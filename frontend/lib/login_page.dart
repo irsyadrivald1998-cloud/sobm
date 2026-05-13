@@ -36,13 +36,7 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Login successful!'),
-            backgroundColor: const Color(0xFFD13639),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        Navigator.of(context).pushReplacementNamed('/home');
       }
     }
   }
