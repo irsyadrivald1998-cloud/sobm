@@ -14,8 +14,12 @@ class MyApp extends StatelessWidget {
       title: 'Login App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFD13639),
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFF0A0E12),
       ),
       home: const LoginPage(),
     );
