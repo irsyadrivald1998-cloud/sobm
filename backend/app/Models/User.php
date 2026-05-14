@@ -41,4 +41,24 @@ class User extends Authenticatable implements FilamentUser
     {
         return in_array($this->role, ['admin', 'viewer']);
     }
+
+    /**
+     * Get the name of the unique identifier for the user.
+     *
+     * @return string
+     */
+    public function getAuthIdentifierName(): string
+    {
+        return 'id';
+    }
+
+    /**
+     * Get the column name for the "username" (employee_id in this case).
+     *
+     * @return string
+     */
+    public function username(): string
+    {
+        return 'employee_id';
+    }
 }
