@@ -3,87 +3,40 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
-use App\Models\Pengguna;
-use Illuminate\Http\JsonResponse;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Login pengguna menggunakan NIK dan kata sandi.
-     *
-     * @param LoginRequest $request
-     * @return JsonResponse
-     */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(Request $request)
     {
-        // Cari pengguna berdasarkan NIK
-        $pengguna = Pengguna::where('nik', $request->nik)->first();
+        $request->validate([
+            'employee_id' => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        // Validasi pengguna dan kata sandi
-        if (!$pengguna || !Hash::check($request->kata_sandi, $pengguna->kata_sandi)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'NIK atau kata sandi salah',
-            ], 401);
+        $user = User::where('employee_id', $request->employee_id)->first();
+
+        if (! $user || ! Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'employee_id' => ['Kredensial tidak valid.'],
+            ]);
         }
 
-        // Buat token untuk pengguna
-        $token = $pengguna->createToken('auth_token')->plainTextToken;
-
         return response()->json([
-            'success' => true,
-            'message' => 'Login berhasil',
-            'data' => [
-                'pengguna' => [
-                    'id' => $pengguna->id,
-                    'nik' => $pengguna->nik,
-                    'nama' => $pengguna->nama,
-                    'peran' => $pengguna->peran,
-                ],
-                'token' => $token,
-                'token_type' => 'Bearer',
-            ],
-        ], 200);
+            'user' => $user,
+            'token' => $user->createToken('mobile-app')->plainTextToken,
+        ]);
     }
 
-    /**
-     * Logout pengguna (revoke token).
-     *
-     * @return JsonResponse
-     */
-    public function logout(): JsonResponse
+    public function logout(Request $request)
     {
-        // Hapus token yang sedang digunakan
-        auth()->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'success' => true,
-            'message' => 'Logout berhasil',
-        ], 200);
-    }
-
-    /**
-     * Mendapatkan informasi pengguna yang sedang login.
-     *
-     * @return JsonResponse
-     */
-    public function me(): JsonResponse
-    {
-        $pengguna = auth()->user();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Data pengguna berhasil diambil',
-            'data' => [
-                'id' => $pengguna->id,
-                'nik' => $pengguna->nik,
-                'nama' => $pengguna->nama,
-                'peran' => $pengguna->peran,
-                'dibuat_pada' => $pengguna->dibuat_pada,
-                'diperbarui_pada' => $pengguna->diperbarui_pada,
-            ],
-        ], 200);
+            'message' => 'Logged out successfully',
+        ]);
     }
 }

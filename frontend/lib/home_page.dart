@@ -8,7 +8,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +38,7 @@ class _HomePageState extends State<HomePage> {
             ),
             title: Row(
               children: [
-                Icon(
-                  Icons.shield,
-                  color: const Color(0xFFD13639),
-                  size: 32,
-                ),
+                Icon(Icons.shield, color: const Color(0xFFD13639), size: 32),
                 const SizedBox(width: 12),
                 const Text(
                   'RIOT',
@@ -105,10 +101,7 @@ class _HomePageState extends State<HomePage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF1A1F2E),
-                    const Color(0xFF0A0E12),
-                  ],
+                  colors: [const Color(0xFF1A1F2E), const Color(0xFF0A0E12)],
                 ),
               ),
               child: Stack(
@@ -117,9 +110,7 @@ class _HomePageState extends State<HomePage> {
                   Positioned.fill(
                     child: Opacity(
                       opacity: 0.1,
-                      child: CustomPaint(
-                        painter: GridPainter(),
-                      ),
+                      child: CustomPaint(painter: GridPainter()),
                     ),
                   ),
                   // Content
@@ -314,10 +305,7 @@ class _HomePageState extends State<HomePage> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFF1A1F2E),
-                    const Color(0xFF0F1419),
-                  ],
+                  colors: [const Color(0xFF1A1F2E), const Color(0xFF0F1419)],
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -381,10 +369,7 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(40),
               decoration: const BoxDecoration(
                 border: Border(
-                  top: BorderSide(
-                    color: Color(0xFF1C1C1F),
-                    width: 1,
-                  ),
+                  top: BorderSide(color: Color(0xFF1C1C1F), width: 1),
                 ),
               ),
               child: Column(
@@ -428,10 +413,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 32),
                   const Text(
                     '© 2026 Riot Games, Inc. All Rights Reserved.',
-                    style: TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Color(0xFF6B7280), fontSize: 12),
                   ),
                 ],
               ),
@@ -442,15 +424,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildGameCard(String title, String subtitle, IconData icon, Color color) {
+  Widget _buildGameCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1C1C1F),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFF2C2C2F),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF2C2C2F), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -469,11 +453,7 @@ class _HomePageState extends State<HomePage> {
                     color: color.withOpacity(0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    size: 40,
-                    color: color,
-                  ),
+                  child: Icon(icon, size: 40, color: color),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -509,10 +489,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: const Color(0xFF0A0E12),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFF2C2C2F),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF2C2C2F), width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -576,10 +553,7 @@ class _HomePageState extends State<HomePage> {
       onTap: () {},
       child: Text(
         text,
-        style: const TextStyle(
-          color: Color(0xFF9CA3AF),
-          fontSize: 14,
-        ),
+        style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
       ),
     );
   }
@@ -596,20 +570,12 @@ class GridPainter extends CustomPainter {
 
     // Draw vertical lines
     for (double i = 0; i < size.width; i += spacing) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
     }
 
     // Draw horizontal lines
     for (double i = 0; i < size.height; i += spacing) {
-      canvas.drawLine(
-        Offset(0, i),
-        Offset(size.width, i),
-        paint,
-      );
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
     }
   }
 
