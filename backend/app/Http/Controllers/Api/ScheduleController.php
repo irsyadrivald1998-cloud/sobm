@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
@@ -15,8 +16,6 @@ class ScheduleController extends Controller
             ->orderBy('scheduled_time', 'asc')
             ->get();
 
-        return response()->json([
-            'schedules' => $schedules,
-        ]);
+        return ApiResponse::success(['schedules' => $schedules], 'OK');
     }
 }

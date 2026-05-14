@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ApiResponse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -25,18 +26,16 @@ class AuthController extends Controller
             ]);
         }
 
-        return response()->json([
+        return ApiResponse::success([
             'user' => $user,
             'token' => $user->createToken('mobile-app')->plainTextToken,
-        ]);
+        ], 'Login berhasil.');
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ]);
+        return ApiResponse::success(null, 'Berhasil keluar.');
     }
 }

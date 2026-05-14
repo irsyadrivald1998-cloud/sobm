@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Schedules\Tables;
 
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -15,25 +16,50 @@ class SchedulesTable
         return $table
             ->columns([
                 TextColumn::make('user.name')
+                    ->label('Pekerja')
                     ->searchable(),
                 TextColumn::make('checkpoint.name')
+                    ->label('Checkpoint')
                     ->searchable(),
-                TextColumn::make('taskCategory.id')
-                    ->searchable(),
+                TextColumn::make('taskCategory.task_name')
+                    ->label('Kategori tugas')
+                    ->searchable()
+                    ->default('—'),
                 TextColumn::make('shift_date')
-                    ->date()
+                    ->label('Tanggal')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->translatedFormat('d M Y') : '—')
                     ->sortable(),
                 TextColumn::make('scheduled_time')
-                    ->time()
+                    ->label('Jam patroli')
+                    ->formatStateUsing(function ($state): string {
+                        if ($state === null) {
+                            return '—';
+                        }
+
+                        return Carbon::parse($state)->format('H:i');
+                    })
                     ->sortable(),
                 TextColumn::make('status')
-                    ->badge(),
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending' => 'warning',
+                        'completed' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Menunggu',
+                        'completed' => 'Selesai',
+                        default => $state,
+                    }),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Dibuat')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i') : '—')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Diubah')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i') : '—')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
