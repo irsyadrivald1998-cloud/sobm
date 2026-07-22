@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 import 'api_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -9,13 +10,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _employeeIdController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _urlController = TextEditingController();
-  bool _isPasswordVisible = false;
-  bool _isLoading = false;
-  
+  final _formKey               = GlobalKey<FormState>();
+  final _emailController       = TextEditingController();
+  final _passwordController    = TextEditingController();
+  final _urlController         = TextEditingController();
+  bool  _isPasswordVisible     = false;
+  bool  _isLoading             = false;
+
   final _apiService = ApiService();
 
   @override
@@ -27,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _employeeIdController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _urlController.dispose();
     super.dispose();
@@ -35,9 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _checkLoginStatus() async {
     if (await _apiService.isLoggedIn()) {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
+      if (mounted) Navigator.of(context).pushReplacementNamed('/home');
     }
   }
 
@@ -47,412 +46,248 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleLogin() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Save custom API Base URL if configured
-      await _apiService.saveBaseUrl(_urlController.text.trim());
-
-      try {
-        await _apiService.login(
-          _employeeIdController.text.trim(),
-          _passwordController.text,
-        );
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login Berhasil'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          Navigator.of(context).pushReplacementNamed('/home');
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString().replaceAll('Exception: ', '')),
-              backgroundColor: const Color(0xFFD13639),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    await _apiService.saveBaseUrl(_urlController.text.trim());
+    try {
+      await _apiService.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+      if (mounted) {
+        _showSnack('Login berhasil', isError: false);
+        Navigator.of(context).pushReplacementNamed('/home');
       }
+    } catch (e) {
+      if (mounted) {
+        _showSnack(e.toString().replaceAll('Exception: ', ''), isError: true);
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  void _showSnack(String message, {required bool isError}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message,
+          style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
+      backgroundColor:
+          isError ? AppTheme.errorContainer : AppTheme.surfaceHighest,
+    ));
+  }
+
   void _showSettingsDialog() {
+    final tempController = TextEditingController(text: _urlController.text);
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1C1C1F),
-          title: const Text(
-            'Server Settings',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'API BASE URL',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF9CA3AF),
-                ),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _urlController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFF0A0E12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(4),
-                    borderSide: const BorderSide(color: Color(0xFFD13639), width: 1.5),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Default: ${ApiService.defaultBaseUrl}',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280)),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _urlController.text = ApiService.defaultBaseUrl;
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Reset to Default', style: TextStyle(color: Color(0xFF9CA3AF))),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Server Settings'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('API BASE URL', style: AppTheme.labelMd),
+            const SizedBox(height: AppTheme.spSm),
+            TextField(
+              controller: tempController,
+              style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+              decoration:
+                  const InputDecoration(hintText: 'http://192.168.x.x:8000'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD13639),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Save'),
-            ),
+            const SizedBox(height: AppTheme.spSm),
+            Text('Default: ${ApiService.defaultBaseUrl}',
+                style: AppTheme.labelSm),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              tempController.text = ApiService.defaultBaseUrl;
+              _urlController.text = ApiService.defaultBaseUrl;
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Reset Default'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _urlController.text = tempController.text;
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
     );
   }
 
+  // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final size   = MediaQuery.of(context).size;
+    final isWide = size.width >= 800;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E12),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: _showSettingsDialog,
+      backgroundColor: AppTheme.background,
+      body: Stack(
+        children: [
+          // ── Main Layout ──────────────────────────────────────────────
+          isWide ? _buildWideLayout() : _buildNarrowLayout(),
+
+          // ── Settings FAB ─────────────────────────────────────────────
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 16,
+            child: IconButton(
+              icon: Icon(Icons.settings_outlined,
+                  color: AppTheme.outline, size: 22),
+              tooltip: 'Server Settings',
+              onPressed: _showSettingsDialog,
+            ),
           ),
-          const SizedBox(width: 8),
+
+          // ── Bottom Status Bar ────────────────────────────────────────
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: _StatusBar(),
+          ),
         ],
       ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 400),
-              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Logo
-                    Container(
-                      height: 80,
-                      margin: const EdgeInsets.only(bottom: 30),
-                      child: Center(
-                        child: Icon(
-                          Icons.verified_user_outlined,
-                          size: 70,
-                          color: const Color(0xFFD13639),
-                        ),
-                      ),
-                    ),
+    );
+  }
 
-                    // Title
-                    const Text(
-                      'SOBM Mobile Check-In',
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Monitoring & Reporting App',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 35),
+  // ── Wide (tablet / desktop) ───────────────────────────────────────────────
+  Widget _buildWideLayout() {
+    return Row(
+      children: [
+        // Left decorative panel
+        Expanded(
+          flex: 5,
+          child: _DecorativePanel(),
+        ),
+        // Right form panel
+        Expanded(
+          flex: 5,
+          child: Container(
+            color: AppTheme.background,
+            child: _buildFormPanel(),
+          ),
+        ),
+      ],
+    );
+  }
 
-                    // Employee ID Field
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'EMPLOYEE ID',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF9CA3AF),
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _employeeIdController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'e.g. hk_001',
-                            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                            filled: true,
-                            fillColor: const Color(0xFF1C1C1F),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF2C2C2F),
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD13639),
-                                width: 2,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD13639),
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD13639),
-                                width: 2,
-                              ),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            errorStyle: const TextStyle(
-                              color: Color(0xFFD13639),
-                              fontSize: 12,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Employee ID is required';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+  // ── Narrow (phone) ────────────────────────────────────────────────────────
+  Widget _buildNarrowLayout() {
+    return Column(
+      children: [
+        // Compact top banner
+        _CompactBanner(),
+        // Form scrollable
+        Expanded(child: _buildFormPanel()),
+      ],
+    );
+  }
 
-                    // Password Field
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'PASSWORD',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF9CA3AF),
-                            letterSpacing: 1.2,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: !_isPasswordVisible,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                            filled: true,
-                            fillColor: const Color(0xFF1C1C1F),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFF2C2C2F),
-                                width: 1,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD13639),
-                                width: 2,
-                              ),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD13639),
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFD13639),
-                                width: 2,
-                              ),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _isPasswordVisible
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                color: const Color(0xFF9CA3AF),
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isPasswordVisible = !_isPasswordVisible;
-                                });
-                              },
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            errorStyle: const TextStyle(
-                              color: Color(0xFFD13639),
-                              fontSize: 12,
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Password is required';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 35),
+  // ── Form Panel ────────────────────────────────────────────────────────────
+  Widget _buildFormPanel() {
+    return SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            AppTheme.spXl,
+            AppTheme.spXl,
+            AppTheme.spXl,
+            80, // room for status bar
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Greeting
+                  Text('Selamat Datang',
+                      style: AppTheme.headlineMd
+                          .copyWith(color: AppTheme.onSurface)),
+                  const SizedBox(height: AppTheme.spXs),
+                  Text('Manajemen Gedung Cerdas',
+                      style: AppTheme.bodyMd),
+                  const SizedBox(height: AppTheme.spXl + AppTheme.spMd),
 
-                    // Login Button
-                    SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleLogin,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD13639),
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: const Color(0xFF7A1F21),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          elevation: 0,
+                  // ── Email ──────────────────────────────────────────
+                  _buildInputField(
+                    label: 'Email',
+                    hint: 'employee@sobm.id',
+                    controller: _emailController,
+                    prefixIcon: Icons.mail_outline,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) => (v == null || v.trim().isEmpty)
+                        ? 'Email wajib diisi'
+                        : null,
+                  ),
+                  const SizedBox(height: AppTheme.spMd),
+
+                  // ── Password ───────────────────────────────────────
+                  _buildInputField(
+                    label: 'Password',
+                    hint: '••••••••',
+                    controller: _passwordController,
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: !_isPasswordVisible,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 20,
+                        color: AppTheme.outline,
+                      ),
+                      onPressed: () => setState(
+                          () => _isPasswordVisible = !_isPasswordVisible),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty)
+                        ? 'Password wajib diisi'
+                        : null,
+                  ),
+                  const SizedBox(height: AppTheme.spXl),
+
+                  // ── Masuk Button ───────────────────────────────────
+                  _MasukButton(
+                      isLoading: _isLoading, onPressed: _handleLogin),
+                  const SizedBox(height: AppTheme.spXl),
+
+                  // ── Divider "Atau" ─────────────────────────────────
+                  _OrDivider(),
+                  const SizedBox(height: AppTheme.spXl),
+
+                  // ── Biometric Buttons ──────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _BiometricButton(
+                          icon: Icons.face,
+                          label: 'Face ID',
+                          onPressed: () => _showSnack(
+                              'Face ID belum tersedia',
+                              isError: false),
                         ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.arrow_forward, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Sign in',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                    
-                    // Technical Note info
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C1C1F),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: const Color(0xFF2C2C2F)),
+                      const SizedBox(width: AppTheme.spMd),
+                      Expanded(
+                        child: _BiometricButton(
+                          icon: Icons.fingerprint,
+                          label: 'Fingerprint',
+                          onPressed: () => _showSnack(
+                              'Fingerprint belum tersedia',
+                              isError: false),
+                        ),
                       ),
-                      child: const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Kredensial Default Pekerja:',
-                            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            '• ID: hk_001\n• Password: password123',
-                            style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, height: 1.4),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
@@ -460,4 +295,329 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  // ── Reusable labeled input ─────────────────────────────────────────────────
+  Widget _buildInputField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    required IconData prefixIcon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: AppTheme.labelMd
+                .copyWith(color: AppTheme.onSurfaceVariant, letterSpacing: 0.8)),
+        const SizedBox(height: AppTheme.spXs + 2),
+        TextFormField(
+          controller: controller,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          style: AppTheme.bodyLg.copyWith(color: AppTheme.onSurface),
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(prefixIcon, size: 20, color: AppTheme.outline),
+            suffixIcon: suffixIcon,
+          ),
+          validator: validator,
+        ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Sub-Widgets
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Left decorative panel for wide layout
+class _DecorativePanel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF180A09), // surfaceLowest
+            Color(0xFF2C1B1A), // surface
+            Color(0xFF1E0F0E), // background
+          ],
+          stops: [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Grid lines decoration
+          Positioned.fill(child: CustomPaint(painter: _GridPainter())),
+
+          // Center content
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppTheme.spXl),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Icon ring
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: AppTheme.primaryBrand.withOpacity(0.5),
+                          width: 1.5),
+                      color: AppTheme.primaryBrand.withOpacity(0.1),
+                    ),
+                    child: const Icon(Icons.business,
+                        size: 48, color: AppTheme.primary),
+                  ),
+                  const SizedBox(height: AppTheme.spLg),
+                  Text(
+                    'SOBM',
+                    style: AppTheme.displayLg.copyWith(
+                      color: AppTheme.onSurface,
+                      letterSpacing: 6,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spSm),
+                  Text(
+                    'Sistem Operasional\nBangunan & Manajemen',
+                    style: AppTheme.bodyMd,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: AppTheme.spXl),
+                  // Decorative accent line
+                  Container(
+                    width: 48,
+                    height: 2,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBrand,
+                      borderRadius: BorderRadius.circular(1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Compact top banner for narrow (phone) layout
+class _CompactBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 160,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF180A09), Color(0xFF2C1B1A)],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Positioned.fill(child: CustomPaint(painter: _GridPainter())),
+            Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: AppTheme.primaryBrand.withOpacity(0.5),
+                          width: 1.5),
+                      color: AppTheme.primaryBrand.withOpacity(0.1),
+                    ),
+                    child: const Icon(Icons.business,
+                        size: 26, color: AppTheme.primary),
+                  ),
+                  const SizedBox(width: AppTheme.spMd),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('SOBM',
+                          style: AppTheme.headlineMd.copyWith(
+                              letterSpacing: 4,
+                              color: AppTheme.onSurface)),
+                      Text('Manajemen Gedung Cerdas',
+                          style: AppTheme.labelMd),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Primary "Masuk" button
+class _MasukButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onPressed;
+  const _MasukButton({required this.isLoading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        child: isLoading
+            ? const SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(
+                    strokeWidth: 2.5, color: Colors.white),
+              )
+            : const Text(
+                'Masuk',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+/// "Atau" divider with lines on both sides
+class _OrDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(
+          child: Divider(thickness: 0.5, color: AppTheme.outlineVariant),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd),
+          child: Text(
+            'Atau',
+            style: AppTheme.labelMd.copyWith(color: AppTheme.outline),
+          ),
+        ),
+        const Expanded(
+          child: Divider(thickness: 0.5, color: AppTheme.outlineVariant),
+        ),
+      ],
+    );
+  }
+}
+
+/// Biometric option button (Face ID / Fingerprint)
+class _BiometricButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  const _BiometricButton(
+      {required this.icon, required this.label, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.spMd),
+        side: const BorderSide(color: AppTheme.outlineVariant, width: 1),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 28, color: AppTheme.primary),
+          const SizedBox(height: AppTheme.spXs),
+          Text(
+            label,
+            style: AppTheme.labelMd.copyWith(color: AppTheme.onSurfaceVariant),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Bottom status bar — "Sistem Berjalan Normal"
+class _StatusBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTheme.spMd,
+        vertical: AppTheme.spSm,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceLowest,
+        border: const Border(
+          top: BorderSide(color: AppTheme.outlineVariant, width: 0.5),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: AppTheme.statusOk,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: AppTheme.spSm),
+            Text(
+              'Sistem Berjalan Normal',
+              style: AppTheme.labelMd.copyWith(color: AppTheme.statusOk),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Subtle blueprint grid background painter
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppTheme.outlineVariant.withOpacity(0.15)
+      ..strokeWidth = 0.5;
+
+    const step = 32.0;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -9,7 +9,7 @@ class ApiService {
   static const String keyBaseUrl = 'api_base_url';
 
   // Default fallbacks based on platform/environment
-  static String get defaultBaseUrl => 'http://192.168.43.157:8000/api';
+  static String get defaultBaseUrl => 'https://f816-114-10-95-0.ngrok-free.app/api';
 
   // Get active API Base URL
   Future<String> getBaseUrl() async {

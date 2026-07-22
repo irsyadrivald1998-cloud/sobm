@@ -3,11 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'app_theme.dart';
 import 'api_service.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  HomePage  (Dashboard)
+// ─────────────────────────────────────────────────────────────────────────────
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -18,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   List<dynamic> _schedules = [];
   bool _isLoading = true;
   String _errorMessage = '';
+  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -26,1022 +30,659 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadInitialData() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
+    setState(() { _isLoading = true; _errorMessage = ''; });
     try {
-      final isLoggedIn = await _apiService.isLoggedIn();
-      if (!isLoggedIn) {
-        if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/');
-        }
+      if (!await _apiService.isLoggedIn()) {
+        if (mounted) Navigator.of(context).pushReplacementNamed('/');
         return;
       }
-
-      final userData = await _apiService.getUser();
+      final userData      = await _apiService.getUser();
       final schedulesData = await _apiService.getSchedules();
-
       setState(() {
-        _user = userData;
+        _user      = userData;
         _schedules = schedulesData;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
-        _isLoading = false;
+        _isLoading    = false;
       });
     }
   }
 
-  void _handleLogout() async {
+  void _handleLogout() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1F),
-        title: const Text('Keluar Aplikasi', style: TextStyle(color: Colors.white)),
-        content: const Text('Apakah Anda yakin ingin keluar?', style: TextStyle(color: Color(0xFF9CA3AF))),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Keluar Aplikasi'),
+        content: Text('Apakah Anda yakin ingin keluar?', style: AppTheme.bodyMd),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Batal', style: TextStyle(color: Color(0xFF9CA3AF))),
-          ),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Batal')),
           ElevatedButton(
             onPressed: () async {
-              final navigator = Navigator.of(context);
-              navigator.pop();
+              final nav = Navigator.of(ctx);
+              nav.pop();
               await _apiService.logout();
-              navigator.pushReplacementNamed('/');
+              nav.pushReplacementNamed('/');
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD13639)),
-            child: const Text('Keluar', style: TextStyle(color: Colors.white)),
+            child: const Text('Keluar'),
           ),
         ],
       ),
     );
-  }
-
-  String _formatIndonesianDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      final days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-      final months = [
-        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-      ];
-      final dayName = days[date.weekday % 7];
-      final monthName = months[date.month - 1];
-      return '$dayName, ${date.day} $monthName ${date.year}';
-    } catch (_) {
-      return dateStr;
-    }
-  }
-
-  bool _isScheduleToday(String shiftDateStr) {
-    try {
-      final shiftDate = DateTime.parse(shiftDateStr);
-      final now = DateTime.now();
-      return shiftDate.year == now.year && shiftDate.month == now.month && shiftDate.day == now.day;
-    } catch (_) {
-      return false;
-    }
   }
 
   void _openCheckInDialog(Map<String, dynamic> schedule) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return CheckInDialog(
-          schedule: schedule,
-          apiService: _apiService,
-          onSuccess: () {
-            _loadInitialData();
-          },
-        );
-      },
+      builder: (_) => CheckInDialog(
+        schedule: schedule,
+        apiService: _apiService,
+        onSuccess: _loadInitialData,
+      ),
     );
   }
 
+  bool _isScheduleToday(String dateStr) {
+    try {
+      final d = DateTime.parse(dateStr);
+      final n = DateTime.now();
+      return d.year == n.year && d.month == n.month && d.day == n.day;
+    } catch (_) { return false; }
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+      return '${days[date.weekday % 7]}, ${date.day} ${months[date.month - 1]} ${date.year}';
+    } catch (_) { return dateStr; }
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final pendingCount = _schedules.where((s) => s['status'] == 'pending').length;
-    final completedCount = _schedules.where((s) => s['status'] == 'completed').length;
-
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E12),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0A0E12),
-        elevation: 0,
-        title: Row(
-          children: [
-            const Icon(Icons.verified_user, color: Color(0xFFD13639), size: 28),
-            const SizedBox(width: 10),
-            const Text(
-              'SOBM Dashboard',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      backgroundColor: AppTheme.background,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand))
+          : _errorMessage.isNotEmpty
+              ? _buildError()
+              : _buildDashboard(),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  // ── Error State ───────────────────────────────────────────────────────────
+  Widget _buildError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppTheme.spXl),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Icon(Icons.error_outline, color: AppTheme.alertCritical, size: 56),
+          const SizedBox(height: AppTheme.spMd),
+          Text(_errorMessage, style: AppTheme.bodyLg, textAlign: TextAlign.center),
+          const SizedBox(height: AppTheme.spLg),
+          ElevatedButton.icon(
+            onPressed: _loadInitialData,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Coba Lagi'),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  // ── Dashboard Body ────────────────────────────────────────────────────────
+  Widget _buildDashboard() {
+    final pendingCount   = _schedules.where((s) => s['status'] == 'pending').length;
+    final completedCount = _schedules.where((s) => s['status'] == 'completed').length;
+    final todaySchedules = _schedules.where((s) => _isScheduleToday(s['shift_date'] ?? '')).toList();
+
+    return RefreshIndicator(
+      onRefresh: _loadInitialData,
+      color: AppTheme.primaryBrand,
+      backgroundColor: AppTheme.surface,
+      child: CustomScrollView(
+        slivers: [
+          // ── Top App Bar ─────────────────────────────────────────────
+          SliverAppBar(
+            pinned: true,
+            backgroundColor: AppTheme.surfaceLowest,
+            surfaceTintColor: Colors.transparent,
+            expandedHeight: 64,
+            titleSpacing: AppTheme.spMd,
+            leading: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.primaryBrand.withOpacity(0.5), width: 1.5),
+                  color: AppTheme.primaryBrand.withOpacity(0.1),
+                ),
+                child: const Icon(Icons.business, color: AppTheme.primary, size: 20),
               ),
             ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
-            tooltip: 'Logout',
-            onPressed: _handleLogout,
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _loadInitialData,
-        color: const Color(0xFFD13639),
-        backgroundColor: const Color(0xFF1C1C1F),
-        child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Color(0xFFD13639)),
-              )
-            : _errorMessage.isNotEmpty
-                ? SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
+            title: Text(
+              _user?['company'] ?? 'COMPANY X',
+              style: AppTheme.titleLg.copyWith(
+                color: AppTheme.primaryBrand,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+            ),
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: Stack(clipBehavior: Clip.none, children: [
+                  const Icon(Icons.notifications_outlined, color: AppTheme.onSurface, size: 26),
+                  Positioned(
+                    right: -2, top: -2,
                     child: Container(
-                      height: MediaQuery.of(context).size.height * 0.7,
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline, color: Color(0xFFD13639), size: 60),
-                          const SizedBox(height: 16),
-                          Text(
-                            _errorMessage,
-                            style: const TextStyle(color: Colors.white, fontSize: 16),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: _loadInitialData,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD13639),
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Coba Lagi'),
-                          ),
-                        ],
+                      width: 8, height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.alertCritical, shape: BoxShape.circle,
                       ),
                     ),
-                  )
-                : CustomScrollView(
-                    slivers: [
-                      // Profile Header
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF1A1F2E), Color(0xFF0F1419)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF2C2C2F)),
-                            ),
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                    radius: 28,
-                                    backgroundColor: const Color(0x33D13639),
-                                    child: const Icon(Icons.person, color: Color(0xFFD13639), size: 30),
-                                  ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _user?['name'] ?? 'Pekerja',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Role: ${(_user?['role'] ?? '-').toString().toUpperCase()}',
-                                        style: const TextStyle(
-                                          color: Color(0xFF9CA3AF),
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'ID Karyawan: ${_user?['employee_id'] ?? '-'}',
-                                        style: const TextStyle(
-                                          color: Color(0xFF6B7280),
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                  ),
+                ]),
+                onPressed: () {},
+              ),
+              const SizedBox(width: 4),
+            ],
+          ),
+
+          // ── Critical Alarm Banner ───────────────────────────────────
+          SliverToBoxAdapter(child: _CriticalAlarmBanner()),
+
+          // ── Stat Cards 2×2 Grid ─────────────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: AppTheme.spSm,
+                crossAxisSpacing: AppTheme.spSm,
+                childAspectRatio: 1.9,
+              ),
+              delegate: SliverChildListDelegate([
+                _StatCard(
+                  label: 'TOTAL GEDUNG',
+                  value: '12',
+                  icon: Icons.domain_outlined,
+                ),
+                _StatCard(
+                  label: 'PERALATAN AKTIF',
+                  value: '85%',
+                  icon: Icons.settings_input_component_outlined,
+                  valueColor: AppTheme.statusOk,
+                ),
+                _StatCard(
+                  label: 'JADWAL TUGAS',
+                  value: '${pendingCount} Aktif',
+                  icon: Icons.people_outline,
+                ),
+                _StatCard(
+                  label: 'STATUS SISTEM',
+                  value: 'Stabil',
+                  icon: Icons.verified_outlined,
+                  valueColor: AppTheme.statusOk,
+                  valueSize: 20,
+                ),
+              ]),
+            ),
+          ),
+
+          // ── Check-in Checkpoint wide card ───────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spSm, AppTheme.spMd, 0),
+              child: _CheckpointCard(
+                total: _schedules.length,
+                completed: completedCount,
+              ),
+            ),
+          ),
+
+          // ── Quick Actions ───────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
+              child: _QuickActions(
+                onBuatLaporan: () {},
+                onScanQR: () {},
+                onMonitoring: () {},
+                onJadwalTugas: () => setState(() => _selectedTab = 0),
+              ),
+            ),
+          ),
+
+          // ── Insiden Harian ──────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
+              child: _InsidenSection(),
+            ),
+          ),
+
+          // ── Konsumsi Energi Chart ───────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
+              child: _EnergyChart(),
+            ),
+          ),
+
+          // ── Aktivitas Terbaru ───────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
+              child: _AktivitasSection(schedules: todaySchedules, onCheckIn: _openCheckInDialog),
+            ),
+          ),
+
+          const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spXl)),
+        ],
+      ),
+    );
+  }
+
+  // ── Bottom Navigation ─────────────────────────────────────────────────────
+  Widget _buildBottomNav() {
+    final items = [
+      _NavItem(icon: Icons.grid_view_rounded, label: 'Home'),
+      _NavItem(icon: Icons.monitor_heart_outlined, label: 'Monitoring'),
+      _NavItem(icon: Icons.assignment_outlined, label: 'Reports'),
+      _NavItem(icon: Icons.person_outline, label: 'Profile'),
+    ];
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppTheme.surfaceLowest,
+        border: Border(top: BorderSide(color: AppTheme.outlineVariant, width: 0.5)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            children: List.generate(items.length, (i) {
+              final selected = _selectedTab == i;
+              return Expanded(
+                child: InkWell(
+                  onTap: () {
+                    if (i == 3) { _handleLogout(); return; }
+                    setState(() => _selectedTab = i);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 40, height: 28,
+                        decoration: selected
+                            ? BoxDecoration(
+                                color: AppTheme.primaryBrand.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                              )
+                            : null,
+                        child: Icon(
+                          items[i].icon,
+                          color: selected ? AppTheme.primaryBrand : AppTheme.outline,
+                          size: 22,
                         ),
                       ),
-
-                      // Stats counters
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _buildStatCard(
-                                  'TUGAS PENDING',
-                                  pendingCount.toString(),
-                                  const Color(0xFFFBBF24),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _buildStatCard(
-                                  'SELESAI',
-                                  completedCount.toString(),
-                                  const Color(0xFF10B981),
-                                ),
-                              ),
-                            ],
-                          ),
+                      const SizedBox(height: 2),
+                      Text(
+                        items[i].label,
+                        style: AppTheme.labelSm.copyWith(
+                          color: selected ? AppTheme.primaryBrand : AppTheme.outline,
+                          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                         ),
-                      ),
-
-                      // Section Title
-                      const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 20.0, right: 20.0, top: 28.0, bottom: 12.0),
-                          child: Text(
-                            'DAFTAR JADWAL TUGAS',
-                            style: TextStyle(
-                              color: Color(0xFF9CA3AF),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Schedules List
-                      _schedules.isEmpty
-                          ? SliverToBoxAdapter(
-                              child: Container(
-                                height: 200,
-                                alignment: Alignment.center,
-                                child: const Text(
-                                  'Tidak ada jadwal tugas ditemukan.',
-                                  style: TextStyle(color: Color(0xFF9CA3AF)),
-                                ),
-                              ),
-                            )
-                          : SliverPadding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              sliver: SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    final schedule = _schedules[index];
-                                    final checkpoint = schedule['checkpoint'] ?? {};
-                                    final category = schedule['task_category'] ?? {};
-                                    final shiftDate = schedule['shift_date'] ?? '';
-                                    final time = schedule['scheduled_time'] ?? '';
-                                    final status = schedule['status'] ?? 'pending';
-
-                                    final isToday = _isScheduleToday(shiftDate);
-                                    final isPending = status == 'pending';
-
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 16),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1C1C1F),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: const Color(0xFF2C2C2F)),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            // Checkpoint and Status
-                                            Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    checkpoint['name'] ?? 'Checkpoint Tanpa Nama',
-                                                    style: const TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                  decoration: BoxDecoration(
-                                                    color: isPending
-                                                         ? const Color(0x33FBBF24)
-                                                         : const Color(0x3310B981),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                  ),
-                                                  child: Text(
-                                                    isPending ? 'PENDING' : 'SELESAI',
-                                                    style: TextStyle(
-                                                      color: isPending
-                                                          ? const Color(0xFFFBBF24)
-                                                          : const Color(0xFF10B981),
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 8),
-
-                                            // Details
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.category_outlined, color: Color(0xFF9CA3AF), size: 16),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'Tugas: ${category['name'] ?? '-'}',
-                                                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.calendar_month_outlined, color: Color(0xFF9CA3AF), size: 16),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  _formatIndonesianDate(shiftDate),
-                                                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                const Icon(Icons.access_time, color: Color(0xFF9CA3AF), size: 16),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  'Jam: $time WIB',
-                                                  style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                                                ),
-                                              ],
-                                            ),
-
-                                            // Action Button
-                                            if (isPending) ...[
-                                              const SizedBox(height: 16),
-                                              SizedBox(
-                                                width: double.infinity,
-                                                height: 40,
-                                                child: ElevatedButton(
-                                                  onPressed: isToday ? () => _openCheckInDialog(schedule) : null,
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor: const Color(0xFFD13639),
-                                                    foregroundColor: Colors.white,
-                                                    disabledBackgroundColor: const Color(0xFF2C2C2F),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius: BorderRadius.circular(4),
-                                                    ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      const Icon(Icons.location_on_outlined, size: 18),
-                                                      const SizedBox(width: 8),
-                                                      Text(
-                                                        isToday
-                                                            ? 'Check In Sekarang'
-                                                            : 'Check In Hanya Pada Hari H',
-                                                        style: TextStyle(
-                                                          fontSize: 14,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: isToday ? Colors.white : const Color(0xFF6B7280),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  childCount: _schedules.length,
-                                ),
-                              ),
-                            ),
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 20),
                       ),
                     ],
                   ),
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1F),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF2C2C2F)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF9CA3AF),
-              letterSpacing: 1.0,
-            ),
+                ),
+              );
+            }),
           ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class CheckInDialog extends StatefulWidget {
-  final Map<String, dynamic> schedule;
-  final ApiService apiService;
-  final VoidCallback onSuccess;
-
-  const CheckInDialog({
-    super.key,
-    required this.schedule,
-    required this.apiService,
-    required this.onSuccess,
-  });
-
-  @override
-  State<CheckInDialog> createState() => _CheckInDialogState();
+class _NavItem {
+  final IconData icon;
+  final String label;
+  const _NavItem({required this.icon, required this.label});
 }
 
-class _CheckInDialogState extends State<CheckInDialog> {
-  final _formKey = GlobalKey<FormState>();
-  final _notesController = TextEditingController();
-  final _issueController = TextEditingController();
-  final ImagePicker _picker = ImagePicker();
+// ─────────────────────────────────────────────────────────────────────────────
+//  Section Widgets
+// ─────────────────────────────────────────────────────────────────────────────
 
-  bool _isGettingLocation = false;
-  Position? _currentPosition;
-  double? _distance;
-
-  bool _isCapturingPhoto = false;
-  XFile? _photoFile;
-  Uint8List? _photoBytes;
-
-  String _conditionStatus = 'Aman/Bersih';
-  bool _isSubmitting = false;
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    _issueController.dispose();
-    super.dispose();
-  }
-
-  double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const r = 6371000; // Earth's radius in meters
-    final dLat = (lat2 - lat1) * (pi / 180);
-    final dLon = (lon2 - lon1) * (pi / 180);
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(lat1 * (pi / 180)) * cos(lat2 * (pi / 180)) * sin(dLon / 2) * sin(dLon / 2);
-    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
-    return r * c;
-  }
-
-  Future<void> _getLocation() async {
-    setState(() {
-      _isGettingLocation = true;
-      _distance = null;
-    });
-
-    try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw Exception('Layanan lokasi dinonaktifkan. Silakan aktifkan GPS.');
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw Exception('Izin akses lokasi ditolak.');
-        }
-      }
-
-      if (permission == LocationPermission.deniedForever) {
-        throw Exception('Izin lokasi ditolak permanen di pengaturan.');
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      final checkpoint = widget.schedule['checkpoint'] ?? {};
-      final double cpLat = double.parse(checkpoint['latitude'].toString());
-      final double cpLng = double.parse(checkpoint['longitude'].toString());
-
-      final distance = _calculateDistance(position.latitude, position.longitude, cpLat, cpLng);
-
-      setState(() {
-        _currentPosition = position;
-        _distance = distance;
-        _isGettingLocation = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isGettingLocation = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: const Color(0xFFD13639),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _takePhoto() async {
-    setState(() {
-      _isCapturingPhoto = true;
-    });
-
-    try {
-      final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 70,
-        maxWidth: 800,
-      );
-
-      if (photo != null) {
-        final bytes = await photo.readAsBytes();
-        setState(() {
-          _photoFile = photo;
-          _photoBytes = bytes;
-          _isCapturingPhoto = false;
-        });
-      } else {
-        setState(() {
-          _isCapturingPhoto = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _isCapturingPhoto = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengambil foto: $e'),
-            backgroundColor: const Color(0xFFD13639),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
-  }
-
-  void _submitReport() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    if (_currentPosition == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Silakan dapatkan GPS koordinat terlebih dahulu.'),
-          backgroundColor: Color(0xFFD13639),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    if (_photoBytes == null || _photoFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Silakan ambil foto tugas terlebih dahulu.'),
-          backgroundColor: Color(0xFFD13639),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    final checkpoint = widget.schedule['checkpoint'] ?? {};
-    final int radius = int.parse(checkpoint['radius_meter'].toString());
-
-    if (_distance != null && _distance! > radius) {
-      final over = (_distance! - radius).ceil();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal: Anda berada $over meter di luar jangkauan lokasi tugas!'),
-          backgroundColor: const Color(0xFFD13639),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    try {
-      await widget.apiService.submitReport(
-        scheduleId: widget.schedule['id'],
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        conditionStatus: _conditionStatus,
-        notes: _notesController.text.trim(),
-        issueDescription: _conditionStatus == 'Ada Kendala' ? _issueController.text.trim() : null,
-        photoBytes: _photoBytes!,
-        photoName: _photoFile!.name,
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Laporan berhasil dikirim!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        Navigator.of(context).pop();
-        widget.onSuccess();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: const Color(0xFFD13639),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-
+/// Red pulse critical alarm banner
+class _CriticalAlarmBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final checkpoint = widget.schedule['checkpoint'] ?? {};
-    final int radius = int.parse(checkpoint['radius_meter'].toString());
-
-    return AlertDialog(
-      backgroundColor: const Color(0xFF1C1C1F),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Form Check In Tugas',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
-            onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          ),
-        ],
+    return Container(
+      margin: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm + 4),
+      decoration: BoxDecoration(
+        color: AppTheme.errorContainer.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: AppTheme.alertCritical.withOpacity(0.5), width: 1),
       ),
-      content: SizedBox(
-        width: 450,
-        child: SingleChildScrollView(
-          child: Form(
-            key: _formKey,
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: AppTheme.alertCritical, size: 22),
+          const SizedBox(width: AppTheme.spSm),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
-                // Checkpoint info header
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A0E12),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFF2C2C2F)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        checkpoint['name'] ?? 'Checkpoint',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Target Koordinat: ${checkpoint['latitude']}, ${checkpoint['longitude']}',
-                        style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                      ),
-                      Text(
-                        'Radius Toleransi: $radius meter',
-                        style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                      ),
-                    ],
+                Text(
+                  '4 Alarm Kritis',
+                  style: AppTheme.bodyLg.copyWith(
+                    color: AppTheme.onSurface,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // GPS Location Section
-                const Text(
-                  '1. VALIDASI LOKASI GPS (WAJIB)',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                Text(
+                  'Tindakan segera diperlukan di Sektor B',
+                  style: AppTheme.labelMd.copyWith(color: AppTheme.onSurfaceVariant),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isGettingLocation ? null : _getLocation,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2C2C2F),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        ),
-                        child: _isGettingLocation
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.gps_fixed, size: 16),
-                                  SizedBox(width: 8),
-                                  Text('Dapatkan GPS'),
-                                ],
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (_currentPosition != null) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0A0E12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Lokasi Anda: ${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}',
-                          style: const TextStyle(color: Colors.white, fontSize: 13),
-                        ),
-                        const SizedBox(height: 4),
-                        if (_distance != null) ...[
-                          Row(
-                            children: [
-                              Text(
-                                'Jarak ke Target: ${_distance!.toStringAsFixed(1)} meter ',
-                                style: const TextStyle(color: Colors.white, fontSize: 13),
-                              ),
-                              Icon(
-                                _distance! <= radius ? Icons.check_circle : Icons.warning,
-                                size: 16,
-                                color: _distance! <= radius ? Colors.green : Colors.red,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          if (_distance! > radius)
-                            Text(
-                              'Peringatan: Anda berada ${(_distance! - radius).ceil()}m di luar jangkauan!',
-                              style: const TextStyle(color: Color(0xFFD13639), fontSize: 12, fontWeight: FontWeight.bold),
-                            )
-                          else
-                            const Text(
-                              'Lokasi valid untuk check-in.',
-                              style: TextStyle(color: Colors.green, fontSize: 12),
-                            ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 20),
-
-                // Photo Capture Section
-                const Text(
-                  '2. FOTO TUGAS (WAJIB)',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: _isCapturingPhoto ? null : _takePhoto,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2C2C2F),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        ),
-                        child: _isCapturingPhoto
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.camera_alt_outlined, size: 16),
-                                  SizedBox(width: 8),
-                                  Text('Ambil Foto Kamera'),
-                                ],
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-                if (_photoBytes != null) ...[
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 150,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0A0E12),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: const Color(0xFF2C2C2F)),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.memory(
-                        _photoBytes!,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 20),
-
-                // Condition Status Section
-                const Text(
-                  '3. STATUS KONDISI',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _conditionStatus,
-                  dropdownColor: const Color(0xFF1C1C1F),
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: const Color(0xFF0A0E12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide.none),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'Aman/Bersih',
-                      child: Text('Aman / Bersih'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Ada Kendala',
-                      child: Text('Ada Kendala'),
-                    ),
-                  ],
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _conditionStatus = val;
-                      });
-                    }
-                  },
-                ),
-                const SizedBox(height: 20),
-
-                // Notes (Optional)
-                const Text(
-                  '4. CATATAN TAMBAHAN (OPSIONAL)',
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _notesController,
-                  maxLines: 2,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Ketik catatan di sini...',
-                    hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                    filled: true,
-                    fillColor: const Color(0xFF0A0E12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(4), borderSide: BorderSide.none),
-                    contentPadding: const EdgeInsets.all(12),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Issue Description (Only if Ada Kendala)
-                if (_conditionStatus == 'Ada Kendala') ...[
-                  const Text(
-                    '5. DESKRIPSI KENDALA (WAJIB)',
-                    style: TextStyle(color: Color(0xFFD13639), fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1),
-                  ),
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _issueController,
-                    maxLines: 3,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Deskripsikan kendala yang terjadi secara detail...',
-                      hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-                      filled: true,
-                      fillColor: const Color(0xFF0A0E12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(4),
-                        borderSide: const BorderSide(color: Color(0xFFD13639), width: 1),
-                      ),
-                      contentPadding: const EdgeInsets.all(12),
-                    ),
-                    validator: (value) {
-                      if (_conditionStatus == 'Ada Kendala' && (value == null || value.trim().isEmpty)) {
-                        return 'Deskripsi kendala wajib diisi jika ada kendala.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                ],
               ],
             ),
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Batal', style: TextStyle(color: Color(0xFF9CA3AF))),
-        ),
-        ElevatedButton(
-          onPressed: _isSubmitting ? null : _submitReport,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFD13639),
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: const Color(0xFF7A1F21),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          const SizedBox(width: AppTheme.spSm),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryBrand,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spXs + 2),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSm)),
+            ),
+            child: Text('Tinjau', style: AppTheme.labelMd.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
-          child: _isSubmitting
-              ? const SizedBox(
-                  height: 18,
-                  width: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                )
-              : const Text('Kirim Laporan', style: TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+}
+
+/// 2-column stat card
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color? valueColor;
+  final double valueSize;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    this.valueColor,
+    this.valueSize = 26,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Flexible(
+                child: Text(
+                  label,
+                  style: AppTheme.labelSm.copyWith(letterSpacing: 0.8),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(icon, size: 18, color: AppTheme.outline),
+            ],
+          ),
+          Text(
+            value,
+            style: AppTheme.displayLg.copyWith(
+              fontSize: valueSize,
+              color: valueColor ?? AppTheme.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Wide checkpoint progress card
+class _CheckpointCard extends StatelessWidget {
+  final int total;
+  final int completed;
+  const _CheckpointCard({required this.total, required this.completed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.location_on_outlined, size: 18, color: AppTheme.outline),
+          const SizedBox(width: AppTheme.spSm),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('CHECK-IN CHECKPOINT', style: AppTheme.labelSm.copyWith(letterSpacing: 0.8)),
+              const SizedBox(height: 4),
+              RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$completed',
+                      style: AppTheme.displayLg.copyWith(fontSize: 28, fontWeight: FontWeight.w700),
+                    ),
+                    TextSpan(
+                      text: ' / $total',
+                      style: AppTheme.bodyMd.copyWith(fontSize: 16, color: AppTheme.outline),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Progress ring
+          SizedBox(
+            width: 48, height: 48,
+            child: CircularProgressIndicator(
+              value: total > 0 ? completed / total : 0,
+              strokeWidth: 4,
+              backgroundColor: AppTheme.outlineVariant,
+              valueColor: const AlwaysStoppedAnimation(AppTheme.primaryBrand),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Quick action 4-button row
+class _QuickActions extends StatelessWidget {
+  final VoidCallback onBuatLaporan;
+  final VoidCallback onScanQR;
+  final VoidCallback onMonitoring;
+  final VoidCallback onJadwalTugas;
+
+  const _QuickActions({
+    required this.onBuatLaporan,
+    required this.onScanQR,
+    required this.onMonitoring,
+    required this.onJadwalTugas,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = [
+      _QAction(icon: Icons.add_circle_outline, label: 'Buat\nLaporan', onTap: onBuatLaporan),
+      _QAction(icon: Icons.qr_code_scanner_outlined, label: 'Scan\nQR', onTap: onScanQR),
+      _QAction(icon: Icons.monitor_outlined, label: 'Moni-\ntoring', onTap: onMonitoring),
+      _QAction(icon: Icons.calendar_today_outlined, label: 'Jadwal\nTugas', onTap: onJadwalTugas),
+    ];
+
+    return Row(
+      children: actions.map((a) {
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: a == actions.first ? 0 : AppTheme.spXs,
+              right: a == actions.last ? 0 : AppTheme.spXs,
+            ),
+            child: InkWell(
+              onTap: a.onTap,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: AppTheme.spMd, horizontal: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(a.icon, size: 26, color: AppTheme.primary),
+                    const SizedBox(height: AppTheme.spXs + 2),
+                    Text(
+                      a.label,
+                      textAlign: TextAlign.center,
+                      style: AppTheme.labelMd.copyWith(
+                        color: AppTheme.onSurfaceVariant,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _QAction {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _QAction({required this.icon, required this.label, required this.onTap});
+}
+
+/// Insiden Harian section
+class _InsidenSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Insiden Harian', style: AppTheme.headlineSm),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBrand.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                border: Border.all(color: AppTheme.primaryBrand.withOpacity(0.4), width: 0.5),
+              ),
+              child: Text('Hari Ini',
+                  style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppTheme.spMd),
+
+        // Incident card
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(AppTheme.spMd),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Thumbnail placeholder
+                    Container(
+                      width: 72, height: 72,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceHigh,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                      ),
+                      child: const Icon(Icons.videocam_outlined,
+                          color: AppTheme.outline, size: 28),
+                    ),
+                    const SizedBox(width: AppTheme.spMd),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Kebocoran Pipa HVAC',
+                              style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700)),
+                          const SizedBox(height: AppTheme.spXs),
+                          Text(
+                            'Terdeteksi penurunan tekanan pada jalur sekunder Lantai 4. Teknisi...',
+                            style: AppTheme.bodyMd,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {},
+                  child: const Text('Lihat Detail'),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

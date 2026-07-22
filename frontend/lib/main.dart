@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 import 'login_page.dart';
 import 'home_page.dart';
 
@@ -12,16 +13,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Riot Games',
+      title: 'SOBM Mobile Check-In',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFD13639),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFF0A0E12),
-      ),
+      theme: AppTheme.theme,
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginPage(),
