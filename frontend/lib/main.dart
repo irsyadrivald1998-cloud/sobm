@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'login_page.dart';
 import 'home_page.dart';
+import 'activity_log_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,8 +19,9 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.theme,
       initialRoute: '/',
       routes: {
-        '/': (context) => const LoginPage(),
-        '/home': (context) => const HomePage(),
+        '/':              (context) => const LoginPage(),
+        '/home':          (context) => const HomePage(),
+        '/activity-log':  (context) => const ActivityLogPage(),
       },
     );
   }

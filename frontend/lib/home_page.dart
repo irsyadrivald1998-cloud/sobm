@@ -315,6 +315,10 @@ class _HomePageState extends State<HomePage> {
                 child: InkWell(
                   onTap: () {
                     if (i == 3) { _handleLogout(); return; }
+                    if (i == 2) {
+                      Navigator.of(context).pushNamed('/activity-log');
+                      return;
+                    }
                     setState(() => _selectedTab = i);
                   },
                   child: Column(
@@ -889,7 +893,7 @@ class _AktivitasSection extends StatelessWidget {
         // "Lihat Semua" button
         Center(
           child: TextButton(
-            onPressed: () {},
+            onPressed: () => Navigator.of(context).pushNamed('/activity-log'),
             child: Text(
               'Lihat Semua Aktivitas',
               style: AppTheme.bodyMd.copyWith(color: AppTheme.primary),

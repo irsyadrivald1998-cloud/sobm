@@ -161,6 +161,37 @@ class ApiService {
     }
   }
 
+  // GET /reports — activity log
+  Future<List<dynamic>> getReports() async {
+    final baseUrl = await getBaseUrl();
+    final token   = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/reports'),
+      headers: {
+        'Accept':        'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (responseData['status'] == true) {
+        final data = responseData['data'];
+        // support both {reports:[]} and flat []
+        if (data is List) return data;
+        if (data is Map && data['reports'] != null) return data['reports'] as List;
+        return [];
+      } else {
+        throw Exception(responseData['message'] ?? 'Gagal mengambil laporan.');
+      }
+    } else {
+      throw Exception(responseData['message'] ?? 'Error ${response.statusCode}');
+    }
+  }
+
   // POST /reports (Multipart)
   Future<Map<String, dynamic>> submitReport({
     required int scheduleId,
