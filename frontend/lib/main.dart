@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
+import 'theme_notifier.dart';
 import 'activity_log_notifier.dart';
 import 'login_page.dart';
 import 'home_page.dart';
@@ -16,12 +17,13 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Single shared instance — lives as long as the app
-  final ActivityLogNotifier _logNotifier = ActivityLogNotifier();
+  final ActivityLogNotifier _logNotifier   = ActivityLogNotifier();
+  final ThemeNotifier        _themeNotifier = ThemeNotifier();
 
   @override
   void dispose() {
     _logNotifier.dispose();
+    _themeNotifier.dispose();
     super.dispose();
   }
 
@@ -29,24 +31,31 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return ActivityLogProvider(
       notifier: _logNotifier,
-      child: MaterialApp(
-        title: 'SOBM Mobile Check-In',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.theme,
-        initialRoute: '/',
-        routes: {
-          '/':             (context) => const LoginPage(),
-          '/home':         (context) => const HomePage(),
-          '/activity-log': (context) => const ActivityLogPage(),
-        },
+      child: ThemeProvider(
+        notifier: _themeNotifier,
+        child: ListenableBuilder(
+          listenable: _themeNotifier,
+          builder: (_, __) => MaterialApp(
+            title: 'SOBM Mobile Check-In',
+            debugShowCheckedModeBanner: false,
+            theme:      AppTheme.lightTheme,
+            darkTheme:  AppTheme.darkTheme,
+            themeMode:  _themeNotifier.themeMode,
+            initialRoute: '/',
+            routes: {
+              '/':             (context) => const LoginPage(),
+              '/home':         (context) => const HomePage(),
+              '/activity-log': (context) => const ActivityLogPage(),
+            },
+          ),
+        ),
       ),
     );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  InheritedWidget wrapper — lets any widget in the tree access the notifier
-// ─────────────────────────────────────────────────────────────────────────────
+// ── InheritedWidget wrappers ──────────────────────────────────────────────────
+
 class ActivityLogProvider extends InheritedNotifier<ActivityLogNotifier> {
   const ActivityLogProvider({
     super.key,
@@ -55,9 +64,22 @@ class ActivityLogProvider extends InheritedNotifier<ActivityLogNotifier> {
   }) : super(notifier: notifier);
 
   static ActivityLogNotifier of(BuildContext context) {
-    final provider = context
-        .dependOnInheritedWidgetOfExactType<ActivityLogProvider>();
-    assert(provider != null, 'No ActivityLogProvider found in widget tree');
-    return provider!.notifier!;
+    final p = context.dependOnInheritedWidgetOfExactType<ActivityLogProvider>();
+    assert(p != null, 'No ActivityLogProvider found');
+    return p!.notifier!;
+  }
+}
+
+class ThemeProvider extends InheritedNotifier<ThemeNotifier> {
+  const ThemeProvider({
+    super.key,
+    required ThemeNotifier notifier,
+    required super.child,
+  }) : super(notifier: notifier);
+
+  static ThemeNotifier of(BuildContext context) {
+    final p = context.dependOnInheritedWidgetOfExactType<ThemeProvider>();
+    assert(p != null, 'No ThemeProvider found');
+    return p!.notifier!;
   }
 }
