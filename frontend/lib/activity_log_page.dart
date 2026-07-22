@@ -21,6 +21,7 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
   final _focusNode         = FocusNode();
 
   bool   _isLoading = false;
+  // ignore: unused_field
   String _error     = '';
 
   @override
