@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,5 +20,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('can_access_worker_api')->group(function () {
         Route::get('/schedules', [ScheduleController::class, 'index']);
         Route::post('/reports', [ReportController::class, 'store']);
+        
+        // Attendance
+        Route::get('/attendance/today', [AttendanceController::class, 'today']);
+        Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
+        Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
     });
 });
