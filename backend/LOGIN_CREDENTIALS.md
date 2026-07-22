@@ -6,15 +6,19 @@ Aplikasi ini menggunakan **Employee ID** untuk login, bukan email.
 
 ### Kredensial Login
 
+Password akun hasil seeding dibaca dari `SEEDER_DEFAULT_PASSWORD` di file `.env`.
+Jangan menyimpan nilai password tersebut di repository atau membagikannya melalui
+dokumentasi.
+
 #### Admin
 - **Employee ID**: `admin_001`
-- **Password**: `password123`
+- **Password**: Nilai `SEEDER_DEFAULT_PASSWORD`
 - **Role**: Admin
 - **Nama**: Super Admin
 
 #### Housekeeping
 - **Employee ID**: `hk_001`
-- **Password**: `password123`
+- **Password**: Nilai `SEEDER_DEFAULT_PASSWORD`
 - **Role**: Housekeeping
 - **Nama**: Budi Housekeeping
 
@@ -41,6 +45,7 @@ Jika tidak bisa login:
 
 2. **Pastikan database sudah di-seed**:
    ```bash
+   $env:SEEDER_DEFAULT_PASSWORD = '<isi-secret-development>'
    php artisan migrate:fresh --seed
    ```
 
@@ -51,7 +56,7 @@ Jika tidak bisa login:
 
 4. **Test authentication manual**:
    ```bash
-   php artisan tinker --execute="echo Auth::attempt(['employee_id' => 'admin_001', 'password' => 'password123']) ? 'SUCCESS' : 'FAILED';"
+   php artisan tinker --execute="echo Auth::attempt(['employee_id' => 'admin_001', 'password' => env('SEEDER_DEFAULT_PASSWORD')]) ? 'SUCCESS' : 'FAILED';"
    ```
 
 ## Catatan Teknis

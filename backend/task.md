@@ -131,8 +131,8 @@ deskripsi kendala bila tersedia.
 
 - Login memakai token Sanctum, tetapi migration
   `personal_access_tokens` belum ditemukan pada repository.
-- Kredensial development `password123` masih dicantumkan pada seeder dan
-  dokumentasi.
+- Secret development sekarang dibaca dari `SEEDER_DEFAULT_PASSWORD` dan tidak
+  dicantumkan pada repository.
 - Belum tersedia policy per-resource yang membatasi kemampuan admin dan
   viewer secara detail.
 - Koordinat check-in berasal dari perangkat dan belum memiliki mekanisme
@@ -154,12 +154,14 @@ deskripsi kendala bila tersedia.
 
 ### Prioritas tinggi
 
-- Tambahkan migration Sanctum dan verifikasi proses login pada database baru.
-- Ganti kredensial default dengan secret development yang tidak disimpan di
-  repository.
-- Tambahkan test feature untuk login, role access, submit report, geolocation,
-  dan duplicate submission.
-- Terapkan policy Filament untuk admin dan viewer.
+- Migration Sanctum sudah tersedia pada `database/migrations` dan proses login
+  sudah diverifikasi melalui test feature.
+- Seeder sekarang mewajibkan `SEEDER_DEFAULT_PASSWORD`; secret development tidak
+  lagi memiliki fallback atau dicantumkan pada repository.
+- Test feature untuk login, role access, submit report, dan geolocation sudah
+  tersedia pada `tests/Feature/OperationalTest.php`.
+- Policy Filament untuk admin dan viewer sudah tersedia dan diverifikasi melalui
+  test feature.
 
 ### Prioritas menengah
 

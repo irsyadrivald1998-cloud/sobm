@@ -5,14 +5,15 @@ test yang ada di `backend`.
 
 ## Prioritas tinggi
 
-1. **Migrasi token Sanctum tidak ada.** `AuthController::login()` memanggil
-   `createToken()`, tetapi migration `personal_access_tokens` tidak ditemukan.
-2. **Kredensial default disimpan di repository.** Seeder dan
-   `LOGIN_CREDENTIALS.md` menggunakan password `password123`.
-3. **Otorisasi admin panel terlalu luas.** `admin` dan `viewer` sama-sama dapat
-   masuk panel, tetapi belum ada policy/per-resource authorization.
-4. **Belum ada test domain atau API.** Alur login, role access, geolocation,
-   submit ganda, cascade, dan pembuatan issue belum memiliki regression test.
+1. **Kredensial development harus dikelola per environment.** Seeder sekarang
+   mewajibkan `SEEDER_DEFAULT_PASSWORD`; secret tersebut tetap harus diatur
+   melalui secret manager pada deployment.
+2. **Otorisasi admin panel belum granular sepenuhnya.** Policy resource sudah
+   tersedia, tetapi pembatasan kemampuan viewer perlu terus diperiksa untuk
+   setiap resource baru.
+3. **Cakupan test domain dan API belum lengkap.** Alur utama login, role access,
+   geolocation, dan submission sudah diuji, tetapi masih perlu test khusus untuk
+   seluruh endpoint serta kondisi concurrency.
 
 ## Prioritas menengah
 

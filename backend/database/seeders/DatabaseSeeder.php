@@ -11,6 +11,7 @@ use App\Models\Report;
 use App\Models\Issue;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 use Carbon\Carbon;
 
 class DatabaseSeeder extends Seeder
@@ -20,7 +21,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $password = env('SEEDER_DEFAULT_PASSWORD', 'password123');
+        $password = env('SEEDER_DEFAULT_PASSWORD');
+
+        if (blank($password)) {
+            throw new RuntimeException(
+                'SEEDER_DEFAULT_PASSWORD must be set before running the database seeder.'
+            );
+        }
+
         $hashedPassword = Hash::make($password);
 
         // 1. Seed Users
