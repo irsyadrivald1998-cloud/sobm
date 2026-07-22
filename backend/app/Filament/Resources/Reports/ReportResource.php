@@ -23,7 +23,13 @@ class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+
+    protected static ?string $navigationLabel = 'Laporan';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
+
+    protected static ?int $navigationSort = 2;
 
     public static function canCreate(): bool
     {
@@ -57,20 +63,20 @@ class ReportResource extends Resource
                 TextEntry::make('schedule.checkpoint.name')
                     ->label('Checkpoint'),
                 TextEntry::make('schedule.shift_date')
-                    ->label('Tanggal jadwal')
-                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->translatedFormat('d M Y') : '—'),
+                    ->label('Tanggal Jadwal')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->translatedFormat('d M Y') : '-'),
                 TextEntry::make('schedule.scheduled_time')
-                    ->label('Jam patroli')
+                    ->label('Jam Patroli')
                     ->formatStateUsing(function ($state): string {
                         if ($state === null) {
-                            return '—';
+                            return '-';
                         }
 
                         return Carbon::parse($state)->format('H:i');
                     }),
                 TextEntry::make('check_in_time')
-                    ->label('Waktu check-in')
-                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i') : '—'),
+                    ->label('Waktu Check-in')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i') : '-'),
                 TextEntry::make('check_in_latitude')
                     ->label('Latitude'),
                 TextEntry::make('check_in_longitude')
@@ -85,13 +91,13 @@ class ReportResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'Aman/Bersih' => 'success',
                         'Ada Kendala' => 'danger',
-                        default => 'gray',
+                        default       => 'gray',
                     }),
                 TextEntry::make('notes')
                     ->label('Catatan')
                     ->columnSpanFull(),
                 TextEntry::make('issue.issue_description')
-                    ->label('Deskripsi kendala')
+                    ->label('Deskripsi Kendala')
                     ->columnSpanFull()
                     ->visible(fn (Report $record): bool => $record->condition_status === 'Ada Kendala'),
             ]);
@@ -112,10 +118,10 @@ class ReportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListReports::route('/'),
+            'index'  => ListReports::route('/'),
             'create' => CreateReport::route('/create'),
-            'view' => ViewReport::route('/{record}'),
-            'edit' => EditReport::route('/{record}/edit'),
+            'view'   => ViewReport::route('/{record}'),
+            'edit'   => EditReport::route('/{record}/edit'),
         ];
     }
 }

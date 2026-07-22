@@ -20,7 +20,8 @@ class ScheduleForm
                     ->relationship('checkpoint', 'name')
                     ->required(),
                 Select::make('task_category_id')
-                    ->relationship('taskCategory', 'id')
+                    ->label('Kategori Tugas')
+                    ->relationship('taskCategory', 'task_name')
                     ->required(),
                 DatePicker::make('shift_date')
                     ->required(),

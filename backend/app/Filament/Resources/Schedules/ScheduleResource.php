@@ -18,22 +18,13 @@ class ScheduleResource extends Resource
 {
     protected static ?string $model = Schedule::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
+    protected static ?string $navigationLabel = 'Jadwal';
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model|null $record = null): bool
-    {
-        return false;
-    }
+    protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model|null $record = null): bool
-    {
-        return false;
-    }
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -55,9 +46,9 @@ class ScheduleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSchedules::route('/'),
+            'index'  => ListSchedules::route('/'),
             'create' => CreateSchedule::route('/create'),
-            'edit' => EditSchedule::route('/{record}/edit'),
+            'edit'   => EditSchedule::route('/{record}/edit'),
         ];
     }
 }

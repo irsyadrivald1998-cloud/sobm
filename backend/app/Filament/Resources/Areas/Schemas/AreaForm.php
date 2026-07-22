@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Areas\Schemas;
 
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class AreaForm
@@ -13,9 +12,8 @@ class AreaForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Nama Area')
                     ->required(),
-                Textarea::make('description')
-                    ->columnSpanFull(),
             ]);
     }
 }

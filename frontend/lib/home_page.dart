@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -71,11 +70,10 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              final navigator = Navigator.of(context);
+              navigator.pop();
               await _apiService.logout();
-              if (mounted) {
-                Navigator.of(context).pushReplacementNamed('/');
-              }
+              navigator.pushReplacementNamed('/');
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD13639)),
             child: const Text('Keluar', style: TextStyle(color: Colors.white)),
@@ -173,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     child: Container(
                       height: MediaQuery.of(context).size.height * 0.7,
-                      alignment: Center.alignment,
+                      alignment: Alignment.center,
                       padding: const EdgeInsets.all(32),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -218,10 +216,10 @@ class _HomePageState extends State<HomePage> {
                             child: Row(
                               children: [
                                 CircleAvatar(
-                                  radius: 28,
-                                  backgroundColor: const Color(0xFFD13639).withOpacity(0.2),
-                                  child: const Icon(Icons.person, color: Color(0xFFD13639), size: 30),
-                                ),
+                                    radius: 28,
+                                    backgroundColor: const Color(0x33D13639),
+                                    child: const Icon(Icons.person, color: Color(0xFFD13639), size: 30),
+                                  ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
@@ -343,7 +341,7 @@ class _HomePageState extends State<HomePage> {
                                           children: [
                                             // Checkpoint and Status
                                             Row(
-                                              mainAxisAlignment: MainAxisAlignment.between,
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
                                                 Expanded(
                                                   child: Text(
@@ -359,8 +357,8 @@ class _HomePageState extends State<HomePage> {
                                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                   decoration: BoxDecoration(
                                                     color: isPending
-                                                        ? const Color(0xFFFBBF24).withOpacity(0.2)
-                                                        : const Color(0xFF10B981).withOpacity(0.2),
+                                                         ? const Color(0x33FBBF24)
+                                                         : const Color(0x3310B981),
                                                     borderRadius: BorderRadius.circular(4),
                                                   ),
                                                   child: Text(
@@ -741,7 +739,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
       backgroundColor: const Color(0xFF1C1C1F),
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.between,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             'Form Check In Tugas',
@@ -937,7 +935,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                 ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: _conditionStatus,
+                  initialValue: _conditionStatus,
                   dropdownColor: const Color(0xFF1C1C1F),
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(

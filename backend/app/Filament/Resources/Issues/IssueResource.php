@@ -18,22 +18,13 @@ class IssueResource extends Resource
 {
     protected static ?string $model = Issue::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
 
-    public static function canCreate(): bool
-    {
-        return false;
-    }
+    protected static ?string $navigationLabel = 'Kendala';
 
-    public static function canEdit(\Illuminate\Database\Eloquent\Model|null $record = null): bool
-    {
-        return false;
-    }
+    protected static string|\UnitEnum|null $navigationGroup = 'Operasional';
 
-    public static function canDelete(\Illuminate\Database\Eloquent\Model|null $record = null): bool
-    {
-        return false;
-    }
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {
@@ -55,9 +46,9 @@ class IssueResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListIssues::route('/'),
+            'index'  => ListIssues::route('/'),
             'create' => CreateIssue::route('/create'),
-            'edit' => EditIssue::route('/{record}/edit'),
+            'edit'   => EditIssue::route('/{record}/edit'),
         ];
     }
 }

@@ -9,15 +9,7 @@ class ApiService {
   static const String keyBaseUrl = 'api_base_url';
 
   // Default fallbacks based on platform/environment
-  static String get defaultBaseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8000/api';
-    } else if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000/api';
-    } else {
-      return 'http://localhost:8000/api';
-    }
-  }
+  static String get defaultBaseUrl => 'http://192.168.43.157:8000/api';
 
   // Get active API Base URL
   Future<String> getBaseUrl() async {
