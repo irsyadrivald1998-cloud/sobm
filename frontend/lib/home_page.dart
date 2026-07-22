@@ -688,3 +688,690 @@ class _InsidenSection extends StatelessWidget {
     );
   }
 }
+
+/// Konsumsi Energi line chart (custom painter)
+class _EnergyChart extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Konsumsi Energi', style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700)),
+                  Text('kWh / Jam Terakhir', style: AppTheme.labelMd),
+                ],
+              ),
+              const Icon(Icons.bolt_outlined, color: AppTheme.tertiary, size: 22),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spMd),
+          SizedBox(
+            height: 100,
+            child: CustomPaint(
+              size: const Size(double.infinity, 100),
+              painter: _EnergyChartPainter(),
+            ),
+          ),
+          const SizedBox(height: AppTheme.spSm),
+          // X-axis labels
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: ['08', '09', '10', '11', '12', '13']
+                .map((t) => Text(t, style: AppTheme.labelSm))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EnergyChartPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Data points (normalized 0-1)
+    const data = [0.45, 0.55, 0.40, 0.72, 0.58, 0.50];
+    final w = size.width;
+    final h = size.height;
+
+    final points = <Offset>[];
+    for (int i = 0; i < data.length; i++) {
+      points.add(Offset(
+        i / (data.length - 1) * w,
+        h - data[i] * h * 0.85 - 8,
+      ));
+    }
+
+    // Gradient fill under the line
+    final fillPath = Path()..moveTo(points.first.dx, h);
+    for (final p in points) fillPath.lineTo(p.dx, p.dy);
+    fillPath.lineTo(points.last.dx, h);
+    fillPath.close();
+
+    canvas.drawPath(
+      fillPath,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.primaryBrand.withOpacity(0.3),
+            AppTheme.primaryBrand.withOpacity(0.0),
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, w, h)),
+    );
+
+    // Line
+    final linePaint = Paint()
+      ..color = AppTheme.primaryBrand
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round;
+
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (int i = 1; i < points.length; i++) {
+      final prev = points[i - 1];
+      final curr = points[i];
+      final mid = Offset((prev.dx + curr.dx) / 2, (prev.dy + curr.dy) / 2);
+      linePath.quadraticBezierTo(prev.dx, prev.dy, mid.dx, mid.dy);
+    }
+    linePath.lineTo(points.last.dx, points.last.dy);
+    canvas.drawPath(linePath, linePaint);
+
+    // Peak dot at index 3 (value 0.72)
+    canvas.drawCircle(
+      points[3],
+      5,
+      Paint()..color = AppTheme.primaryBrand,
+    );
+    canvas.drawCircle(
+      points[3],
+      5,
+      Paint()
+        ..color = Colors.white.withOpacity(0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+
+    // Dotted vertical line at peak
+    final dotPaint = Paint()
+      ..color = AppTheme.primaryBrand.withOpacity(0.4)
+      ..strokeWidth = 1;
+    const dashH = 4.0;
+    const gapH  = 4.0;
+    double y = points[3].dy + 8;
+    while (y < h) {
+      canvas.drawLine(Offset(points[3].dx, y), Offset(points[3].dx, y + dashH), dotPaint);
+      y += dashH + gapH;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
+}
+
+/// Aktivitas Terbaru section + schedule list
+class _AktivitasSection extends StatelessWidget {
+  final List<dynamic> schedules;
+  final Function(Map<String, dynamic>) onCheckIn;
+
+  const _AktivitasSection({required this.schedules, required this.onCheckIn});
+
+  @override
+  Widget build(BuildContext context) {
+    // Static sample activities that match the design
+    final activities = [
+      _Activity(
+        icon: Icons.elevator_outlined,
+        iconColor: AppTheme.statusOk,
+        title: 'Lift 4 Maintenance Complete',
+        subtitle: 'Teknisi: Budi S. • Gedung Utama',
+        time: '10 Min lalu',
+      ),
+      _Activity(
+        icon: Icons.electric_bolt_outlined,
+        iconColor: AppTheme.statusWarning,
+        title: 'Genset Backup Tested',
+        subtitle: 'Sistem otomatis berjalan normal',
+        time: '45 Min lalu',
+      ),
+      _Activity(
+        icon: Icons.assignment_outlined,
+        iconColor: AppTheme.tertiary,
+        title: 'Laporan Dibuat: Panel Listrik',
+        subtitle: 'Status: Rusak Ringan • Teknisi: Budi S.',
+        time: '2 Jam lalu',
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Aktivitas Terbaru', style: AppTheme.headlineSm),
+        const SizedBox(height: AppTheme.spMd),
+
+        // Activity items
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+          ),
+          child: Column(
+            children: [
+              ...activities.asMap().entries.map((e) {
+                final isLast = e.key == activities.length - 1;
+                return Column(
+                  children: [
+                    _ActivityTile(activity: e.value),
+                    if (!isLast)
+                      const Divider(height: 1, indent: 56),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppTheme.spMd),
+
+        // "Lihat Semua" button
+        Center(
+          child: TextButton(
+            onPressed: () {},
+            child: Text(
+              'Lihat Semua Aktivitas',
+              style: AppTheme.bodyMd.copyWith(color: AppTheme.primary),
+            ),
+          ),
+        ),
+
+        // Today's schedule (from API) if any
+        if (schedules.isNotEmpty) ...[
+          const SizedBox(height: AppTheme.spLg),
+          Row(
+            children: [
+              Container(width: 3, height: 18,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryBrand,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: AppTheme.spSm),
+              Text('Jadwal Hari Ini',
+                  style: AppTheme.labelMd.copyWith(letterSpacing: 1.2)),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spSm),
+          ...schedules.map((s) => _ScheduleTile(
+            schedule: s,
+            onCheckIn: () => onCheckIn(s),
+          )),
+        ],
+      ],
+    );
+  }
+}
+
+class _Activity {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String time;
+  const _Activity({
+    required this.icon, required this.iconColor,
+    required this.title, required this.subtitle, required this.time,
+  });
+}
+
+class _ActivityTile extends StatelessWidget {
+  final _Activity activity;
+  const _ActivityTile({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      child: Row(
+        children: [
+          Container(
+            width: 40, height: 40,
+            decoration: BoxDecoration(
+              color: activity.iconColor.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: Icon(activity.icon, color: activity.iconColor, size: 20),
+          ),
+          const SizedBox(width: AppTheme.spMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(activity.title,
+                    style: AppTheme.bodyMd.copyWith(
+                      color: AppTheme.onSurface, fontWeight: FontWeight.w600)),
+                const SizedBox(height: 2),
+                Text(activity.subtitle,
+                    style: AppTheme.labelMd,
+                    overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+          const SizedBox(width: AppTheme.spSm),
+          Text(activity.time, style: AppTheme.labelSm),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScheduleTile extends StatelessWidget {
+  final Map<String, dynamic> schedule;
+  final VoidCallback onCheckIn;
+  const _ScheduleTile({required this.schedule, required this.onCheckIn});
+
+  @override
+  Widget build(BuildContext context) {
+    final checkpoint = schedule['checkpoint'] ?? {};
+    final status     = schedule['status'] ?? 'pending';
+    final isPending  = status == 'pending';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppTheme.spSm),
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: isPending ? AppTheme.primaryBrand.withOpacity(0.4) : AppTheme.outlineVariant,
+          width: 0.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isPending ? Icons.pending_actions_outlined : Icons.check_circle_outline,
+            color: isPending ? AppTheme.statusWarning : AppTheme.statusOk,
+            size: 20,
+          ),
+          const SizedBox(width: AppTheme.spSm),
+          Expanded(
+            child: Text(checkpoint['name'] ?? '-',
+                style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
+          ),
+          if (isPending)
+            SizedBox(
+              height: 32,
+              child: ElevatedButton(
+                onPressed: onCheckIn,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                ),
+                child: const Text('Check In', style: TextStyle(fontSize: 12)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CheckIn Dialog  (unchanged from previous version)
+// ─────────────────────────────────────────────────────────────────────────────
+class CheckInDialog extends StatefulWidget {
+  final Map<String, dynamic> schedule;
+  final ApiService apiService;
+  final VoidCallback onSuccess;
+
+  const CheckInDialog({
+    super.key,
+    required this.schedule,
+    required this.apiService,
+    required this.onSuccess,
+  });
+
+  @override
+  State<CheckInDialog> createState() => _CheckInDialogState();
+}
+
+class _CheckInDialogState extends State<CheckInDialog> {
+  final _formKey         = GlobalKey<FormState>();
+  final _notesController = TextEditingController();
+  final _issueController = TextEditingController();
+  final _picker          = ImagePicker();
+
+  bool      _isGettingLocation = false;
+  Position? _currentPosition;
+  double?   _distance;
+
+  bool      _isCapturingPhoto = false;
+  XFile?    _photoFile;
+  Uint8List? _photoBytes;
+
+  String _conditionStatus = 'Aman/Bersih';
+  bool   _isSubmitting    = false;
+
+  @override
+  void dispose() {
+    _notesController.dispose();
+    _issueController.dispose();
+    super.dispose();
+  }
+
+  double _calcDistance(double lat1, double lon1, double lat2, double lon2) {
+    const r = 6371000.0;
+    final dLat = (lat2 - lat1) * (pi / 180);
+    final dLon = (lon2 - lon1) * (pi / 180);
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * (pi / 180)) * cos(lat2 * (pi / 180)) *
+        sin(dLon / 2) * sin(dLon / 2);
+    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
+  }
+
+  Future<void> _getLocation() async {
+    setState(() { _isGettingLocation = true; _distance = null; });
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) throw Exception('GPS dinonaktifkan.');
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
+      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
+        throw Exception('Izin lokasi ditolak.');
+      }
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final cp  = widget.schedule['checkpoint'] ?? {};
+      final dist = _calcDistance(pos.latitude, pos.longitude,
+          double.parse(cp['latitude'].toString()), double.parse(cp['longitude'].toString()));
+      setState(() { _currentPosition = pos; _distance = dist; });
+    } catch (e) {
+      _showSnack(e.toString().replaceAll('Exception: ', ''), isError: true);
+    } finally {
+      setState(() => _isGettingLocation = false);
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    setState(() => _isCapturingPhoto = true);
+    try {
+      final photo = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70, maxWidth: 800);
+      if (photo != null) {
+        final bytes = await photo.readAsBytes();
+        setState(() { _photoFile = photo; _photoBytes = bytes; });
+      }
+    } catch (e) {
+      _showSnack('Gagal mengambil foto: $e', isError: true);
+    } finally {
+      setState(() => _isCapturingPhoto = false);
+    }
+  }
+
+  void _showSnack(String msg, {required bool isError}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
+      backgroundColor: isError ? AppTheme.errorContainer : AppTheme.surfaceHighest,
+    ));
+  }
+
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    if (_currentPosition == null) { _showSnack('Dapatkan GPS terlebih dahulu.', isError: true); return; }
+    if (_photoBytes == null) { _showSnack('Ambil foto terlebih dahulu.', isError: true); return; }
+
+    final cp     = widget.schedule['checkpoint'] ?? {};
+    final radius = int.parse(cp['radius_meter'].toString());
+    if (_distance != null && _distance! > radius) {
+      _showSnack('Anda ${(_distance! - radius).ceil()}m di luar jangkauan!', isError: true);
+      return;
+    }
+    setState(() => _isSubmitting = true);
+    try {
+      await widget.apiService.submitReport(
+        scheduleId: widget.schedule['id'],
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        conditionStatus: _conditionStatus,
+        notes: _notesController.text.trim(),
+        issueDescription: _conditionStatus == 'Ada Kendala' ? _issueController.text.trim() : null,
+        photoBytes: _photoBytes!,
+        photoName: _photoFile!.name,
+      );
+      if (mounted) {
+        _showSnack('Laporan berhasil dikirim!', isError: false);
+        Navigator.of(context).pop();
+        widget.onSuccess();
+      }
+    } catch (e) {
+      _showSnack(e.toString().replaceAll('Exception: ', ''), isError: true);
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cp     = widget.schedule['checkpoint'] ?? {};
+    final radius = int.parse(cp['radius_meter'].toString());
+    final withinRange = _distance != null && _distance! <= radius;
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm),
+              decoration: const BoxDecoration(
+                color: AppTheme.surfaceLow,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
+              ),
+              child: Row(children: [
+                const Icon(Icons.assignment_outlined, color: AppTheme.primary, size: 22),
+                const SizedBox(width: AppTheme.spSm),
+                Expanded(child: Text('Form Check-In Tugas', style: AppTheme.titleLg)),
+                IconButton(
+                  icon: Icon(Icons.close, color: AppTheme.outline, size: 20),
+                  onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                ),
+              ]),
+            ),
+            const Divider(height: 1),
+
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppTheme.spMd),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Checkpoint info
+                      _SectionBox(child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(cp['name'] ?? 'Checkpoint', style: AppTheme.titleLg),
+                          const SizedBox(height: AppTheme.spXs),
+                          Text('Koordinat: ${cp['latitude']}, ${cp['longitude']}', style: AppTheme.labelMd),
+                          Text('Radius: $radius meter', style: AppTheme.labelMd),
+                        ],
+                      )),
+                      const SizedBox(height: AppTheme.spMd),
+
+                      _StepLabel('1. VALIDASI LOKASI GPS', required: true),
+                      const SizedBox(height: AppTheme.spSm),
+                      SizedBox(width: double.infinity, child: OutlinedButton.icon(
+                        onPressed: _isGettingLocation ? null : _getLocation,
+                        icon: _isGettingLocation
+                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.onSurface))
+                            : const Icon(Icons.gps_fixed, size: 18),
+                        label: Text(_isGettingLocation ? 'Mendapatkan lokasi...' : 'Dapatkan GPS'),
+                      )),
+                      if (_currentPosition != null) ...[
+                        const SizedBox(height: AppTheme.spSm),
+                        _SectionBox(child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}', style: AppTheme.bodyMd),
+                            if (_distance != null) ...[
+                              const SizedBox(height: AppTheme.spXs),
+                              Row(children: [
+                                Icon(withinRange ? Icons.check_circle_outline : Icons.warning_amber_outlined,
+                                    size: 16, color: withinRange ? AppTheme.statusOk : AppTheme.alertCritical),
+                                const SizedBox(width: AppTheme.spXs),
+                                Text(
+                                  withinRange
+                                      ? 'Jarak ${_distance!.toStringAsFixed(1)}m — Valid ✓'
+                                      : 'Jarak ${_distance!.toStringAsFixed(1)}m — ${(_distance! - radius).ceil()}m di luar!',
+                                  style: AppTheme.bodyMd.copyWith(
+                                    color: withinRange ? AppTheme.statusOk : AppTheme.alertCritical),
+                                ),
+                              ]),
+                            ],
+                          ],
+                        )),
+                      ],
+                      const SizedBox(height: AppTheme.spMd),
+
+                      _StepLabel('2. FOTO TUGAS', required: true),
+                      const SizedBox(height: AppTheme.spSm),
+                      SizedBox(width: double.infinity, child: OutlinedButton.icon(
+                        onPressed: _isCapturingPhoto ? null : _takePhoto,
+                        icon: _isCapturingPhoto
+                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.onSurface))
+                            : const Icon(Icons.camera_alt_outlined, size: 18),
+                        label: Text(_photoBytes != null ? 'Ambil Ulang Foto' : 'Ambil Foto'),
+                      )),
+                      if (_photoBytes != null) ...[
+                        const SizedBox(height: AppTheme.spSm),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                          child: Image.memory(_photoBytes!, height: 160, width: double.infinity, fit: BoxFit.cover),
+                        ),
+                      ],
+                      const SizedBox(height: AppTheme.spMd),
+
+                      _StepLabel('3. STATUS KONDISI', required: true),
+                      const SizedBox(height: AppTheme.spSm),
+                      DropdownButtonFormField<String>(
+                        value: _conditionStatus,
+                        dropdownColor: AppTheme.surfaceLow,
+                        style: AppTheme.bodyLg.copyWith(color: AppTheme.onSurface),
+                        items: const [
+                          DropdownMenuItem(value: 'Aman/Bersih', child: Text('Aman / Bersih')),
+                          DropdownMenuItem(value: 'Ada Kendala', child: Text('Ada Kendala')),
+                        ],
+                        onChanged: (v) { if (v != null) setState(() => _conditionStatus = v); },
+                      ),
+                      const SizedBox(height: AppTheme.spMd),
+
+                      _StepLabel('4. CATATAN', required: false),
+                      const SizedBox(height: AppTheme.spSm),
+                      TextFormField(
+                        controller: _notesController, maxLines: 2,
+                        style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                        decoration: const InputDecoration(hintText: 'Catatan opsional...'),
+                      ),
+
+                      if (_conditionStatus == 'Ada Kendala') ...[
+                        const SizedBox(height: AppTheme.spMd),
+                        _StepLabel('5. DESKRIPSI KENDALA', required: true, color: AppTheme.alertCritical),
+                        const SizedBox(height: AppTheme.spSm),
+                        TextFormField(
+                          controller: _issueController, maxLines: 3,
+                          style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                          decoration: const InputDecoration(hintText: 'Deskripsikan kendala...'),
+                          validator: (v) {
+                            if (_conditionStatus == 'Ada Kendala' && (v == null || v.trim().isEmpty)) {
+                              return 'Wajib diisi jika ada kendala';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(AppTheme.spMd),
+              child: Row(children: [
+                Expanded(child: OutlinedButton(
+                  onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Batal'),
+                )),
+                const SizedBox(width: AppTheme.spMd),
+                Expanded(flex: 2, child: ElevatedButton.icon(
+                  onPressed: _isSubmitting ? null : _submit,
+                  icon: _isSubmitting
+                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.send_outlined, size: 18),
+                  label: Text(_isSubmitting ? 'Mengirim...' : 'Kirim Laporan'),
+                )),
+              ]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Dialog helpers ────────────────────────────────────────────────────────────
+class _SectionBox extends StatelessWidget {
+  final Widget child;
+  const _SectionBox({required this.child});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceLow,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _StepLabel extends StatelessWidget {
+  final String text;
+  final bool required;
+  final Color? color;
+  const _StepLabel(this.text, {required this.required, this.color});
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [
+      Text(text, style: AppTheme.labelMd.copyWith(
+          letterSpacing: 1.1, color: color ?? AppTheme.onSurfaceVariant)),
+      if (required) ...[
+        const SizedBox(width: 4),
+        Text('(WAJIB)', style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),
+      ],
+    ]);
+  }
+}
