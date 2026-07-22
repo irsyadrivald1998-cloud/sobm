@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Worker routes
     Route::middleware('can_access_worker_api')->group(function () {
         Route::get('/schedules', [ScheduleController::class, 'index']);
+        Route::get('/reports', [ReportController::class, 'index']);
         Route::post('/reports', [ReportController::class, 'store']);
         
         // Attendance

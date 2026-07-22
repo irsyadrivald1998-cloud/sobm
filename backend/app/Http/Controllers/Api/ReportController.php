@@ -13,6 +13,24 @@ use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
+    public function index()
+    {
+        $reports = Report::query()
+            ->with([
+                'schedule.checkpoint',
+                'schedule.taskCategory',
+                'schedule.user:id,name,role',
+                'issue',
+            ])
+            ->latest('created_at')
+            ->limit(100)
+            ->get();
+
+        return ApiResponse::success([
+            'reports' => $reports,
+        ], 'Aktivitas laporan berhasil diambil.');
+    }
+
     public function store(StoreReportRequest $request)
     {
         $scheduleId = (int) $request->validated('schedule_id');

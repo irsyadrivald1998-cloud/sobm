@@ -1,6 +1,5 @@
 import 'dart:typed_data' show Uint8List;
 import 'package:flutter/material.dart';
-import 'app_theme.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  ActivityLogEntry — single timeline item
@@ -50,7 +49,10 @@ class ActivityLogNotifier extends ChangeNotifier {
   List<ActivityLogEntry> get entries => List.unmodifiable(_entries);
 
   // Called on app start / pull-to-refresh to seed entries from API data
-  void seedFromApi(List<dynamic> reports, List<dynamic> schedules) {
+  void seedFromApi(
+    List<dynamic> reports,
+    List<dynamic> schedules,
+  ) {
     _entries.clear();
 
     for (final r in reports) {
@@ -176,20 +178,6 @@ class ActivityLogNotifier extends ChangeNotifier {
       ));
     }
 
-    notifyListeners();
-  }
-
-  /// Push a plain chat message typed by the user
-  void pushChatMessage({required String actor, required String body}) {
-    final now = DateTime.now();
-    _entries.insert(0, ActivityLogEntry(
-      type:       LogEntryType.user,
-      actor:      actor,
-      timestamp:  _fmtNow(now),
-      date:       now,
-      body:       body,
-      avatarIcon: Icons.person,
-    ));
     notifyListeners();
   }
 

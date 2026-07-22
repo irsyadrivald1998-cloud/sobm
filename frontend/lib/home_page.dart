@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
       // Seed the shared activity log notifier
       if (mounted) {
         ActivityLogProvider.of(context)
-            .seedFromApi(reportsData, schedulesData);
+          .seedFromApi(reportsData, schedulesData);
       }
     } catch (e) {
       setState(() {

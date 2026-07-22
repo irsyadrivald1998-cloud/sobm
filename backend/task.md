@@ -1,179 +1,197 @@
-# Task dan Gambaran Project
+# SOBM - Task dan Dokumentasi Proyek
 
-## Tentang project
+## Ringkasan
 
-Project ini adalah aplikasi monitoring dan pelaporan operasional berbasis
-lokasi. Aplikasi digunakan oleh pekerja lapangan untuk melihat jadwal tugas,
-melakukan check-in di checkpoint tertentu, mengunggah foto kondisi lokasi, dan
-melaporkan kendala.
+SOBM adalah aplikasi monitoring operasional berbasis lokasi untuk pekerja
+lapangan. Pekerja dapat melihat jadwal, melakukan absensi, check-in pada
+checkpoint, mengunggah foto kondisi lokasi, mengirim laporan, serta melihat
+aktivitas rekan kerja melalui feed aktivitas bersama.
 
-Project terdiri dari:
+Komponen proyek:
 
-- **Backend**: Laravel 13, PHP 8.3, Sanctum, dan Filament.
-- **Frontend**: Flutter untuk aplikasi mobile pekerja.
-- **Database**: Migration domain menggunakan tabel users, areas, checkpoints,
-  task_categories, schedules, reports, dan issues.
+- Backend: Laravel 13, PHP 8.3, Sanctum, dan Filament.
+- Frontend: Flutter untuk aplikasi mobile pekerja.
+- Database: users, areas, checkpoints, task_categories, schedules, reports,
+  issues, dan attendances.
 
-## Aktor project
+## Aktor
 
-| Aktor | Fungsi |
+| Aktor | Akses utama |
 | --- | --- |
-| Admin | Mengelola user, area, checkpoint, kategori tugas, jadwal, laporan, dan issue melalui Filament. |
-| Viewer | Dapat mengakses admin panel sesuai konfigurasi saat ini, tetapi pembatasan resource belum granular. |
-| Housekeeping | Melihat jadwal dan mengirim laporan check-in. |
-| Teknisi | Melihat jadwal dan mengirim laporan check-in. |
-| Security | Melihat jadwal dan mengirim laporan check-in. |
+| Admin | Mengelola data operasional dan memantau laporan, aktivitas, issue, serta absensi melalui Filament. |
+| Viewer | Melihat data admin sesuai policy yang berlaku. |
+| Housekeeping | Melihat jadwal, absensi, mengirim laporan, dan melihat aktivitas rekan. |
+| Teknisi | Melihat jadwal, absensi, mengirim laporan, dan melihat aktivitas rekan. |
+| Security | Melihat jadwal, absensi, mengirim laporan, dan melihat aktivitas rekan. |
 
-## Alur project
+## Alur Utama
 
-### 1. Persiapan data oleh admin
+1. Admin menyiapkan user, area, checkpoint, kategori tugas, dan jadwal di
+   `/admin`.
+2. Pekerja login dengan `employee_id` melalui `POST /api/login`.
+3. Pekerja mengambil jadwal miliknya melalui `GET /api/schedules`.
+4. Pekerja melakukan absensi masuk sebelum bekerja dan absensi keluar setelah
+   selesai bekerja.
+5. Pekerja mengirim laporan kondisi melalui `POST /api/reports` dengan lokasi
+   dan foto. Jadwal yang berhasil dilaporkan berubah menjadi `completed`.
+6. Pekerja dan admin melihat feed aktivitas bersama untuk mengetahui laporan dan
+   progres rekan kerja. Feed bersifat baca-saja dan tidak menyediakan komunikasi.
+7. Admin memantau laporan, aktivitas, issue, dan absensi melalui Filament.
 
-Admin masuk ke `/admin`, kemudian menyiapkan:
+## API Mobile
 
-1. User beserta `employee_id`, nama, password, dan role.
-2. Area operasional.
-3. Checkpoint dengan koordinat dan radius validasi.
-4. Kategori tugas berdasarkan role pekerja.
-5. Jadwal tugas untuk user, checkpoint, kategori tugas, tanggal, dan waktu.
-
-### 2. Pembuatan jadwal
-
-Command `php artisan schedules:generate` dapat membuat jadwal berdasarkan
-waktu saat command dijalankan:
-
-- Housekeeping: setiap dua jam pada 08:00-18:00.
-- Teknisi: setiap tiga jam pada 08:00-18:00.
-- Security: setiap jam pada 22:00-05:00.
-
-Jadwal dibagikan secara round-robin kepada user dengan role yang sesuai.
-Command ini harus dijalankan oleh scheduler atau proses terjadwal agar
-pembuatan jadwal berjalan otomatis.
-
-### 3. Login pekerja
-
-Frontend mengirim `employee_id` dan password ke:
+Semua endpoint selain login menggunakan header:
 
 ```text
-POST /api/login
+Authorization: Bearer <sanctum-token>
 ```
 
-Backend memvalidasi kredensial dan mengembalikan token Sanctum. Frontend
-menyimpan token untuk request berikutnya.
+### Autentikasi
 
-### 4. Melihat jadwal
+| Method | Endpoint | Keterangan |
+| --- | --- | --- |
+| POST | `/api/login` | Login dengan `employee_id` dan password. |
+| POST | `/api/logout` | Menghapus token aktif. |
+| GET | `/api/user` | Mengambil user yang sedang login. |
 
-Frontend mengirim token ke:
+### Jadwal dan laporan
 
-```text
-GET /api/schedules
-```
+| Method | Endpoint | Keterangan |
+| --- | --- | --- |
+| GET | `/api/schedules` | Jadwal milik user yang sedang login. |
+| POST | `/api/reports` | Mengirim laporan check-in dengan foto, lokasi, kondisi, dan catatan. |
 
-Backend hanya mengembalikan jadwal milik user yang sedang login, beserta data
-checkpoint dan task category.
+Laporan memvalidasi kepemilikan jadwal, tanggal, status jadwal, radius
+checkpoint, format foto, dan kondisi laporan. Satu jadwal hanya dapat memiliki
+satu laporan.
 
-### 5. Check-in dan pengiriman laporan
+### Feed aktivitas laporan
 
-Pekerja memilih jadwal hari ini, mengambil lokasi dan foto, lalu mengirim
-multipart request ke:
+| Method | Endpoint | Keterangan |
+| --- | --- | --- |
+| GET | `/api/reports` | Mengambil aktivitas laporan lintas pekerja yang dapat dilihat user aktif. |
 
-```text
-POST /api/reports
-```
+Aturan feed:
 
-Backend memeriksa:
+- Hanya user terautentikasi dengan akses worker yang dapat mengakses endpoint.
+- Feed menampilkan laporan, catatan, foto, issue, nama pekerja, dan waktu aktivitas.
+- Flutter memuat ulang feed saat halaman dibuka atau disegarkan.
+- Tidak ada endpoint, input, atau tombol untuk mengirim pesan.
 
-1. User telah login dan memiliki role pekerja.
-2. Jadwal benar-benar milik user tersebut.
-3. Jadwal belum selesai dan belum memiliki laporan.
-4. Tanggal jadwal sama dengan tanggal saat ini.
-5. Jarak lokasi check-in berada di dalam radius checkpoint.
-6. Foto dan status kondisi memenuhi validasi.
+### Absensi
 
-Jika validasi berhasil:
+| Method | Endpoint | Keterangan |
+| --- | --- | --- |
+| GET | `/api/attendance/today` | Status absensi hari ini. |
+| POST | `/api/attendance/clock-in` | Absensi masuk dengan lokasi dan selfie. |
+| POST | `/api/attendance/clock-out` | Absensi keluar dengan lokasi dan selfie. |
 
+## Aturan Bisnis
+
+### Jadwal
+
+Command `php artisan schedules:generate` membuat jadwal berdasarkan role dan
+waktu kerja:
+
+- Housekeeping: setiap dua jam, 08:00-18:00.
+- Teknisi: setiap tiga jam, 08:00-18:00.
+- Security: setiap jam, 22:00-05:00.
+
+Pembagian user menggunakan round-robin. Jadwal hanya dapat dilaporkan pada
+tanggal yang sesuai dan ketika statusnya masih `pending`.
+
+### Laporan
+
+- Check-in harus berada dalam radius checkpoint.
+- Foto menerima jpeg, jpg, png, atau webp dengan ukuran maksimal 2 MB.
 - Foto disimpan pada disk `public`.
-- Record `reports` dibuat.
-- Status `schedules` diubah menjadi `completed`.
-- Jika kondisi `Ada Kendala`, record `issues` dibuat.
+- Kondisi `Ada Kendala` membuat satu issue terkait laporan.
+- Feed dapat menampilkan laporan dari banyak pekerja, tetapi setiap jadwal hanya
+   memiliki satu laporan.
 
-### 6. Monitoring oleh admin
+### Absensi
 
-Admin melihat laporan dan kendala melalui Filament. Laporan menampilkan
-pekerja, checkpoint, waktu check-in, koordinat, foto, kondisi, catatan, dan
-deskripsi kendala bila tersedia.
+- Satu user hanya memiliki satu record absensi per tanggal.
+- Clock-in memerlukan lokasi dan selfie.
+- Jam standar masuk adalah 08:00 WIB.
+- Clock-in setelah 08:15 berstatus `Terlambat`; sampai 08:15 masih `Hadir`.
+- Clock-out hanya dapat dilakukan setelah clock-in pada hari yang sama.
+- Status yang tersedia: `Hadir`, `Terlambat`, dan `Alpa`.
 
-## Batasan project saat ini
+## Model Data Ringkas
 
-### Batasan fitur
+```mermaid
+erDiagram
+    USERS ||--o{ SCHEDULES : receives
+    USERS ||--o{ ATTENDANCES : has
+    AREAS ||--o{ CHECKPOINTS : contains
+    CHECKPOINTS ||--o{ SCHEDULES : location
+    TASK_CATEGORIES ||--o{ SCHEDULES : classifies
+    SCHEDULES ||--o| REPORTS : produces
+    REPORTS ||--o| ISSUES : may_have
+```
 
-- API mobile hanya menyediakan login, logout, data user, daftar jadwal, dan
-  pengiriman laporan.
-- Belum ada endpoint mobile untuk mengubah atau menyelesaikan issue.
-- Belum ada notifikasi untuk jadwal baru, laporan gagal, atau kendala.
-- Jadwal hanya memiliki status `pending` dan `completed`.
-- Sistem belum mendukung penjadwalan berbasis shift yang dapat dikonfigurasi
-  penuh dari admin.
-- Satu jadwal hanya dapat memiliki satu laporan.
-- Satu laporan secara model hanya dapat memiliki satu issue.
+Constraint penting:
 
-### Batasan operasional
+- `users.employee_id` unik.
+- `reports.schedule_id` unik.
+- `attendances` memiliki unique index gabungan `user_id` dan `date`.
+- Sanctum menggunakan tabel `personal_access_tokens`.
 
-- Check-in hanya dapat dilakukan pada hari jadwal.
-- Check-in dibatasi oleh koordinat checkpoint dan `radius_meter`.
-- Foto dibatasi pada format jpeg, jpg, png, atau webp dengan ukuran maksimal
-  2 MB.
-- Pembagian jadwal menggunakan round-robin sederhana dan memilih kategori tugas
-  pertama untuk role tersebut.
-- Command generator tidak menjamin idempotensi pada kondisi concurrent tanpa
-  unique constraint yang sesuai.
+## Konfigurasi dan Keamanan
 
-### Batasan keamanan
+- Password hasil seeding dibaca dari `SEEDER_DEFAULT_PASSWORD` pada `.env`.
+- Seeder tidak memiliki fallback password yang disimpan di repository.
+- Jangan menyimpan secret development atau production di source control.
+- Token API menggunakan Laravel Sanctum.
+- Policy resource membatasi akses admin, viewer, dan worker.
+- Koordinat berasal dari perangkat dan belum memiliki perlindungan anti-spoofing.
+- Rate limiting khusus login dan pengiriman laporan masih perlu ditambahkan.
 
-- Login memakai token Sanctum, tetapi migration
-  `personal_access_tokens` belum ditemukan pada repository.
-- Secret development sekarang dibaca dari `SEEDER_DEFAULT_PASSWORD` dan tidak
-  dicantumkan pada repository.
-- Belum tersedia policy per-resource yang membatasi kemampuan admin dan
-  viewer secara detail.
-- Koordinat check-in berasal dari perangkat dan belum memiliki mekanisme
-  anti-spoofing.
-- Belum terlihat rate limiting khusus untuk login dan pengiriman laporan.
+Contoh setup lokal PowerShell:
 
-### Batasan kualitas dan deployment
+```powershell
+$env:SEEDER_DEFAULT_PASSWORD = '<isi-secret-development>'
+php artisan migrate:fresh --seed
+```
 
-- Test yang tersedia masih berupa test contoh Laravel; test API dan alur bisnis
-  belum tersedia.
-- README backend masih berupa template Laravel.
-- Konfigurasi frontend memakai default base URL berupa alamat IP lokal.
-- Belum ada dokumentasi resmi untuk scheduler, storage link, queue, backup,
-  monitoring, dan deployment production.
-- Penghapusan data parent menggunakan cascade dan berisiko menghapus histori
-  schedule serta report.
+## Status Implementasi
 
-## Task lanjutan yang disarankan
+### Selesai
 
-### Prioritas tinggi
+- Migration dan autentikasi Sanctum.
+- Login, logout, user, jadwal, dan pengiriman laporan.
+- Validasi geolocation dan pencegahan laporan ganda.
+- Policy Filament dasar untuk admin dan viewer.
+- Fitur absensi clock-in, clock-out, dan status absensi.
+- Feed aktivitas laporan lintas pekerja pada backend dan Flutter.
+- Test feature untuk login, role access, laporan, dan geolocation.
 
-- Migration Sanctum sudah tersedia pada `database/migrations` dan proses login
-  sudah diverifikasi melalui test feature.
-- Seeder sekarang mewajibkan `SEEDER_DEFAULT_PASSWORD`; secret development tidak
-  lagi memiliki fallback atau dicantumkan pada repository.
-- Test feature untuk login, role access, submit report, dan geolocation sudah
-  tersedia pada `tests/Feature/OperationalTest.php`.
-- Policy Filament untuk admin dan viewer sudah tersedia dan diverifikasi melalui
-  test feature.
+### Prioritas berikutnya
 
-### Prioritas menengah
+- Lengkapi test untuk feed aktivitas, absensi, upload foto, dan akses antar-user.
+- Tambahkan polling atau realtime notification untuk aktivitas laporan baru.
+- Tambahkan filter tanggal, role, checkpoint, dan status bila dibutuhkan.
+- Tambahkan workflow issue, audit penyelesaian, dan notifikasi kendala.
+- Pisahkan base URL Flutter dari source code ke konfigurasi environment.
+- Tambahkan unique constraint dan transaksi untuk mencegah duplikasi jadwal
+  saat proses berjalan bersamaan.
+- Evaluasi kebijakan arsip dan soft delete agar histori operasional tidak hilang.
 
-- Tambahkan unique constraint untuk mencegah duplikasi jadwal.
-- Samakan constraint database dengan relasi `Report::issue()`.
-- Validasi kesesuaian role user dan kategori tugas.
-- Tambahkan workflow issue, audit penyelesaian, dan strategi arsip histori.
-- Pisahkan konfigurasi base URL frontend dari source code.
+## Validasi Lokal
 
-### Prioritas rendah
+Backend:
 
-- Tambahkan dokumentasi API dan deployment.
-- Tambahkan notification dan monitoring.
-- Evaluasi index komposit berdasarkan pola query produksi.
-- Gunakan enum PHP atau tabel referensi untuk role dan status.
+```powershell
+cd backend
+php artisan test
+```
+
+Frontend:
+
+```powershell
+cd frontend
+flutter pub get
+flutter analyze
+flutter test
+```
