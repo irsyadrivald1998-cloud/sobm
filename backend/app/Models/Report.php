@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 #[Fillable(['schedule_id', 'check_in_time', 'check_in_latitude', 'check_in_longitude', 'photo_path', 'condition_status', 'notes'])]
 class Report extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected function casts(): array
     {

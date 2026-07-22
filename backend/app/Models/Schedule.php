@@ -8,10 +8,25 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 #[Fillable(['user_id', 'checkpoint_id', 'task_category_id', 'shift_date', 'scheduled_time', 'status'])]
 class Schedule extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+
+    protected static function booted()
+    {
+        static::saving(function ($schedule) {
+            $user = $schedule->user;
+            $taskCategory = $schedule->taskCategory;
+            if ($user && $taskCategory) {
+                if ($user->role !== $taskCategory->target_role) {
+                    throw new \InvalidArgumentException("Role user ({$user->role}) tidak sesuai dengan target role kategori tugas ({$taskCategory->target_role}).");
+                }
+            }
+        });
+    }
 
     protected function casts(): array
     {

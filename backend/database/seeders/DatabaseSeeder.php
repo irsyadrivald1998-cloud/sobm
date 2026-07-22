@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             ['employee_id' => 'admin_001'],
             [
                 'name' => 'Super Admin',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make(env('SEEDER_DEFAULT_PASSWORD', 'password123')),
                 'role' => 'admin',
             ]
         );
@@ -33,7 +33,7 @@ class DatabaseSeeder extends Seeder
             ['employee_id' => 'hk_001'],
             [
                 'name' => 'Budi Housekeeping',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make(env('SEEDER_DEFAULT_PASSWORD', 'password123')),
                 'role' => 'housekeeping',
             ]
         );

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 #[Fillable(['target_role', 'task_name'])]
 class TaskCategory extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public function schedules(): HasMany
     {

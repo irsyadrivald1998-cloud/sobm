@@ -33,6 +33,17 @@ class IssuesTable
                     ->boolean()
                     ->trueColor('success')
                     ->falseColor('danger'),
+                TextColumn::make('resolvedBy.name')
+                    ->label('Diselesaikan Oleh')
+                    ->placeholder('-'),
+                TextColumn::make('resolved_at')
+                    ->label('Waktu Selesai')
+                    ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i') : '-')
+                    ->sortable(),
+                TextColumn::make('resolution_notes')
+                    ->label('Catatan Penyelesaian')
+                    ->limit(30)
+                    ->placeholder('-'),
                 TextColumn::make('created_at')
                     ->label('Dilaporkan')
                     ->formatStateUsing(fn ($state) => $state ? Carbon::parse($state)->timezone(config('app.timezone'))->translatedFormat('d M Y, H:i') : '-')
