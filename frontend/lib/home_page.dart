@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
+import 'main.dart' show ActivityLogProvider;
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  HomePage  (Dashboard)
@@ -38,11 +39,20 @@ class _HomePageState extends State<HomePage> {
       }
       final userData      = await _apiService.getUser();
       final schedulesData = await _apiService.getSchedules();
+      final reportsData   = await _apiService.getReports()
+          .catchError((_) => <dynamic>[]);
+
       setState(() {
         _user      = userData;
         _schedules = schedulesData;
         _isLoading = false;
       });
+
+      // Seed the shared activity log notifier
+      if (mounted) {
+        ActivityLogProvider.of(context)
+            .seedFromApi(reportsData, schedulesData);
+      }
     } catch (e) {
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
@@ -80,7 +90,20 @@ class _HomePageState extends State<HomePage> {
       builder: (_) => CheckInDialog(
         schedule: schedule,
         apiService: _apiService,
-        onSuccess: _loadInitialData,
+        userName: _user?['name'] ?? 'Pekerja',
+        onSuccess: (reportData, photoBytes, photoPath) {
+          _loadInitialData();
+          // Real-time push to activity log
+          ActivityLogProvider.of(context).pushReport(
+            reportData:     reportData,
+            schedule:       schedule,
+            userName:       _user?['name'] ?? 'Pekerja',
+            photoBytes:     photoBytes,
+            photoLocalPath: photoPath,
+            notes:          reportData['notes'] as String?,
+            issueDescription: reportData['issue_description'] as String?,
+          );
+        },
       ),
     );
   }
@@ -1043,12 +1066,15 @@ class _ScheduleTile extends StatelessWidget {
 class CheckInDialog extends StatefulWidget {
   final Map<String, dynamic> schedule;
   final ApiService apiService;
-  final VoidCallback onSuccess;
+  final String     userName;
+  // Returns (reportData, photoBytes, photoLocalPath)
+  final void Function(Map<String, dynamic>, Uint8List?, String) onSuccess;
 
   const CheckInDialog({
     super.key,
     required this.schedule,
     required this.apiService,
+    required this.userName,
     required this.onSuccess,
   });
 
@@ -1147,7 +1173,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
     }
     setState(() => _isSubmitting = true);
     try {
-      await widget.apiService.submitReport(
+      final reportData = await widget.apiService.submitReport(
         scheduleId: widget.schedule['id'],
         latitude: _currentPosition!.latitude,
         longitude: _currentPosition!.longitude,
@@ -1160,7 +1186,17 @@ class _CheckInDialogState extends State<CheckInDialog> {
       if (mounted) {
         _showSnack('Laporan berhasil dikirim!', isError: false);
         Navigator.of(context).pop();
-        widget.onSuccess();
+        widget.onSuccess(
+          {
+            ...reportData,
+            'notes':             _notesController.text.trim(),
+            'issue_description': _conditionStatus == 'Ada Kendala'
+                ? _issueController.text.trim()
+                : null,
+          },
+          _photoBytes,
+          _photoFile?.path ?? '',
+        );
       }
     } catch (e) {
       _showSnack(e.toString().replaceAll('Exception: ', ''), isError: true);
