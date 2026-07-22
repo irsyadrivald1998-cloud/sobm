@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ActivityLogProvider;
+import 'task_detail_page.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  HomePage  (Dashboard)
@@ -107,6 +108,28 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _openTaskDetail({int initialIndex = 0}) {
+    if (_schedules.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Tidak ada jadwal tugas hari ini.'),
+      ));
+      return;
+    }
+    Navigator.of(context)
+        .push(MaterialPageRoute(
+          builder: (_) => TaskDetailPage(
+            schedules:    _schedules,
+            apiService:   _apiService,
+            user:         _user,
+            initialIndex: initialIndex,
+          ),
+        ))
+        .then((refreshed) {
+          if (refreshed == true) _loadInitialData();
+        });
+  }
+
 
   bool _isScheduleToday(String dateStr) {
     try {
@@ -275,10 +298,10 @@ class _HomePageState extends State<HomePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
               child: _QuickActions(
-                onBuatLaporan: () {},
-                onScanQR: () {},
+                onBuatLaporan: () => _openTaskDetail(),
+                onScanQR: () => _openTaskDetail(),
                 onMonitoring: () {},
-                onJadwalTugas: () => setState(() => _selectedTab = 0),
+                onJadwalTugas: () => _openTaskDetail(),
               ),
             ),
           ),
@@ -303,7 +326,11 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
-              child: _AktivitasSection(schedules: todaySchedules, onCheckIn: _openCheckInDialog),
+              child: _AktivitasSection(
+                schedules: todaySchedules,
+                onCheckIn: (s) => _openTaskDetail(
+                    initialIndex: _schedules.indexOf(s)),
+              ),
             ),
           ),
 

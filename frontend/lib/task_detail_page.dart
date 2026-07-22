@@ -65,8 +65,9 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
               apiService: widget.apiService,
               onCompleted: (reportData, photoBytes, photoPath,
                            checklist, notes, issueDesc) {
-                // Push to activity log notifier
-                ActivityLogProvider.of(context).pushReport(
+                // Capture notifier BEFORE pop (context still valid here)
+                final notifier = ActivityLogProvider.of(context);
+                notifier.pushReport(
                   reportData:       reportData,
                   schedule:         _current,
                   userName:         widget.user?['name'] ?? 'Pekerja',
@@ -75,7 +76,8 @@ class _TaskDetailPageState extends State<TaskDetailPage> {
                   notes:            notes,
                   issueDescription: issueDesc,
                 );
-                Navigator.of(context).pop(true); // signal refresh
+                // Now safe to pop
+                Navigator.of(context).pop(true);
               },
             ),
           ),
@@ -342,52 +344,64 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   Future<void> _submit() async {
-    if (_position == null) {
-      _snack('Dapatkan GPS terlebih dahulu.', isError: true); return;
-    }
+    // Photo is the only hard requirement
     if (_photoBytes == null) {
-      _snack('Unggah foto terlebih dahulu.', isError: true); return;
-    }
-    if (!_hasSig) {
-      _snack('Tanda tangan wajib diisi.', isError: true); return;
+      _snack('Unggah foto terlebih dahulu.', isError: true);
+      return;
     }
 
-    final cp      = widget.schedule['checkpoint'] as Map<String, dynamic>? ?? {};
-    final radius  = int.tryParse(cp['radius_meter']?.toString() ?? '100') ?? 100;
+    // Warn (not block) if GPS hasn't been retrieved
+    if (_position == null) {
+      _snack('GPS belum divalidasi — melanjutkan tanpa koordinat.',
+          isError: false);
+    }
+
+    // Warn (not block) if out of radius
+    final cp     = widget.schedule['checkpoint'] as Map<String, dynamic>? ?? {};
+    final radius = int.tryParse(cp['radius_meter']?.toString() ?? '100') ?? 100;
     if (_distance != null && _distance! > radius) {
-      _snack('Anda ${(_distance! - radius).ceil()}m di luar jangkauan!',
-          isError: true);
-      return;
+      _snack('Peringatan: ${(_distance! - radius).ceil()}m di luar jangkauan.',
+          isError: false);
     }
 
     setState(() => _isSubmitting = true);
     try {
       final reportData = await widget.apiService.submitReport(
-        scheduleId:      widget.schedule['id'],
-        latitude:        _position!.latitude,
-        longitude:       _position!.longitude,
-        conditionStatus: _conditionStatus,
-        notes:           _notesCtrl.text.trim(),
+        scheduleId:       widget.schedule['id'],
+        latitude:         _position?.latitude  ?? 0.0,
+        longitude:        _position?.longitude ?? 0.0,
+        conditionStatus:  _conditionStatus,
+        notes:            _notesCtrl.text.trim(),
         issueDescription: _conditionStatus == 'Ada Kendala'
-            ? _issueCtrl.text.trim() : null,
+            ? _issueCtrl.text.trim()
+            : null,
         photoBytes: _photoBytes!,
-        photoName:  'task_photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        photoName:
+            'task_photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
 
       if (mounted) {
         _snack('Tugas berhasil diselesaikan!', isError: false);
+
+        final fullReport = {
+          ...reportData,
+          'notes': _notesCtrl.text.trim(),
+          'issue_description': _conditionStatus == 'Ada Kendala'
+              ? _issueCtrl.text.trim()
+              : null,
+        };
+
         widget.onCompleted(
-          {
-            ...reportData,
-            'notes':             _notesCtrl.text.trim(),
-            'issue_description': _conditionStatus == 'Ada Kendala'
-                ? _issueCtrl.text.trim() : null,
-          },
+          fullReport,
           _photoBytes,
           _photoPath,
           _checklist,
-          _notesCtrl.text.trim().isNotEmpty ? _notesCtrl.text.trim() : null,
-          _conditionStatus == 'Ada Kendala' ? _issueCtrl.text.trim() : null,
+          _notesCtrl.text.trim().isNotEmpty
+              ? _notesCtrl.text.trim()
+              : null,
+          _conditionStatus == 'Ada Kendala'
+              ? _issueCtrl.text.trim()
+              : null,
         );
       }
     } catch (e) {
@@ -406,3 +420,657 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
           isError ? AppTheme.errorContainer : AppTheme.statusOk.withOpacity(0.8),
     ));
   }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    final schedule   = widget.schedule;
+    final checkpoint = schedule['checkpoint']    as Map<String, dynamic>? ?? {};
+    final category   = schedule['task_category'] as Map<String, dynamic>? ?? {};
+    final status     = schedule['status'] as String? ?? 'pending';
+    final id         = schedule['id']?.toString() ?? '0';
+    final time       = schedule['scheduled_time'] as String? ?? '--:--';
+    final isPending  = status == 'pending';
+    final cp         = checkpoint;
+    final radius     = int.tryParse(cp['radius_meter']?.toString() ?? '100') ?? 100;
+    final withinRange = _distance != null && _distance! <= radius;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(
+          AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 100),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+
+          // ── WO Header Card ─────────────────────────────────────────
+          _SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('DETAIL PERINTAH KERJA',
+                        style: AppTheme.labelSm
+                            .copyWith(letterSpacing: 1.0)),
+                    _PriorityBadge(isPending: isPending),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spSm),
+                Text(
+                  '#WO-2023-${id.padLeft(3, '0')}',
+                  style: AppTheme.headlineMd.copyWith(
+                    color: AppTheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spSm),
+
+          // ── Asset Target ───────────────────────────────────────────
+          _SectionCard(
+            child: Row(
+              children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceHigh,
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: const Icon(Icons.settings_outlined,
+                      color: AppTheme.primary, size: 22),
+                ),
+                const SizedBox(width: AppTheme.spMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Aset Target',
+                          style: AppTheme.labelMd),
+                      const SizedBox(height: 2),
+                      Text(
+                        checkpoint['name'] ?? category['name'] ?? 'Checkpoint',
+                        style: AppTheme.bodyLg.copyWith(
+                            fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        checkpoint['address'] as String? ??
+                            'Lantai ${checkpoint['floor'] ?? '-'}, ${checkpoint['area'] ?? '-'}',
+                        style: AppTheme.bodyMd,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spSm),
+
+          // ── Batas Waktu + Status ───────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: _SectionCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Batas Waktu', style: AppTheme.labelMd),
+                      const SizedBox(height: AppTheme.spXs),
+                      Text('Hari Ini',
+                          style: AppTheme.bodyLg
+                              .copyWith(fontWeight: FontWeight.w700)),
+                      Text(time,
+                          style: AppTheme.labelMd
+                              .copyWith(color: AppTheme.outline)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.spSm),
+              Expanded(
+                child: _SectionCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Status', style: AppTheme.labelMd),
+                      const SizedBox(height: AppTheme.spXs),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              isPending ? 'Sedang Berjalan' : 'Selesai',
+                              style: AppTheme.bodyLg.copyWith(
+                                color: isPending
+                                    ? AppTheme.tertiary
+                                    : AppTheme.statusOk,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: 8, height: 8,
+                            decoration: BoxDecoration(
+                              color: isPending
+                                  ? AppTheme.tertiary
+                                  : AppTheme.statusOk,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spSm),
+
+          // ── GPS Lokasi ─────────────────────────────────────────────
+          _SectionCard(
+            onTap: _gettingLocation ? null : _getLocation,
+            child: Row(
+              children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceHigh,
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: _gettingLocation
+                      ? const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppTheme.primary),
+                        )
+                      : const Icon(Icons.gps_fixed,
+                          color: AppTheme.primary, size: 22),
+                ),
+                const SizedBox(width: AppTheme.spMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _position == null
+                            ? 'Validasi Lokasi GPS'
+                            : _distance != null
+                                ? (withinRange
+                                    ? 'Lokasi Valid ✓'
+                                    : '${_distance!.toStringAsFixed(1)}m — di luar jangkauan!')
+                                : 'Lokasi didapat',
+                        style: AppTheme.bodyLg.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: _position == null
+                              ? AppTheme.onSurface
+                              : withinRange
+                                  ? AppTheme.statusOk
+                                  : AppTheme.alertCritical,
+                        ),
+                      ),
+                      if (_position != null)
+                        Text(
+                          '${_position!.latitude.toStringAsFixed(5)}, '
+                          '${_position!.longitude.toStringAsFixed(5)}',
+                          style: AppTheme.labelMd,
+                        )
+                      else
+                        Text('Ketuk untuk validasi',
+                            style: AppTheme.labelMd),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right,
+                    color: AppTheme.outline, size: 20),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spSm),
+
+          // ── Scan QR ────────────────────────────────────────────────
+          _SectionCard(
+            onTap: () => setState(() => _qrScanned = !_qrScanned),
+            highlight: _qrScanned,
+            child: Row(
+              children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: _qrScanned
+                        ? AppTheme.primaryBrand.withOpacity(0.2)
+                        : AppTheme.surfaceHigh,
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: Icon(
+                    _qrScanned
+                        ? Icons.check_circle_outline
+                        : Icons.qr_code_scanner_outlined,
+                    color: _qrScanned
+                        ? AppTheme.primaryBrand
+                        : AppTheme.primary,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spMd),
+                Expanded(
+                  child: Text(
+                    _qrScanned ? 'QR Aset Terverifikasi ✓' : 'Scan QR Aset',
+                    style: AppTheme.bodyLg.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: _qrScanned
+                          ? AppTheme.primaryBrand
+                          : AppTheme.onSurface,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: _qrScanned
+                      ? AppTheme.primaryBrand
+                      : AppTheme.outline,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spSm),
+
+          // ── Unggah Foto & Isi Checklist ────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: _SectionCard(
+                  onTap: _pickPhoto,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _photoBytes != null
+                          ? ClipRRect(
+                              borderRadius:
+                                  BorderRadius.circular(AppTheme.radiusSm),
+                              child: Image.memory(_photoBytes!,
+                                  height: 56,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover),
+                            )
+                          : Icon(
+                              Icons.add_photo_alternate_outlined,
+                              color: AppTheme.primary, size: 30),
+                      const SizedBox(height: AppTheme.spXs),
+                      Text(
+                        _photoBytes != null ? 'Foto ✓' : 'Unggah Foto',
+                        style: AppTheme.labelMd.copyWith(
+                          color: _photoBytes != null
+                              ? AppTheme.statusOk
+                              : AppTheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppTheme.spSm),
+              Expanded(
+                child: _SectionCard(
+                  onTap: () => _showChecklistSheet(context),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.checklist_outlined,
+                          color: AppTheme.primary, size: 30),
+                      const SizedBox(height: AppTheme.spXs),
+                      Text(
+                        'Isi Checklist\n'
+                        '(${_checklist.where((c) => c.checked).length}'
+                        '/${_checklist.length})',
+                        style: AppTheme.labelMd,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spMd),
+
+          // ── Kondisi & Catatan ──────────────────────────────────────
+          _SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('KONDISI', style: AppTheme.labelSm.copyWith(letterSpacing: 1)),
+                const SizedBox(height: AppTheme.spSm),
+                DropdownButtonFormField<String>(
+                  value: _conditionStatus,
+                  dropdownColor: AppTheme.surfaceLow,
+                  style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                  decoration: const InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'Aman/Bersih', child: Text('Aman / Bersih')),
+                    DropdownMenuItem(
+                        value: 'Ada Kendala', child: Text('Ada Kendala')),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) setState(() => _conditionStatus = v);
+                  },
+                ),
+                if (_conditionStatus == 'Ada Kendala') ...[
+                  const SizedBox(height: AppTheme.spSm),
+                  TextField(
+                    controller: _issueCtrl,
+                    maxLines: 2,
+                    style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                    decoration: const InputDecoration(
+                      hintText: 'Deskripsi kendala...',
+                    ),
+                  ),
+                ],
+                const SizedBox(height: AppTheme.spSm),
+                Text('CATATAN', style: AppTheme.labelSm.copyWith(letterSpacing: 1)),
+                const SizedBox(height: AppTheme.spXs),
+                TextField(
+                  controller: _notesCtrl,
+                  maxLines: 2,
+                  style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                  decoration: const InputDecoration(
+                    hintText: 'Tambahkan catatan opsional...',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spMd),
+
+          // ── Tanda Tangan ───────────────────────────────────────────
+          _SignaturePad(
+            key: _sigKey,
+            onChanged: (hasData) => setState(() => _hasSig = hasData),
+          ),
+          const SizedBox(height: AppTheme.spXl),
+
+          // ── Selesaikan Button ──────────────────────────────────────
+          SizedBox(
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _isSubmitting
+                    ? AppTheme.outlineVariant
+                    : AppTheme.primaryBrand,
+                shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.radiusLg)),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 24, width: 24,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: Colors.white),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isPending
+                              ? Icons.check_circle_outline
+                              : Icons.check_circle,
+                          color: Colors.white, size: 22,
+                        ),
+                        const SizedBox(width: AppTheme.spSm),
+                        Text(
+                          isPending ? 'Selesaikan' : 'Kirim Ulang Laporan',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showChecklistSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.surfaceLow,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppTheme.radiusLg)),
+      ),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+          padding: const EdgeInsets.all(AppTheme.spMd),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Checklist Tugas', style: AppTheme.headlineSm),
+              const SizedBox(height: AppTheme.spMd),
+              ..._checklist.map((item) => CheckboxListTile(
+                value: item.checked,
+                onChanged: (v) {
+                  setSheet(() => item.checked = v ?? false);
+                  setState(() {});
+                },
+                title: Text(item.label, style: AppTheme.bodyMd),
+                activeColor: AppTheme.primaryBrand,
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              )),
+              const SizedBox(height: AppTheme.spMd),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Simpan'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Signature Pad widget
+// ─────────────────────────────────────────────────────────────────────────────
+class _SignaturePad extends StatefulWidget {
+  final ValueChanged<bool> onChanged;
+  const _SignaturePad({super.key, required this.onChanged});
+
+  @override
+  State<_SignaturePad> createState() => _SignaturePadState();
+}
+
+class _SignaturePadState extends State<_SignaturePad> {
+  final List<Offset?> _points = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('TANDA TANGAN TEKNISI',
+            style: AppTheme.labelSm.copyWith(letterSpacing: 1.2)),
+        const SizedBox(height: AppTheme.spSm),
+        Container(
+          height: 150,
+          decoration: BoxDecoration(
+            color: AppTheme.surfaceLow,
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            border: Border.all(
+              color: _points.isEmpty
+                  ? AppTheme.outlineVariant
+                  : AppTheme.primaryBrand.withOpacity(0.5),
+              width: 1,
+              // dashed look via BoxDecoration not natively supported,
+              // using solid thin border instead
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+            child: Stack(
+              children: [
+                if (_points.isEmpty)
+                  const Center(
+                    child: Text(
+                      'Ketuk untuk tanda tangan',
+                      style: TextStyle(
+                        color: AppTheme.outline,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                GestureDetector(
+                  onPanStart: (d) {
+                    setState(() => _points.add(d.localPosition));
+                    widget.onChanged(true);
+                  },
+                  onPanUpdate: (d) =>
+                      setState(() => _points.add(d.localPosition)),
+                  onPanEnd: (_) => setState(() => _points.add(null)),
+                  child: CustomPaint(
+                    painter: _SigPainter(_points),
+                    size: Size.infinite,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_points.isNotEmpty)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () {
+                setState(() => _points.clear());
+                widget.onChanged(false);
+              },
+              icon: const Icon(Icons.refresh, size: 16),
+              label: const Text('Hapus'),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.outline,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SigPainter extends CustomPainter {
+  final List<Offset?> points;
+  _SigPainter(this.points);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppTheme.onSurface
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SigPainter old) => old.points != points;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Helper Widgets
+// ─────────────────────────────────────────────────────────────────────────────
+class _SectionCard extends StatelessWidget {
+  final Widget child;
+  final VoidCallback? onTap;
+  final bool highlight;
+  const _SectionCard({
+    required this.child,
+    this.onTap,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.spMd),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          border: Border.all(
+            color: highlight
+                ? AppTheme.primaryBrand.withOpacity(0.6)
+                : AppTheme.outlineVariant,
+            width: highlight ? 1.5 : 0.5,
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+class _PriorityBadge extends StatelessWidget {
+  final bool isPending;
+  const _PriorityBadge({required this.isPending});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isPending ? AppTheme.alertCritical : AppTheme.statusOk;
+    final label = isPending ? 'Prioritas Tinggi' : 'Selesai';
+    final icon  = isPending ? Icons.warning_amber_outlined : Icons.check_circle_outline;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppTheme.spSm, vertical: AppTheme.spXs),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+        border: Border.all(color: color.withOpacity(0.4), width: 0.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(label,
+              style: AppTheme.labelSm.copyWith(color: color)),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Checklist Item model
+// ─────────────────────────────────────────────────────────────────────────────
+class _CheckItem {
+  final String label;
+  bool checked;
+  _CheckItem(this.label, {this.checked = false});
+}
