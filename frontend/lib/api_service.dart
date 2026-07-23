@@ -17,7 +17,9 @@ class ApiService {
   // Get active API Base URL
   Future<String> getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(keyBaseUrl) ?? defaultBaseUrl;
+    // Added /v1 to base URL to match backend changes
+    final baseUrl = prefs.getString(keyBaseUrl) ?? defaultBaseUrl;
+    return '$baseUrl/v1';
   }
 
   // Save active API Base URL
@@ -255,14 +257,14 @@ class ApiService {
         photoName: photoName,
       );
 
-  // GET /reports — activity log
-  Future<List<dynamic>> getReports() async {
+  // GET /reports — activity log with pagination
+  Future<Map<String, dynamic>> getReports({int page = 1}) async {
     final baseUrl = await getBaseUrl();
     final token   = await getToken();
     if (token == null) throw Exception('Tidak terautentikasi.');
 
     final response = await http.get(
-      Uri.parse('$baseUrl/reports'),
+      Uri.parse('$baseUrl/reports?page=$page'),
       headers: {
         'Accept':        'application/json',
         'Authorization': 'Bearer $token',
@@ -273,11 +275,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       if (responseData['status'] == true) {
-        final data = responseData['data'];
-        // support both {reports:[]} and flat []
-        if (data is List) return data;
-        if (data is Map && data['reports'] != null) return data['reports'] as List;
-        return [];
+        return responseData['data']['reports'] as Map<String, dynamic>;
       } else {
         throw Exception(responseData['message'] ?? 'Gagal mengambil laporan.');
       }

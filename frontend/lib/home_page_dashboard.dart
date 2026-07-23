@@ -140,8 +140,8 @@ class _HomePageDashboardState extends State<HomePageDashboard> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.primaryBrand.withOpacity(0.5), width: 1.5),
-                  color: AppTheme.primaryBrand.withOpacity(0.1),
+                  border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.5), width: 1.5),
+                  color: AppTheme.primaryBrand.withValues(alpha: 0.1),
                 ),
                 child: const Icon(Icons.business, color: AppTheme.primary, size: 20),
               ),
@@ -266,9 +266,9 @@ class _CriticalAlarmBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm + 4),
       decoration: BoxDecoration(
-        color: AppTheme.errorContainer.withOpacity(0.9),
+        color: AppTheme.errorContainer.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.alertCritical.withOpacity(0.5), width: 1),
+        border: Border.all(color: AppTheme.alertCritical.withValues(alpha: 0.5), width: 1),
       ),
       child: Row(
         children: [
@@ -502,9 +502,9 @@ class _InsidenSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryBrand.withOpacity(0.15),
+                color: AppTheme.primaryBrand.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                border: Border.all(color: AppTheme.primaryBrand.withOpacity(0.4), width: 0.5),
+                border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.4), width: 0.5),
               ),
               child: Text('Hari Ini',
                   style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),
@@ -634,7 +634,9 @@ class _EnergyChartPainter extends CustomPainter {
     }
 
     final fillPath = Path()..moveTo(points.first.dx, h);
-    for (final p in points) fillPath.lineTo(p.dx, p.dy);
+    for (final p in points) {
+      fillPath.lineTo(p.dx, p.dy);
+    }
     fillPath.lineTo(points.last.dx, h);
     fillPath.close();
 
@@ -645,8 +647,8 @@ class _EnergyChartPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppTheme.primaryBrand.withOpacity(0.3),
-            AppTheme.primaryBrand.withOpacity(0.0),
+            AppTheme.primaryBrand.withValues(alpha: 0.3),
+            AppTheme.primaryBrand.withValues(alpha: 0.0),
           ],
         ).createShader(Rect.fromLTWH(0, 0, w, h)),
     );
@@ -676,13 +678,13 @@ class _EnergyChartPainter extends CustomPainter {
       points[3],
       5,
       Paint()
-        ..color = Colors.white.withOpacity(0.5)
+        ..color = Colors.white.withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
 
     final dotPaint = Paint()
-      ..color = AppTheme.primaryBrand.withOpacity(0.4)
+      ..color = AppTheme.primaryBrand.withValues(alpha: 0.4)
       ..strokeWidth = 1;
     const dashH = 4.0;
     const gapH  = 4.0;
@@ -819,7 +821,7 @@ class _ActivityTile extends StatelessWidget {
           Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              color: activity.iconColor.withOpacity(0.15),
+              color: activity.iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
             child: Icon(activity.icon, color: activity.iconColor, size: 20),
@@ -865,7 +867,7 @@ class _ScheduleTile extends StatelessWidget {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: isPending ? AppTheme.primaryBrand.withOpacity(0.4) : AppTheme.outlineVariant,
+          color: isPending ? AppTheme.primaryBrand.withValues(alpha: 0.4) : AppTheme.outlineVariant,
           width: 0.5,
         ),
       ),

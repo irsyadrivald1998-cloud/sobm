@@ -2,12 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Responses\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class WorkerApiAccess
+class FilamentAdminAccess
 {
     /**
      * Handle an incoming request.
@@ -16,13 +15,12 @@ class WorkerApiAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedRoles = ['housekeeping', 'teknisi', 'security', 'osb', 'resepsionis', 'bm'];
         $user = $request->user();
 
-        if (! $user || ! in_array($user->role, $allowedRoles, true)) {
-            return ApiResponse::error('Akses ditolak.', 403);
+        if ($user && in_array($user->role, ['admin', 'viewer'], true)) {
+            return $next($request);
         }
 
-        return $next($request);
+        abort(403, 'Anda tidak memiliki akses ke halaman admin.');
     }
 }

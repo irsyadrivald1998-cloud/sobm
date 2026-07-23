@@ -48,6 +48,7 @@ class _MyAppState extends State<MyApp> {
               '/activity-log': (context) => const ActivityLogPage(),
               '/attendance':   (context) => const AttendancePage(),
               '/profile':      (context) => const ProfilePage(),
+              '/access-denied':(context) => const AccessDeniedPage(),
             },
           ),
         ),

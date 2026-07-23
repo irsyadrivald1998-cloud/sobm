@@ -371,9 +371,9 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
     setState(() => _isSubmitting = true);
     try {
       final reportData = await widget.apiService.submitReport(
-        scheduleId:       widget.schedule['id'],
-        latitude:         _position!.latitude,
-        longitude:        _position!.longitude,
+        scheduleId:       isOsbOrResepsionis ? null : widget.schedule['id'],
+        latitude:         _position?.latitude ?? 0.0,
+        longitude:        _position?.longitude ?? 0.0,
         conditionStatus:  _conditionStatus,
         workDescription:  _workDescriptionCtrl.text.trim(),
         notes:            _notesCtrl.text.trim(),

@@ -19,14 +19,43 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
   String _error = '';
   LogEntryType? _filterType;
 
+  int _currentPage = 1;
+  bool _isFetchingMore = false;
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ActivityLogProvider.of(context);
       if (notifier.entries.isEmpty) _load();
     });
     _timer = Timer.periodic(const Duration(seconds: 15), (_) => _load(isManual: false));
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+        !_isFetchingMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    setState(() => _isFetchingMore = true);
+    try {
+      final api = ApiService();
+      _currentPage++;
+      final reportsData = await api.getReports(page: _currentPage);
+      final schedules = await api.getSchedules(); // Should ideally cache this
+      if (mounted) {
+        ActivityLogProvider.of(context).appendFromApi(reportsData, schedules);
+      }
+    } catch (e) {
+      // Handle error (perhaps decrement _currentPage)
+    } finally {
+      if (mounted) setState(() => _isFetchingMore = false);
+    }
   }
 
   @override
@@ -45,10 +74,11 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
 
     try {
       final api = ApiService();
-      final reports = await api.getReports();
+      // Updated to fetch paginated reports
+      final reportsData = await api.getReports(page: 1);
       final schedules = await api.getSchedules();
       if (mounted) {
-        ActivityLogProvider.of(context).seedFromApi(reports, schedules);
+        ActivityLogProvider.of(context).seedFromApi(reportsData, schedules);
       }
     } catch (error) {
       if (mounted) {
@@ -132,12 +162,24 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
         }
 
         return RefreshIndicator(
-          onRefresh: () => _load(),
+          onRefresh: () {
+            _currentPage = 1;
+            return _load();
+          },
           child: ListView.separated(
+            controller: _scrollController,
             padding: const EdgeInsets.all(AppTheme.spMd),
-            itemCount: filteredEntries.length,
+            itemCount: filteredEntries.length + (_isFetchingMore ? 1 : 0),
             separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spSm),
-            itemBuilder: (_, index) => _ActivityTile(entry: filteredEntries[index]),
+            itemBuilder: (_, index) {
+              if (index == filteredEntries.length) {
+                return const Center(child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ));
+              }
+              return _ActivityTile(entry: filteredEntries[index]);
+            },
           ),
         );
       },
@@ -192,6 +234,19 @@ class _ActivityTile extends StatelessWidget {
                   const SizedBox(height: AppTheme.spXs),
                   Text(entry.workOrder!, style: AppTheme.labelSm),
                 ],
+                if (entry.status != null) ...[
+                  const SizedBox(height: AppTheme.spXs),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _statusColor(entry.status!).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(entry.status!.toUpperCase(),
+                        style: AppTheme.labelSm.copyWith(
+                            color: _statusColor(entry.status!), fontWeight: FontWeight.bold)),
+                  ),
+                ],
               ],
             ),
           ),
@@ -199,4 +254,10 @@ class _ActivityTile extends StatelessWidget {
       ),
     );
   }
+
+  Color _statusColor(String status) => switch (status) {
+    'resolved' => AppTheme.statusOk,
+    'in-progress' => AppTheme.statusWarning,
+    _ => AppTheme.alertCritical,
+  };
 }

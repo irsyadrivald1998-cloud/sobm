@@ -2,12 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Http\Responses\ApiResponse;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class WorkerApiAccess
+class UserApiAccess
 {
     /**
      * Handle an incoming request.
@@ -16,11 +15,11 @@ class WorkerApiAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedRoles = ['housekeeping', 'teknisi', 'security', 'osb', 'resepsionis', 'bm'];
-        $user = $request->user();
-
-        if (! $user || ! in_array($user->role, $allowedRoles, true)) {
-            return ApiResponse::error('Akses ditolak.', 403);
+        if ($request->user() && $request->user()->role === 'user') {
+            if ($request->isMethod('GET') && $request->is('api/reports')) {
+                return $next($request);
+            }
+            return ApiResponse::error('Akses ditolak. Role User hanya boleh mengakses feed aktivitas.', 403);
         }
 
         return $next($request);

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Middleware\WorkerApiAccess;
+use App\Http\Middleware\UserApiAccess;
+use App\Http\Middleware\ReportRateLimiting;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -22,6 +24,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'can_access_worker_api' => WorkerApiAccess::class,
+            'can_access_user_api' => UserApiAccess::class,
+            'report_rate_limit' => ReportRateLimiting::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

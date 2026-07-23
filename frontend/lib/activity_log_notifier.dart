@@ -24,6 +24,7 @@ class ActivityLogEntry {
 
   // alert fields
   final String? alertTitle;
+  final String? status;
 
   const ActivityLogEntry({
     required this.type,
@@ -37,6 +38,7 @@ class ActivityLogEntry {
     this.avatarIcon,
     this.avatarColor,
     this.alertTitle,
+    this.status,
   });
 }
 
@@ -50,10 +52,29 @@ class ActivityLogNotifier extends ChangeNotifier {
 
   // Called on app start / pull-to-refresh to seed entries from API data
   void seedFromApi(
-    List<dynamic> reports,
+    Map<String, dynamic> reportsData,
     List<dynamic> schedules,
   ) {
     _entries.clear();
+    _appendReports(reportsData, schedules, true);
+  }
+
+  // Append new entries from paginated API data
+  void appendFromApi(
+    Map<String, dynamic> reportsData,
+    List<dynamic> schedules,
+  ) {
+    _appendReports(reportsData, schedules, false);
+  }
+
+  void _appendReports(
+    Map<String, dynamic> reportsData,
+    List<dynamic> schedules,
+    bool clearExisting,
+  ) {
+    if (clearExisting) _entries.clear();
+
+    final List<dynamic> reports = reportsData['data'] as List<dynamic>? ?? [];
 
     for (final r in reports) {
       final report     = r as Map<String, dynamic>;
@@ -97,6 +118,7 @@ class ActivityLogNotifier extends ChangeNotifier {
           date:       _parse(createdAt),
           alertTitle: 'Alarm Kritis: ${checkpoint['name'] ?? 'Checkpoint'}',
           body:       issue['description'] as String? ?? 'Kendala terdeteksi.',
+          status:     issue['status'] as String? ?? 'open',
         ));
       }
     }

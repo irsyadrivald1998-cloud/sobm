@@ -15,7 +15,7 @@ class StoreReportRequest extends FormRequest
             return false;
         }
 
-        return in_array($user->role, ['housekeeping', 'teknisi', 'security'], true);
+        return in_array($user->role, ['housekeeping', 'teknisi', 'security', 'osb', 'resepsionis'], true);
     }
 
     /**
@@ -23,8 +23,7 @@ class StoreReportRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'schedule_id' => 'required|integer|exists:schedules,id',
+        $rules = [
             'check_in_latitude' => 'required|numeric|between:-90,90',
             'check_in_longitude' => 'required|numeric|between:-180,180',
             'photo' => 'required|image|mimes:jpeg,jpg,png,webp|max:2048',
@@ -33,6 +32,14 @@ class StoreReportRequest extends FormRequest
             'notes' => 'nullable|string',
             'issue_description' => 'required_if:condition_status,Ada Kendala|string',
         ];
+
+        if (!in_array($this->user()->role, ['osb', 'resepsionis'], true)) {
+            $rules['schedule_id'] = 'required|integer|exists:schedules,id';
+        } else {
+            $rules['schedule_id'] = 'nullable|integer|exists:schedules,id';
+        }
+
+        return $rules;
     }
 
     public function messages(): array

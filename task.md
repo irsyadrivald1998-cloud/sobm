@@ -57,11 +57,11 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 Sesuaikan UI role OSB/Resepsionis: form laporan tanpa pemilihan jadwal
+- ✅ Sesuaikan UI role OSB/Resepsionis: form laporan tanpa pemilihan jadwal
   wajib (opsional), tetap wajib deskripsi & foto.
-- 🔲 Buat mode UI untuk role **User**: hanya tampilkan halaman feed
+- ✅ Buat mode UI untuk role **User**: hanya tampilkan halaman feed
   aktivitas; sembunyikan/nonaktifkan menu jadwal, laporan, dan absensi.
-- 🔲 Update pesan error/UX saat role User mencoba mengakses fitur yang tidak
+- ✅ Update pesan error/UX saat role User mencoba mengakses fitur yang tidak
   diizinkan (idealnya dicegah dari sisi navigasi, bukan hanya error API).
 
 ---
@@ -138,7 +138,7 @@ task **Backend** dan **Frontend** secara terpisah.
 - 🔲 Putuskan & implementasikan definisi tanggal absensi untuk shift
   Security yang melewati tengah malam (apakah `date` = tanggal mulai shift
   atau tanggal kalender saat clock-in/out).
-- 🔲 Bangun modul manajemen cuti/izin/sakit; pastikan user berstatus izin
+- ✅ Bangun modul manajemen cuti/izin/sakit (Upload surat izin/sakit); pastikan user berstatus izin
   resmi tidak otomatis menjadi `Alpa`.
 - 🔲 Tambah scheduled job/command untuk otomatis menandai status `Alpa`
   saat user tidak clock-in sama sekali.
