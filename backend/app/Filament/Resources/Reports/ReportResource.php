@@ -93,6 +93,9 @@ class ReportResource extends Resource
                         'Ada Kendala' => 'danger',
                         default       => 'gray',
                     }),
+                TextEntry::make('work_description')
+                    ->label('Deskripsi Pekerjaan')
+                    ->columnSpanFull(),
                 TextEntry::make('notes')
                     ->label('Catatan')
                     ->columnSpanFull(),

@@ -151,7 +151,6 @@ class AppTheme {
       textTheme: interTextTheme,
       colorScheme: const ColorScheme.dark(
         brightness: Brightness.dark,
-        background: background,
         surface: surface,
         primary: primaryBrand,
         onPrimary: Colors.white,
@@ -267,7 +266,6 @@ class AppTheme {
       textTheme: interTextTheme,
       colorScheme: const ColorScheme.light(
         brightness: Brightness.light,
-        background: lightBackground,
         surface: lightSurface,
         primary: primaryBrand,
         onPrimary: Colors.white,
@@ -289,7 +287,7 @@ class AppTheme {
         foregroundColor: lightOnSurface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        shadowColor: lightOutlineVariant.withOpacity(0.3),
+        shadowColor: lightOutlineVariant.withValues(alpha: 0.3),
         titleTextStyle: titleLg.copyWith(color: lightOnSurface),
       ),
       cardTheme: CardThemeData(

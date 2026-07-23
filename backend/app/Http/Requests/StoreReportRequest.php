@@ -29,6 +29,7 @@ class StoreReportRequest extends FormRequest
             'check_in_longitude' => 'required|numeric|between:-180,180',
             'photo' => 'required|image|mimes:jpeg,jpg,png,webp|max:2048',
             'condition_status' => 'required|in:Aman/Bersih,Ada Kendala',
+            'work_description' => 'required|string',
             'notes' => 'nullable|string',
             'issue_description' => 'required_if:condition_status,Ada Kendala|string',
         ];
@@ -43,6 +44,7 @@ class StoreReportRequest extends FormRequest
             'photo.required' => 'Foto wajib diunggah.',
             'photo.image' => 'Berkas harus berupa gambar.',
             'photo.max' => 'Ukuran foto maksimal 2 MB.',
+            'work_description.required' => 'Deskripsi pekerjaan wajib diisi.',
         ];
     }
 }

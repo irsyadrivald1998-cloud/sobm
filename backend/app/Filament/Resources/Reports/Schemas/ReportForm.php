@@ -39,6 +39,10 @@ class ReportForm
                         'Ada Kendala' => 'Ada Kendala',
                     ])
                     ->required(),
+                Textarea::make('work_description')
+                    ->label('Deskripsi Pekerjaan')
+                    ->required()
+                    ->columnSpanFull(),
                 Textarea::make('notes')
                     ->columnSpanFull(),
             ]);

@@ -129,7 +129,7 @@ class _WoTabBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.spMd, vertical: AppTheme.spSm),
         itemCount: schedules.length,
-        separatorBuilder: (_, __) =>
+        separatorBuilder: (_, _) =>
             const SizedBox(width: AppTheme.spSm),
         itemBuilder: (_, i) {
           final s        = schedules[i] as Map<String, dynamic>;
@@ -214,6 +214,7 @@ class _WorkOrderDetail extends StatefulWidget {
 class _WorkOrderDetailState extends State<_WorkOrderDetail> {
   final _picker       = ImagePicker();
   final _notesCtrl    = TextEditingController();
+  final _workDescriptionCtrl = TextEditingController();
   final _issueCtrl    = TextEditingController();
   final _sigKey       = GlobalKey();
 
@@ -229,7 +230,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
   bool      _gettingLocation = false;
 
   // Signature
-  List<Offset?> _sigPoints = [];
+  final List<Offset?> _sigPoints = [];
   bool          _hasSig    = false;
 
   // Checklist items — generated from task category
@@ -244,6 +245,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
   @override
   void dispose() {
     _notesCtrl.dispose();
+    _workDescriptionCtrl.dispose();
     _issueCtrl.dispose();
     super.dispose();
   }
@@ -344,33 +346,36 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   Future<void> _submit() async {
-    // Photo is the only hard requirement
+    if (_workDescriptionCtrl.text.trim().isEmpty) {
+      _snack('Deskripsi pekerjaan wajib diisi.', isError: true);
+      return;
+    }
+
     if (_photoBytes == null) {
       _snack('Unggah foto terlebih dahulu.', isError: true);
       return;
     }
 
-    // Warn (not block) if GPS hasn't been retrieved
     if (_position == null) {
-      _snack('GPS belum divalidasi — melanjutkan tanpa koordinat.',
-          isError: false);
+      _snack('Dapatkan GPS terlebih dahulu.', isError: true);
+      return;
     }
 
-    // Warn (not block) if out of radius
     final cp     = widget.schedule['checkpoint'] as Map<String, dynamic>? ?? {};
     final radius = int.tryParse(cp['radius_meter']?.toString() ?? '100') ?? 100;
     if (_distance != null && _distance! > radius) {
-      _snack('Peringatan: ${(_distance! - radius).ceil()}m di luar jangkauan.',
-          isError: false);
+      _snack('Lokasi berada di luar radius checkpoint.', isError: true);
+      return;
     }
 
     setState(() => _isSubmitting = true);
     try {
       final reportData = await widget.apiService.submitReport(
         scheduleId:       widget.schedule['id'],
-        latitude:         _position?.latitude  ?? 0.0,
-        longitude:        _position?.longitude ?? 0.0,
+        latitude:         _position!.latitude,
+        longitude:        _position!.longitude,
         conditionStatus:  _conditionStatus,
+        workDescription:  _workDescriptionCtrl.text.trim(),
         notes:            _notesCtrl.text.trim(),
         issueDescription: _conditionStatus == 'Ada Kendala'
             ? _issueCtrl.text.trim()
@@ -386,6 +391,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
         final fullReport = {
           ...reportData,
           'notes': _notesCtrl.text.trim(),
+          'work_description': _workDescriptionCtrl.text.trim(),
           'issue_description': _conditionStatus == 'Ada Kendala'
               ? _issueCtrl.text.trim()
               : null,
@@ -417,7 +423,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
       content: Text(msg,
           style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
       backgroundColor:
-          isError ? AppTheme.errorContainer : AppTheme.statusOk.withOpacity(0.8),
+          isError ? AppTheme.errorContainer : AppTheme.statusOk.withValues(alpha: 0.8),
     ));
   }
 
@@ -497,8 +503,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
                             fontWeight: FontWeight.w700),
                       ),
                       Text(
-                        checkpoint['address'] as String? ??
-                            'Lantai ${checkpoint['floor'] ?? '-'}, ${checkpoint['area'] ?? '-'}',
+                        'Lantai ${checkpoint['floor'] ?? '-'}',
                         style: AppTheme.bodyMd,
                       ),
                     ],
@@ -642,7 +647,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
                   width: 40, height: 40,
                   decoration: BoxDecoration(
                     color: _qrScanned
-                        ? AppTheme.primaryBrand.withOpacity(0.2)
+                        ? AppTheme.primaryBrand.withValues(alpha: 0.2)
                         : AppTheme.surfaceHigh,
                     borderRadius:
                         BorderRadius.circular(AppTheme.radiusSm),
@@ -749,7 +754,7 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
                 Text('KONDISI', style: AppTheme.labelSm.copyWith(letterSpacing: 1)),
                 const SizedBox(height: AppTheme.spSm),
                 DropdownButtonFormField<String>(
-                  value: _conditionStatus,
+                  initialValue: _conditionStatus,
                   dropdownColor: AppTheme.surfaceLow,
                   style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
                   decoration: const InputDecoration(
@@ -777,6 +782,17 @@ class _WorkOrderDetailState extends State<_WorkOrderDetail> {
                     ),
                   ),
                 ],
+                const SizedBox(height: AppTheme.spSm),
+                Text('DESKRIPSI PEKERJAAN', style: AppTheme.labelSm.copyWith(letterSpacing: 1)),
+                const SizedBox(height: AppTheme.spXs),
+                TextField(
+                  controller: _workDescriptionCtrl,
+                  maxLines: 3,
+                  style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                  decoration: const InputDecoration(
+                    hintText: 'Jelaskan pekerjaan yang dilakukan...',
+                  ),
+                ),
                 const SizedBox(height: AppTheme.spSm),
                 Text('CATATAN', style: AppTheme.labelSm.copyWith(letterSpacing: 1)),
                 const SizedBox(height: AppTheme.spXs),
@@ -920,7 +936,7 @@ class _SignaturePadState extends State<_SignaturePad> {
             border: Border.all(
               color: _points.isEmpty
                   ? AppTheme.outlineVariant
-                  : AppTheme.primaryBrand.withOpacity(0.5),
+                  : AppTheme.primaryBrand.withValues(alpha: 0.5),
               width: 1,
               // dashed look via BoxDecoration not natively supported,
               // using solid thin border instead
@@ -1024,7 +1040,7 @@ class _SectionCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           border: Border.all(
             color: highlight
-                ? AppTheme.primaryBrand.withOpacity(0.6)
+                ? AppTheme.primaryBrand.withValues(alpha: 0.6)
                 : AppTheme.outlineVariant,
             width: highlight ? 1.5 : 0.5,
           ),
@@ -1049,9 +1065,9 @@ class _PriorityBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppTheme.spSm, vertical: AppTheme.spXs),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-        border: Border.all(color: color.withOpacity(0.4), width: 0.5),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1072,5 +1088,5 @@ class _PriorityBadge extends StatelessWidget {
 class _CheckItem {
   final String label;
   bool checked;
-  _CheckItem(this.label, {this.checked = false});
+  _CheckItem(this.label) : checked = false;
 }

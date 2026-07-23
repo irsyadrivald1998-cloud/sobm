@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'activity_log_notifier.dart';
 import 'app_theme.dart';
@@ -12,8 +14,10 @@ class ActivityLogPage extends StatefulWidget {
 }
 
 class _ActivityLogPageState extends State<ActivityLogPage> {
+  Timer? _timer;
   bool _isLoading = false;
   String _error = '';
+  LogEntryType? _filterType;
 
   @override
   void initState() {
@@ -22,13 +26,22 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
       final notifier = ActivityLogProvider.of(context);
       if (notifier.entries.isEmpty) _load();
     });
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _load(isManual: false));
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _isLoading = true;
-      _error = '';
-    });
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool isManual = true}) async {
+    if (isManual) {
+      setState(() {
+        _isLoading = true;
+        _error = '';
+      });
+    }
 
     try {
       final api = ApiService();
@@ -42,7 +55,7 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
         setState(() => _error = error.toString().replaceAll('Exception: ', ''));
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && isManual) setState(() => _isLoading = false);
     }
   }
 
@@ -54,9 +67,19 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
         title: Text('Aktivitas Rekan Kerja', style: AppTheme.titleLg),
         backgroundColor: AppTheme.surfaceLowest,
         actions: [
+          PopupMenuButton<LogEntryType?>(
+            icon: Icon(_filterType == null ? Icons.filter_list : Icons.filter_list_alt),
+            onSelected: (type) => setState(() => _filterType = type),
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: null, child: Text('Semua Aktivitas')),
+              const PopupMenuItem(value: LogEntryType.system, child: Text('Sistem')),
+              const PopupMenuItem(value: LogEntryType.user, child: Text('Laporan Pengguna')),
+              const PopupMenuItem(value: LogEntryType.alert, child: Text('Kendala/Alert')),
+            ],
+          ),
           IconButton(
             tooltip: 'Muat ulang aktivitas',
-            onPressed: _load,
+            onPressed: () => _load(),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -81,7 +104,7 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
             Text(_error, textAlign: TextAlign.center),
             const SizedBox(height: AppTheme.spMd),
             OutlinedButton.icon(
-              onPressed: _load,
+              onPressed: () => _load(),
               icon: const Icon(Icons.refresh),
               label: const Text('Coba lagi'),
             ),
@@ -95,18 +118,26 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
     return ListenableBuilder(
       listenable: ActivityLogProvider.of(context),
       builder: (context, _) {
-        final entries = ActivityLogProvider.of(context).entries;
-        if (entries.isEmpty) {
-          return const Center(child: Text('Belum ada aktivitas laporan.'));
+        final allEntries = ActivityLogProvider.of(context).entries;
+        final filteredEntries = _filterType == null
+            ? allEntries
+            : allEntries.where((e) => e.type == _filterType).toList();
+
+        if (filteredEntries.isEmpty) {
+          return Center(
+            child: Text(_filterType == null
+              ? 'Belum ada aktivitas laporan.'
+              : 'Tidak ada aktivitas dengan filter ini.'),
+          );
         }
 
         return RefreshIndicator(
-          onRefresh: _load,
+          onRefresh: () => _load(),
           child: ListView.separated(
             padding: const EdgeInsets.all(AppTheme.spMd),
-            itemCount: entries.length,
+            itemCount: filteredEntries.length,
             separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spSm),
-            itemBuilder: (_, index) => _ActivityTile(entry: entries[index]),
+            itemBuilder: (_, index) => _ActivityTile(entry: filteredEntries[index]),
           ),
         );
       },

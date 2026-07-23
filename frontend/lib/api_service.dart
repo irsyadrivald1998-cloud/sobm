@@ -9,7 +9,10 @@ class ApiService {
   static const String keyBaseUrl = 'api_base_url';
 
   // Default fallbacks based on platform/environment
-  static String get defaultBaseUrl => 'https://f816-114-10-95-0.ngrok-free.app/api';
+  static String get defaultBaseUrl => const String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: 'https://f816-114-10-95-0.ngrok-free.app/api',
+      );
 
   // Get active API Base URL
   Future<String> getBaseUrl() async {
@@ -161,6 +164,97 @@ class ApiService {
     }
   }
 
+  // GET /attendance/today
+  Future<Map<String, dynamic>?> getTodayAttendance() async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/attendance/today'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200 && responseData['status'] == true) {
+      final data = responseData['data'];
+      return data is Map ? Map<String, dynamic>.from(data) : null;
+    }
+    throw Exception(responseData['message'] ?? 'Gagal mengambil status absensi.');
+  }
+
+  Future<Map<String, dynamic>> _submitAttendance({
+    required String action,
+    required double latitude,
+    required double longitude,
+    required Uint8List photoBytes,
+    required String photoName,
+    String? notes,
+  }) async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/attendance/$action'),
+    );
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+    request.fields['latitude'] = latitude.toString();
+    request.fields['longitude'] = longitude.toString();
+    if (notes != null && notes.trim().isNotEmpty) {
+      request.fields['notes'] = notes.trim();
+    }
+    request.files.add(http.MultipartFile.fromBytes(
+      'photo',
+      photoBytes,
+      filename: photoName,
+    ));
+
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 20));
+    final response = await http.Response.fromStream(streamedResponse);
+    final responseData = jsonDecode(response.body);
+    if ((response.statusCode == 200 || response.statusCode == 201) &&
+        responseData['status'] == true) {
+      return Map<String, dynamic>.from(responseData['data'] as Map);
+    }
+    throw Exception(responseData['message'] ?? 'Gagal mengirim absensi.');
+  }
+
+  Future<Map<String, dynamic>> clockIn({
+    required double latitude,
+    required double longitude,
+    required Uint8List photoBytes,
+    required String photoName,
+    String? notes,
+  }) => _submitAttendance(
+        action: 'clock-in',
+        latitude: latitude,
+        longitude: longitude,
+        photoBytes: photoBytes,
+        photoName: photoName,
+        notes: notes,
+      );
+
+  Future<Map<String, dynamic>> clockOut({
+    required double latitude,
+    required double longitude,
+    required Uint8List photoBytes,
+    required String photoName,
+  }) => _submitAttendance(
+        action: 'clock-out',
+        latitude: latitude,
+        longitude: longitude,
+        photoBytes: photoBytes,
+        photoName: photoName,
+      );
+
   // GET /reports — activity log
   Future<List<dynamic>> getReports() async {
     final baseUrl = await getBaseUrl();
@@ -198,6 +292,7 @@ class ApiService {
     required double latitude,
     required double longitude,
     required String conditionStatus,
+    String workDescription = '',
     String? notes,
     String? issueDescription,
     required Uint8List photoBytes,
@@ -217,6 +312,7 @@ class ApiService {
     request.fields['check_in_latitude'] = latitude.toString();
     request.fields['check_in_longitude'] = longitude.toString();
     request.fields['condition_status'] = conditionStatus;
+    request.fields['work_description'] = workDescription;
     if (notes != null && notes.isNotEmpty) {
       request.fields['notes'] = notes;
     }

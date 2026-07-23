@@ -46,6 +46,8 @@ class _MyAppState extends State<MyApp> {
               '/':             (context) => const LoginPage(),
               '/home':         (context) => const HomePage(),
               '/activity-log': (context) => const ActivityLogPage(),
+              '/attendance':   (context) => const AttendancePage(),
+              '/profile':      (context) => const ProfilePage(),
             },
           ),
         ),

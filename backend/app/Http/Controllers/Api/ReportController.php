@@ -80,6 +80,7 @@ class ReportController extends Controller
                         'check_in_longitude' => $request->validated('check_in_longitude'),
                         'photo_path' => $photoPath,
                         'condition_status' => $request->validated('condition_status'),
+                        'work_description' => $request->validated('work_description'),
                         'notes' => $request->validated('notes'),
                     ]);
                 } catch (UniqueConstraintViolationException $e) {

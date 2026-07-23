@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['schedule_id', 'check_in_time', 'check_in_latitude', 'check_in_longitude', 'photo_path', 'condition_status', 'notes'])]
+#[Fillable(['schedule_id', 'check_in_time', 'check_in_latitude', 'check_in_longitude', 'photo_path', 'condition_status', 'work_description', 'notes'])]
 class Report extends Model
 {
     use HasFactory, SoftDeletes;
