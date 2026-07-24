@@ -101,14 +101,6 @@ class ActivityLogProvider extends InheritedNotifier<ActivityLogNotifier> {
     assert(p != null, 'No ActivityLogProvider found');
     return p!.notifier!;
   }
-  
-  static ActivityLogNotifier? maybeOf(BuildContext context) {
-    try {
-      return context.dependOnInheritedWidgetOfExactType<ActivityLogProvider>()?.notifier;
-    } catch (e) {
-      return null;
-    }
-  }
 }
 
 class ThemeProvider extends InheritedNotifier<ThemeNotifier> {
@@ -123,14 +115,6 @@ class ThemeProvider extends InheritedNotifier<ThemeNotifier> {
     assert(p != null, 'No ThemeProvider found');
     return p!.notifier!;
   }
-  
-  static ThemeNotifier? maybeOf(BuildContext context) {
-    try {
-      return context.dependOnInheritedWidgetOfExactType<ThemeProvider>()?.notifier;
-    } catch (e) {
-      return null;
-    }
-  }
 }
 
 class NotificationProvider extends InheritedNotifier<NotificationService> {
@@ -144,13 +128,5 @@ class NotificationProvider extends InheritedNotifier<NotificationService> {
     final p = context.dependOnInheritedWidgetOfExactType<NotificationProvider>();
     assert(p != null, 'No NotificationProvider found');
     return p!.notifier!;
-  }
-  
-  static NotificationService? maybeOf(BuildContext context) {
-    try {
-      return context.dependOnInheritedWidgetOfExactType<NotificationProvider>()?.notifier;
-    } catch (e) {
-      return null;
-    }
   }
 }

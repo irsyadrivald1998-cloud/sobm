@@ -1186,4 +1186,3 @@ class _NavTile extends StatelessWidget {
     );
   }
 }
-

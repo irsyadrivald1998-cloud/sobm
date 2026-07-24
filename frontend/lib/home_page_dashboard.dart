@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ActivityLogProvider;
