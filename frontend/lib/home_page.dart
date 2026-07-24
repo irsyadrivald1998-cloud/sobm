@@ -382,7 +382,6 @@ class _HomePageState extends State<HomePage> {
     
     final items = [
       _NavItem(icon: Icons.grid_view_rounded, label: 'Home'),
-      _NavItem(icon: Icons.monitor_heart_outlined, label: 'Monitoring'),
       _NavItem(icon: Icons.assignment_outlined, label: 'Reports'),
       _NavItem(
         icon: isAdmin ? Icons.admin_panel_settings : Icons.person_outline, 
@@ -405,7 +404,7 @@ class _HomePageState extends State<HomePage> {
               return Expanded(
                 child: InkWell(
                   onTap: () {
-                    if (i == 3) { 
+                    if (i == 2) { 
                       // Navigate to profile/admin dashboard based on role
                       final role = _user?['role'] as String? ?? 'worker';
                       if (role == 'admin' || role == 'viewer') {
@@ -415,7 +414,7 @@ class _HomePageState extends State<HomePage> {
                       }
                       return; 
                     }
-                    if (i == 2) {
+                    if (i == 1) {
                       Navigator.of(context).pushNamed('/activity-log');
                       return;
                     }
