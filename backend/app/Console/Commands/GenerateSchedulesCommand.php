@@ -81,42 +81,52 @@ class GenerateSchedulesCommand extends Command
         $checkpoints = Checkpoint::all();
         if ($checkpoints->isEmpty()) return;
 
-        // Get or create state for round-robin
-        $state = ScheduleGenerationState::firstOrCreate(
-            ['role' => $role],
-            ['last_user_index' => 0]
-        );
+        // Use transaction to prevent race conditions
+        DB::transaction(function () use ($role, $users, $taskCategories, $checkpoints, $date, $time) {
+            // Get or create state for round-robin with lock
+            $state = ScheduleGenerationState::where('role', $role)
+                ->lockForUpdate()
+                ->first();
 
-        $currentIndex = $state->last_user_index;
-
-        foreach ($checkpoints as $checkpoint) {
-            // Distribute round-robin among available users for this role
-            $user = $users[$currentIndex % $users->count()];
-            $taskCategory = $taskCategories->first();
-
-            // Check if already generated for this hour
-            $exists = Schedule::where('user_id', $user->id)
-                ->where('checkpoint_id', $checkpoint->id)
-                ->where('task_category_id', $taskCategory->id)
-                ->where('shift_date', $date)
-                ->whereRaw('HOUR(scheduled_time) = ?', [Carbon::parse($time)->hour])
-                ->exists();
-
-            if (!$exists) {
-                Schedule::create([
-                    'user_id' => $user->id,
-                    'checkpoint_id' => $checkpoint->id,
-                    'task_category_id' => $taskCategory->id,
-                    'shift_date' => $date,
-                    'scheduled_time' => $time,
-                    'status' => 'pending',
+            if (!$state) {
+                $state = ScheduleGenerationState::create([
+                    'role' => $role,
+                    'last_user_index' => 0
                 ]);
             }
 
-            $currentIndex++;
-        }
+            $currentIndex = $state->last_user_index;
 
-        // Save state
-        $state->update(['last_user_index' => $currentIndex % $users->count()]);
+            foreach ($checkpoints as $checkpoint) {
+                // Distribute round-robin among available users for this role
+                $user = $users[$currentIndex % $users->count()];
+                $taskCategory = $taskCategories->first();
+
+                // Check if already generated for this hour
+                $exists = Schedule::where('user_id', $user->id)
+                    ->where('checkpoint_id', $checkpoint->id)
+                    ->where('task_category_id', $taskCategory->id)
+                    ->where('shift_date', $date)
+                    ->whereRaw('HOUR(scheduled_time) = ?', [Carbon::parse($time)->hour])
+                    ->lockForUpdate()
+                    ->exists();
+
+                if (!$exists) {
+                    Schedule::create([
+                        'user_id' => $user->id,
+                        'checkpoint_id' => $checkpoint->id,
+                        'task_category_id' => $taskCategory->id,
+                        'shift_date' => $date,
+                        'scheduled_time' => $time,
+                        'status' => 'pending',
+                    ]);
+                }
+
+                $currentIndex++;
+            }
+
+            // Save state
+            $state->update(['last_user_index' => $currentIndex % $users->count()]);
+        });
     }
 }

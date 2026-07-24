@@ -104,6 +104,69 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $osb1 = User::updateOrCreate(
+            ['employee_id' => 'osb_001'],
+            [
+                'name' => 'Dewi OSB',
+                'password' => $hashedPassword,
+                'role' => 'osb',
+            ]
+        );
+
+        $osb2 = User::updateOrCreate(
+            ['employee_id' => 'osb_002'],
+            [
+                'name' => 'Eko OSB',
+                'password' => $hashedPassword,
+                'role' => 'osb',
+            ]
+        );
+
+        $resep1 = User::updateOrCreate(
+            ['employee_id' => 'resep_001'],
+            [
+                'name' => 'Fitri Resepsionis',
+                'password' => $hashedPassword,
+                'role' => 'resepsionis',
+            ]
+        );
+
+        $resep2 = User::updateOrCreate(
+            ['employee_id' => 'resep_002'],
+            [
+                'name' => 'Hendra Resepsionis',
+                'password' => $hashedPassword,
+                'role' => 'resepsionis',
+            ]
+        );
+
+        $bm1 = User::updateOrCreate(
+            ['employee_id' => 'bm_001'],
+            [
+                'name' => 'Budi Manager',
+                'password' => $hashedPassword,
+                'role' => 'bm',
+            ]
+        );
+
+        $user1 = User::updateOrCreate(
+            ['employee_id' => 'user_001'],
+            [
+                'name' => 'Citra User',
+                'password' => $hashedPassword,
+                'role' => 'user',
+            ]
+        );
+
+        $user2 = User::updateOrCreate(
+            ['employee_id' => 'user_002'],
+            [
+                'name' => 'Dedi User',
+                'password' => $hashedPassword,
+                'role' => 'user',
+            ]
+        );
+
         // 2. Seed Areas
         $area1 = Area::updateOrCreate(
             ['name' => 'Gedung Utama Universitas Jayanusa'],

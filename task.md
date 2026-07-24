@@ -33,26 +33,26 @@ task **Backend** dan **Frontend** secara terpisah.
 ## Milestone 1 — Role & Akses (baru: OSB, Resepsionis, BM, User)
 
 ### Backend
-
-- 🔲 Migration + seeding role baru: `OSB`, `Resepsionis`, `BM`, `User` pada
+ 
+- ✅ Migration + seeding role baru: `OSB`, `Resepsionis`, `BM`, `User` pada
   tabel `users`/`role`.
-- 🔲 Update `schedules:generate`:
+- ✅ Update `schedules:generate`:
   - Admin & BM: tidak menghasilkan jadwal patroli/checkpoint (hanya absensi).
   - User: tidak menghasilkan jadwal sama sekali (tidak absensi, tidak
     patroli).
   - OSB & Resepsionis: jadwal kerja 08:00-17:00 tanpa frekuensi checkpoint
     tetap.
-- 🔲 `POST /api/reports`: buat `schedule_id` nullable/opsional khusus role
+- ✅ `POST /api/reports`: buat `schedule_id` nullable/opsional khusus role
   OSB & Resepsionis; lewati validasi kepemilikan jadwal/tanggal/status/radius
   untuk kedua role ini, tetap validasi `work_description`, format & ukuran
   foto, dan kondisi laporan.
-- 🔲 Middleware/policy baru untuk role **User**: hanya izinkan
+- ✅ Middleware/policy baru untuk role **User**: hanya izinkan
   `GET /api/reports` (feed); tolak akses ke `GET /api/schedules`,
   `POST /api/reports`, dan seluruh endpoint `attendance/*`.
-- 🔲 Policy Filament: pastikan role Housekeeping, Teknisi, Security, OSB,
+- ✅ Policy Filament: pastikan role Housekeeping, Teknisi, Security, OSB,
   Resepsionis, BM, dan User **tidak** punya akun/akses backend sama sekali;
   hanya Admin (penuh) dan Viewer (read-only).
-- 🔲 Update test feature untuk role access mencakup role-role baru
+- ✅ Update test feature untuk role access mencakup role-role baru
   (khususnya negative test: User ditolak di endpoint selain feed).
 
 ### Frontend
@@ -70,12 +70,12 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Backend
 
-- 🔲 Tambah polling atau realtime notification untuk aktivitas laporan baru.
-- 🔲 Tambah filter tanggal, role, checkpoint, dan status pada
+- ✅ Tambah polling atau realtime notification untuk aktivitas laporan baru.
+- ✅ Tambah filter tanggal, role, checkpoint, dan status pada
   `GET /api/reports` bila dibutuhkan.
-- 🔲 Tambah pagination pada `GET /api/reports` (feed berpotensi berat saat
+- ✅ Tambah pagination pada `GET /api/reports` (feed berpotensi berat saat
   data menumpuk).
-- 🔲 Lengkapi test feature: feed aktivitas, absensi, deskripsi pekerjaan,
+- ✅ Lengkapi test feature: feed aktivitas, absensi, deskripsi pekerjaan,
   upload foto, dan akses antar-user (termasuk role User & OSB/Resepsionis).
 
 ### Frontend
@@ -92,10 +92,10 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Backend
 
-- 🔲 Definisikan lifecycle status `issues` (mis. `open`, `in-progress`,
+- ✅ Definisikan lifecycle status `issues` (mis. `open`, `in-progress`,
   `resolved`).
-- 🔲 Tambah endpoint/aksi untuk update status issue & audit penyelesaian.
-- 🔲 Tambah notifikasi kendala ke Admin saat issue baru dibuat.
+- ✅ Tambah endpoint/aksi untuk update status issue & audit penyelesaian.
+- ✅ Tambah notifikasi kendala ke Admin saat issue baru dibuat.
 
 ### Frontend
 
@@ -109,7 +109,7 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Backend
 
-- 🔲 Tambah rate limiting & account lockout untuk `POST /api/login` dan
+- ✅ Tambah rate limiting & account lockout untuk `POST /api/login` dan
   `POST /api/reports` guna mencegah brute-force.
 - 🔲 Evaluasi signed URL / access control untuk foto laporan & selfie
   (saat ini disimpan di disk `public`).
@@ -160,12 +160,12 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Backend
 
-- 🔲 Tambah unique constraint & transaksi pada proses generate jadwal untuk
+- ✅ Tambah unique constraint & transaksi pada proses generate jadwal untuk
   mencegah duplikasi saat berjalan bersamaan.
-- 🔲 Simpan state round-robin (`schedules:generate`) di database, bukan
+- ✅ Simpan state round-robin (`schedules:generate`) di database, bukan
   hanya variable runtime.
-- 🔲 Tambah soft delete pada `schedules`, `reports`, `attendances`.
-- 🔲 Tambah index: `schedules (user_id, date, status)` dan
+- ✅ Tambah soft delete pada `schedules`, `reports`, `attendances`.
+- ✅ Tambah index: `schedules (user_id, date, status)` dan
   `reports (created_at)`.
 - 🔲 Putuskan struktur penyimpanan foto (kolom langsung vs tabel `media`
   polymorphic) sebelum kebutuhan multi-foto per laporan muncul.
@@ -188,7 +188,7 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Backend
 
-- 🔲 Tambah API versioning (`/api/`) untuk mengantisipasi perubahan
+- ✅ Tambah API versioning (`/api/v1/`) untuk mengantisipasi perubahan
   breaking.
 - 🔲 Tambah observability: logging terstruktur, error tracking, monitoring
   uptime.
