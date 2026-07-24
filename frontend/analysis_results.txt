@@ -1,0 +1,59 @@
+Analyzing lib...
+
+  error - offline_queue_manager.dart:27:11 - The name 'databasePath' is already defined. Try renaming one of the declarations. - duplicate_definition
+           - The first definition of this name at offline_queue_manager.dart:26:11.
+warning - admin_dashboard_page.dart:1134:10 - A value for optional parameter 'showArrow' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - app_theme.dart:25:22 - The value of the field '_lightSurfaceLowest' isn't used. Try removing the field, or using it. - unused_field
+warning - home_page.dart:69:8 - The declaration '_handleLogout' isn't referenced. Try removing the declaration of '_handleLogout'. - unused_element
+warning - home_page.dart:91:8 - The declaration '_openCheckInDialog' isn't referenced. Try removing the declaration of '_openCheckInDialog'. - unused_element
+warning - home_page.dart:146:10 - The declaration '_formatDate' isn't referenced. Try removing the declaration of '_formatDate'. - unused_element
+warning - home_page_dashboard.dart:2:8 - Unused import: 'dart:math'. Try removing the import directive. - unused_import
+warning - home_page_dashboard.dart:3:8 - Unused import: 'package:geolocator/geolocator.dart'. Try removing the import directive. - unused_import
+warning - home_page_dashboard.dart:4:8 - Unused import: 'package:image_picker/image_picker.dart'. Try removing the import directive. - unused_import
+warning - offline_queue_manager.dart:27:11 - The value of the local variable 'databasePath' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - offline_queue_page.dart:4:8 - Unused import: 'dart:convert'. Try removing the import directive. - unused_import
+warning - task_detail_page.dart:2:8 - Unused import: 'dart:ui'. Try removing the import directive. - unused_import
+warning - task_detail_page.dart:35:9 - The value of the field '_scrollController' isn't used. Try removing the field, or using it. - unused_field
+warning - task_detail_page.dart:233:23 - The value of the field '_sigPoints' isn't used. Try removing the field, or using it. - unused_field
+warning - task_detail_page.dart:234:17 - The value of the field '_hasSig' isn't used. Try removing the field, or using it. - unused_field
+   info - activity_log_page.dart:448:35 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - admin_dashboard_page.dart:415:49 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:416:45 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:452:59 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:498:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:666:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:706:9 - Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter. - use_super_parameters
+   info - admin_dashboard_page.dart:756:40 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:791:9 - Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter. - use_super_parameters
+   info - admin_dashboard_page.dart:879:37 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:985:26 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:1039:9 - Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter. - use_super_parameters
+   info - admin_dashboard_page.dart:1082:32 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - admin_dashboard_page.dart:1155:34 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - environment_banner.dart:32:56 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - environment_banner.dart:82:33 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - environment_banner.dart:85:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:214:67 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:215:48 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:306:27 - Unnecessary braces in a string interpolation. Try removing the braces. - unnecessary_brace_in_string_interps
+   info - home_page.dart:430:62 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:478:40 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:480:58 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:710:9 - Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter. - use_super_parameters
+   info - home_page.dart:725:46 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:727:65 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:864:29 - Statements in a for should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+   info - home_page.dart:875:35 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:876:35 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:908:32 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:915:39 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:1057:41 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:1103:52 - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - home_page.dart:1394:25 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:61:26 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - notifications_page.dart:57:35 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - offline_queue_page.dart:201:37 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - profile_page.dart:436:19 - 'activeColor' is deprecated and shouldn't be used. Use activeThumbColor instead. This feature was deprecated after v3.31.0-2.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - task_detail_page.dart:4:8 - The import of 'package:flutter/rendering.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive. - unnecessary_import
+
+54 issues found.

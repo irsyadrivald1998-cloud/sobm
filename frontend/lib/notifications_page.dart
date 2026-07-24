@@ -54,7 +54,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           return ListView.separated(
             padding: const EdgeInsets.all(AppTheme.spMd),
             itemCount: notifications.length,
-            separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spSm),
+            separatorBuilder: (_, _) => const SizedBox(height: AppTheme.spSm),
             itemBuilder: (_, index) {
               return _NotificationTile(
                 notification: notifications[index],

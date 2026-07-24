@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:path/path.dart' as path;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'api_service.dart';
 
@@ -24,10 +24,10 @@ class OfflineQueueManager {
 
   Future<Database> _initDatabase() async {
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, 'offline_queue.db');
+    final p = path.join(databasePath, 'offline_queue.db');
 
     return await openDatabase(
-      path,
+      p,
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''

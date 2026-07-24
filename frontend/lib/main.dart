@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
           notifier: _notificationService,
           child: ListenableBuilder(
             listenable: _themeNotifier,
-            builder: (_, __) => MaterialApp(
+            builder: (_, _) => MaterialApp(
             title: 'SOBM Mobile Check-In',
             debugShowCheckedModeBanner: false,
             theme:      AppTheme.lightTheme,

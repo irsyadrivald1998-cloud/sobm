@@ -412,8 +412,8 @@ class _AdminHeader extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
-                          AppTheme.primaryBrand.withOpacity(0.3),
-                          AppTheme.tertiary.withOpacity(0.2),
+                          AppTheme.primaryBrand.withValues(alpha: 0.3),
+                          AppTheme.tertiary.withValues(alpha: 0.2),
                         ],
                       ),
                       border: Border.all(
@@ -449,7 +449,7 @@ class _AdminHeader extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppTheme.statusWarning.withOpacity(0.4),
+                            color: AppTheme.statusWarning.withValues(alpha: 0.4),
                             blurRadius: 8,
                           ),
                         ],
@@ -495,7 +495,7 @@ class _AdminHeader extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                   boxShadow: [
                     BoxShadow(
-                      color: AppTheme.primaryBrand.withOpacity(0.3),
+                      color: AppTheme.primaryBrand.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -663,7 +663,7 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: data.color.withOpacity(0.15),
+                  color: data.color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppTheme.radiusSm),
                 ),
                 child: Icon(data.icon, color: data.color, size: 20),
@@ -703,7 +703,7 @@ class _StatCard extends StatelessWidget {
 }
 
 class _WeeklyActivityChart extends StatelessWidget {
-  const _WeeklyActivityChart({Key? key}) : super(key: key);
+  const _WeeklyActivityChart();
 
   @override
   Widget build(BuildContext context) {
@@ -753,7 +753,7 @@ class _WeeklyActivityChart extends StatelessWidget {
             drawVerticalLine: false,
             horizontalInterval: 10,
             getDrawingHorizontalLine: (value) => FlLine(
-              color: cs.outlineVariant.withOpacity(0.3),
+              color: cs.outlineVariant.withValues(alpha: 0.3),
               strokeWidth: 0.5,
             ),
           ),
@@ -788,7 +788,7 @@ class _WeeklyActivityChart extends StatelessWidget {
 }
 
 class _QuickActionsGrid extends StatelessWidget {
-  const _QuickActionsGrid({Key? key}) : super(key: key);
+  const _QuickActionsGrid();
 
   @override
   Widget build(BuildContext context) {
@@ -876,7 +876,7 @@ class _QuickActionButton extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: action.color.withOpacity(0.15),
+                color: action.color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(action.icon, color: action.color, size: 24),
@@ -982,7 +982,7 @@ class _ProfileInfoRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(AppTheme.radiusSm),
           ),
           child: Icon(icon, color: color, size: 18),
@@ -1036,7 +1036,7 @@ class _SettingsCard extends StatelessWidget {
 }
 
 class _DividerLine extends StatelessWidget {
-  const _DividerLine({Key? key}) : super(key: key);
+  const _DividerLine();
 
   @override
   Widget build(BuildContext context) {
@@ -1079,7 +1079,7 @@ class _SwitchTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
+              color: iconColor.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -1131,8 +1131,7 @@ class _NavTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.showArrow = true,
-  });
+  }) : showArrow = true;
 
   @override
   Widget build(BuildContext context) {
@@ -1152,7 +1151,7 @@ class _NavTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.12),
+                color: iconColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -1187,3 +1186,4 @@ class _NavTile extends StatelessWidget {
     );
   }
 }
+

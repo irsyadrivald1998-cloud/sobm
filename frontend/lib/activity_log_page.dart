@@ -445,7 +445,7 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
             controller: _scrollController,
             padding: const EdgeInsets.all(AppTheme.spMd),
             itemCount: filteredEntries.length + (_isFetchingMore ? 1 : 0),
-            separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spSm),
+            separatorBuilder: (_, _) => const SizedBox(height: AppTheme.spSm),
             itemBuilder: (_, index) {
               if (index == filteredEntries.length) {
                 return const Center(child: Padding(

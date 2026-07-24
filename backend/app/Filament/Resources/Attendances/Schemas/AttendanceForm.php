@@ -36,17 +36,17 @@ class AttendanceForm
                     ->required(),
                 TimePicker::make('clock_in_time')
                     ->label('Jam Masuk')
-                    ->required(),
+                    ->required(fn ($get) => $get('status') !== 'Alpa'),
                 TimePicker::make('clock_out_time')
                     ->label('Jam Keluar'),
                 TextInput::make('clock_in_latitude')
                     ->label('Latitude Masuk')
                     ->numeric()
-                    ->required(),
+                    ->required(fn ($get) => $get('status') !== 'Alpa'),
                 TextInput::make('clock_in_longitude')
                     ->label('Longitude Masuk')
                     ->numeric()
-                    ->required(),
+                    ->required(fn ($get) => $get('status') !== 'Alpa'),
                 TextInput::make('clock_out_latitude')
                     ->label('Latitude Keluar')
                     ->numeric(),
@@ -57,7 +57,7 @@ class AttendanceForm
                     ->label('Foto Masuk')
                     ->image()
                     ->directory('attendances/clock_in')
-                    ->required(),
+                    ->required(fn ($get) => $get('status') !== 'Alpa'),
                 FileUpload::make('clock_out_photo_path')
                     ->label('Foto Keluar')
                     ->image()

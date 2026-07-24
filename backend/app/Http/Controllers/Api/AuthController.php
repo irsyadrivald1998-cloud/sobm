@@ -40,7 +40,7 @@ class AuthController extends Controller
 
         return ApiResponse::success([
             'user' => $user,
-            'token' => $user->createToken('mobile-app')->plainTextToken,
+            'token' => $user->createToken('mobile-app', ['*'], now()->addDays(7))->plainTextToken,
         ], 'Login berhasil.');
     }
 

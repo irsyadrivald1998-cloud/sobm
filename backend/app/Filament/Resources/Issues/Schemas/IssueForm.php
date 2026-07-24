@@ -20,23 +20,32 @@ class IssueForm
                 Textarea::make('issue_description')
                     ->required()
                     ->columnSpanFull(),
-                Toggle::make('is_resolved')
+                Select::make('status')
+                    ->options([
+                        'open' => 'Open',
+                        'in-progress' => 'In Progress',
+                        'resolved' => 'Resolved',
+                    ])
                     ->required()
                     ->live(),
+                Toggle::make('is_resolved')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(false),
                 Textarea::make('resolution_notes')
                     ->label('Catatan Penyelesaian')
-                    ->visible(fn ($get) => $get('is_resolved'))
-                    ->required(fn ($get) => $get('is_resolved'))
+                    ->visible(fn ($get) => $get('status') === 'resolved')
+                    ->required(fn ($get) => $get('status') === 'resolved')
                     ->columnSpanFull(),
                 DateTimePicker::make('resolved_at')
                     ->label('Diselesaikan Pada')
                     ->disabled()
-                    ->visible(fn ($get) => $get('is_resolved')),
+                    ->visible(fn ($get) => $get('status') === 'resolved'),
                 Select::make('resolved_by')
                     ->label('Diselesaikan Oleh')
                     ->relationship('resolvedBy', 'name')
                     ->disabled()
-                    ->visible(fn ($get) => $get('is_resolved')),
+                    ->visible(fn ($get) => $get('status') === 'resolved'),
             ]);
     }
 }

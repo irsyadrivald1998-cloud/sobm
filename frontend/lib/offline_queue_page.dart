@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'offline_queue_manager.dart';
-import 'dart:convert';
 
 class OfflineQueuePage extends StatefulWidget {
   const OfflineQueuePage({super.key});
@@ -198,7 +197,7 @@ class _OfflineQueuePageState extends State<OfflineQueuePage> {
             child: ListView.separated(
               padding: const EdgeInsets.all(AppTheme.spMd),
               itemCount: _queueItems.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spSm),
+              separatorBuilder: (_, _) => const SizedBox(height: AppTheme.spSm),
               itemBuilder: (_, index) => _QueueItemTile(
                 item: _queueItems[index],
                 onDelete: () async {

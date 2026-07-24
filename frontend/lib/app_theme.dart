@@ -22,7 +22,6 @@ class AppTheme {
   // ── Light Colors ──────────────────────────────────────────────────────────
   static const Color _lightBackground       = Color(0xFFFFF8F7);
   static const Color _lightSurface          = Color(0xFFFFFFFF);
-  static const Color _lightSurfaceLowest    = Color(0xFFFFFFFF);
   static const Color _lightSurfaceLow       = Color(0xFFFFF0EE);
   static const Color _lightSurfaceHigh      = Color(0xFFF5E0DE);
   static const Color _lightOnSurface        = Color(0xFF2C0A09);

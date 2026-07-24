@@ -1,0 +1,119 @@
+Analyzing lib...
+
+  error - admin_dashboard_page.dart:706:44 - The class 'StatelessWidget' doesn't have a constructor named 'key'. Try defining a constructor named 'key' in 'StatelessWidget', or invoking a different constructor. - undefined_constructor_in_initializer
+  error - admin_dashboard_page.dart:706:53 - Expected to find '('. - expected_token
+  error - admin_dashboard_page.dart:791:41 - The class 'StatelessWidget' doesn't have a constructor named 'key'. Try defining a constructor named 'key' in 'StatelessWidget', or invoking a different constructor. - undefined_constructor_in_initializer
+  error - admin_dashboard_page.dart:791:50 - Expected to find '('. - expected_token
+  error - admin_dashboard_page.dart:1039:36 - The class 'StatelessWidget' doesn't have a constructor named 'key'. Try defining a constructor named 'key' in 'StatelessWidget', or invoking a different constructor. - undefined_constructor_in_initializer
+  error - admin_dashboard_page.dart:1039:45 - Expected to find '('. - expected_token
+  error - api_service.dart:37:36 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - api_service.dart:52:16 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:82:13 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - api_service.dart:88:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:152:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:179:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:220:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:270:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:326:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:352:13 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - api_service.dart:355:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:402:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:425:13 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - api_service.dart:428:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:461:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:469:40 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - api_service.dart:497:13 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - api_service.dart:504:26 - The method 'jsonDecode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - api_service.dart:512:40 - The method 'jsonEncode' isn't defined for the type 'ApiService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - home_page.dart:707:39 - The class 'StatelessWidget' doesn't have a constructor named 'key'. Try defining a constructor named 'key' in 'StatelessWidget', or invoking a different constructor. - undefined_constructor_in_initializer
+  error - home_page.dart:707:48 - Expected to find '('. - expected_token
+  error - home_page.dart:1164:28 - The method 'ImagePicker' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'ImagePicker'. - undefined_method
+  error - home_page.dart:1167:3 - Undefined class 'Position'. Try changing the name to the name of an existing class, or creating a class with the name 'Position'. - undefined_class
+  error - home_page.dart:1171:3 - Undefined class 'XFile'. Try changing the name to the name of an existing class, or creating a class with the name 'XFile'. - undefined_class
+  error - home_page.dart:1186:35 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1187:35 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1188:15 - The method 'sin' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - home_page.dart:1188:31 - The method 'sin' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - home_page.dart:1189:9 - The method 'cos' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'cos'. - undefined_method
+  error - home_page.dart:1189:21 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1189:34 - The method 'cos' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'cos'. - undefined_method
+  error - home_page.dart:1189:46 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1190:9 - The method 'sin' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - home_page.dart:1190:25 - The method 'sin' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - home_page.dart:1191:20 - The method 'atan2' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'atan2'. - undefined_method
+  error - home_page.dart:1191:26 - The method 'sqrt' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'sqrt'. - undefined_method
+  error - home_page.dart:1191:35 - The method 'sqrt' isn't defined for the type '_CheckInDialogState'. Try correcting the name to the name of an existing method, or defining a method named 'sqrt'. - undefined_method
+  error - home_page.dart:1197:18 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1198:24 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1199:19 - Undefined name 'LocationPermission'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1199:59 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1200:19 - Undefined name 'LocationPermission'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1200:56 - Undefined name 'LocationPermission'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1203:25 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1203:72 - Undefined name 'LocationAccuracy'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - home_page.dart:1218:53 - Undefined name 'ImageSource'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - leave_submission_page.dart:21:3 - Undefined class 'XFile'. Try changing the name to the name of an existing class, or creating a class with the name 'XFile'. - undefined_class
+  error - leave_submission_page.dart:32:13 - Undefined class 'ImagePicker'. Try changing the name to the name of an existing class, or creating a class with the name 'ImagePicker'. - undefined_class
+  error - leave_submission_page.dart:32:34 - The method 'ImagePicker' isn't defined for the type '_LeaveSubmissionPageState'. Try correcting the name to the name of an existing method, or defining a method named 'ImagePicker'. - undefined_method
+  error - leave_submission_page.dart:33:13 - Undefined class 'XFile'. Try changing the name to the name of an existing class, or creating a class with the name 'XFile'. - undefined_class
+  error - leave_submission_page.dart:34:17 - Undefined name 'ImageSource'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - my_tasks_page.dart:479:20 - The method 'ImagePicker' isn't defined for the type '_TaskDetailInputPageState'. Try correcting the name to the name of an existing method, or defining a method named 'ImagePicker'. - undefined_method
+  error - my_tasks_page.dart:481:15 - Undefined name 'ImageSource'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - my_tasks_page.dart:519:30 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - my_tasks_page.dart:520:26 - Undefined name 'LocationAccuracy'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - notification_service.dart:105:50 - The method 'jsonDecode' isn't defined for the type 'NotificationService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - notification_service.dart:130:23 - The method 'jsonEncode' isn't defined for the type 'NotificationService'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - offline_queue_manager.dart:59:18 - The method 'jsonEncode' isn't defined for the type 'OfflineQueueManager'. Try correcting the name to the name of an existing method, or defining a method named 'jsonEncode'. - undefined_method
+  error - offline_queue_manager.dart:60:44 - The method 'base64Encode' isn't defined for the type 'OfflineQueueManager'. Try correcting the name to the name of an existing method, or defining a method named 'base64Encode'. - undefined_method
+  error - offline_queue_manager.dart:156:23 - The method 'jsonDecode' isn't defined for the type 'OfflineQueueManager'. Try correcting the name to the name of an existing method, or defining a method named 'jsonDecode'. - undefined_method
+  error - offline_queue_manager.dart:195:46 - The method 'base64Decode' isn't defined for the type 'OfflineQueueManager'. Try correcting the name to the name of an existing method, or defining a method named 'base64Decode'. - undefined_method
+  error - offline_queue_manager.dart:222:46 - The method 'base64Decode' isn't defined for the type 'OfflineQueueManager'. Try correcting the name to the name of an existing method, or defining a method named 'base64Decode'. - undefined_method
+  error - profile_page.dart:58:47 - The name 'ImageSource' isn't a type, so it can't be used as a type argument. Try correcting the name to an existing type, or defining a type named 'ImageSource'. - non_type_as_type_argument
+  error - profile_page.dart:82:54 - Undefined name 'ImageSource'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - profile_page.dart:87:54 - Undefined name 'ImageSource'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - profile_page.dart:100:36 - Undefined class 'ImageSource'. Try changing the name to the name of an existing class, or creating a class with the name 'ImageSource'. - undefined_class
+  error - profile_page.dart:102:22 - The method 'ImagePicker' isn't defined for the type '_ProfilePageState'. Try correcting the name to the name of an existing method, or defining a method named 'ImagePicker'. - undefined_method
+  error - task_detail_page.dart:211:25 - The method 'ImagePicker' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'ImagePicker'. - undefined_method
+  error - task_detail_page.dart:224:3 - Undefined class 'Position'. Try changing the name to the name of an existing class, or creating a class with the name 'Position'. - undefined_class
+  error - task_detail_page.dart:299:18 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:302:24 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:303:19 - Undefined name 'LocationPermission'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:304:22 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:306:19 - Undefined name 'LocationPermission'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:307:19 - Undefined name 'LocationPermission'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:310:25 - Undefined name 'Geolocator'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:311:28 - Undefined name 'LocationAccuracy'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:318:46 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:319:47 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:320:19 - The method 'sin' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - task_detail_page.dart:320:35 - The method 'sin' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - task_detail_page.dart:321:13 - The method 'cos' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'cos'. - undefined_method
+  error - task_detail_page.dart:321:33 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:321:46 - The method 'cos' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'cos'. - undefined_method
+  error - task_detail_page.dart:321:57 - Undefined name 'pi'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - task_detail_page.dart:322:13 - The method 'sin' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - task_detail_page.dart:322:29 - The method 'sin' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'sin'. - undefined_method
+  error - task_detail_page.dart:323:24 - The method 'atan2' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'atan2'. - undefined_method
+  error - task_detail_page.dart:323:30 - The method 'sqrt' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'sqrt'. - undefined_method
+  error - task_detail_page.dart:323:39 - The method 'sqrt' isn't defined for the type '_WorkOrderDetailState'. Try correcting the name to the name of an existing method, or defining a method named 'sqrt'. - undefined_method
+  error - task_detail_page.dart:336:17 - Undefined name 'ImageSource'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+warning - admin_dashboard_page.dart:706:36 - A value for optional parameter 'key' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - admin_dashboard_page.dart:791:33 - A value for optional parameter 'key' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - admin_dashboard_page.dart:1039:28 - A value for optional parameter 'key' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - api_service.dart:182:62 - Dead code. Try removing the code, or fixing the code before it so that it can be reached. - dead_code
+warning - home_page.dart:66:8 - The declaration '_handleLogout' isn't referenced. Try removing the declaration of '_handleLogout'. - unused_element
+warning - home_page.dart:88:8 - The declaration '_openCheckInDialog' isn't referenced. Try removing the declaration of '_openCheckInDialog'. - unused_element
+warning - home_page.dart:143:10 - The declaration '_formatDate' isn't referenced. Try removing the declaration of '_formatDate'. - unused_element
+warning - home_page.dart:189:11 - The value of the local variable 'pendingCount' isn't used. Try removing the variable or using it. - unused_local_variable
+warning - home_page.dart:707:31 - A value for optional parameter 'key' isn't ever given. Try removing the unused parameter. - unused_element_parameter
+warning - task_detail_page.dart:31:9 - The value of the field '_scrollController' isn't used. Try removing the field, or using it. - unused_field
+warning - task_detail_page.dart:229:23 - The value of the field '_sigPoints' isn't used. Try removing the field, or using it. - unused_field
+warning - task_detail_page.dart:230:17 - The value of the field '_hasSig' isn't used. Try removing the field, or using it. - unused_field
+   info - activity_log_page.dart:448:35 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - home_page.dart:861:29 - Statements in a for should be enclosed in a block. Try wrapping the statement in a block. - curly_braces_in_flow_control_structures
+   info - home_page.dart:1391:25 - 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement. - deprecated_member_use
+   info - main.dart:61:26 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - notifications_page.dart:57:35 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+   info - offline_queue_page.dart:200:37 - Unnecessary use of multiple underscores. Try using '_'. - unnecessary_underscores
+
+115 issues found.

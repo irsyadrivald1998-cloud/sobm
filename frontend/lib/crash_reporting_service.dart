@@ -101,8 +101,7 @@ class CrashReportingService {
 
       // In production, send to server here
       if (!AppConfig.isDebug) {
-        // TODO: Send crash report to backend
-        // await _sendToServer(buffer.toString());
+  
       }
     } catch (e) {
       debugPrint('Failed to log error: $e');

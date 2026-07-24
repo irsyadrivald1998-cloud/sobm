@@ -28,7 +28,7 @@ class OperationalTest extends TestCase
             'role' => 'housekeeping',
         ]);
 
-        $response = $this->postJson('/api/v1/login', [
+        $response = $this->postJson('/api/login', [
             'employee_id' => 'emp_123',
             'password' => 'secret_pass',
         ]);
@@ -52,7 +52,7 @@ class OperationalTest extends TestCase
             'role' => 'housekeeping',
         ]);
 
-        $response = $this->postJson('/api/v1/login', [
+        $response = $this->postJson('/api/login', [
             'employee_id' => 'emp_123',
             'password' => 'wrong_pass',
         ]);
@@ -145,7 +145,7 @@ class OperationalTest extends TestCase
 
         // Inside radius (exact coordinate)
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/reports', [
+            ->postJson('/api/reports', [
                 'schedule_id' => $schedule->id,
                 'check_in_latitude' => -0.9432,
                 'check_in_longitude' => 100.3539,
@@ -199,7 +199,7 @@ class OperationalTest extends TestCase
 
         // Outside radius (far coordinate)
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/reports', [
+            ->postJson('/api/reports', [
                 'schedule_id' => $schedule->id,
                 'check_in_latitude' => -1.9432,
                 'check_in_longitude' => 101.3539,
@@ -247,7 +247,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/reports', [
+            ->postJson('/api/reports', [
                 'schedule_id' => $schedule->id,
                 'check_in_latitude' => -0.9432,
                 'check_in_longitude' => 100.3539,
@@ -272,7 +272,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/reports');
+            ->getJson('/api/reports');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -294,7 +294,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/reports?date=' . now()->toDateString());
+            ->getJson('/api/reports?date=' . now()->toDateString());
 
         $response->assertStatus(200);
     }
@@ -305,7 +305,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/reports?role=housekeeping');
+            ->getJson('/api/reports?role=housekeeping');
 
         $response->assertStatus(200);
     }
@@ -325,7 +325,7 @@ class OperationalTest extends TestCase
         ]);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/reports?checkpoint_id=' . $checkpoint->id);
+            ->getJson('/api/reports?checkpoint_id=' . $checkpoint->id);
 
         $response->assertStatus(200);
     }
@@ -336,7 +336,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/reports?condition_status=Aman/Bersih');
+            ->getJson('/api/reports?condition_status=Aman/Bersih');
 
         $response->assertStatus(200);
     }
@@ -349,7 +349,7 @@ class OperationalTest extends TestCase
         $since = now()->subHour()->toDateTimeString();
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/reports?since=' . $since);
+            ->getJson('/api/reports?since=' . $since);
 
         $response->assertStatus(200);
     }
@@ -363,7 +363,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/attendance/clock-in', [
+            ->postJson('/api/attendance/clock-in', [
                 'latitude' => -0.9432,
                 'longitude' => 100.3539,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -381,7 +381,7 @@ class OperationalTest extends TestCase
 
         // Try to clock out without clocking in
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/attendance/clock-out', [
+            ->postJson('/api/attendance/clock-out', [
                 'latitude' => -0.9432,
                 'longitude' => 100.3539,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -396,7 +396,7 @@ class OperationalTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/v1/attendance/today');
+            ->getJson('/api/attendance/today');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -440,7 +440,7 @@ class OperationalTest extends TestCase
 
         // Missing work_description
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/reports', [
+            ->postJson('/api/reports', [
                 'schedule_id' => $schedule->id,
                 'check_in_latitude' => -0.9432,
                 'check_in_longitude' => 100.3539,
@@ -484,7 +484,7 @@ class OperationalTest extends TestCase
 
         // Missing photo
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/reports', [
+            ->postJson('/api/reports', [
                 'schedule_id' => $schedule->id,
                 'check_in_latitude' => -0.9432,
                 'check_in_longitude' => 100.3539,
@@ -528,7 +528,7 @@ class OperationalTest extends TestCase
 
         // Invalid file type (PDF instead of image)
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/v1/reports', [
+            ->postJson('/api/reports', [
                 'schedule_id' => $schedule->id,
                 'check_in_latitude' => -0.9432,
                 'check_in_longitude' => 100.3539,

@@ -29,6 +29,10 @@ class UserForm
                         'housekeeping' => 'Housekeeping',
                         'teknisi' => 'Teknisi',
                         'security' => 'Security',
+                        'osb' => 'OSB',
+                        'resepsionis' => 'Resepsionis',
+                        'bm' => 'BM',
+                        'user' => 'User',
                     ])
                     ->required(),
             ]);

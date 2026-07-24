@@ -17,6 +17,16 @@ class IssueController extends Controller
             'resolution_notes' => 'required_if:status,resolved|string|nullable',
         ]);
 
+        // Additional business logic validation
+        if ($request->status === 'resolved' && $issue->status === 'resolved') {
+            return ApiResponse::error('Issue sudah dalam status resolved.', 422);
+        }
+
+        if ($request->status !== 'resolved' && empty($request->resolution_notes) && $issue->status === 'resolved') {
+            // Un-resolving issue, ensure we clear notes in request so they get wiped out
+            $request->merge(['resolution_notes' => null]);
+        }
+
         $issue->update([
             'status' => $request->status,
             'resolution_notes' => $request->resolution_notes,

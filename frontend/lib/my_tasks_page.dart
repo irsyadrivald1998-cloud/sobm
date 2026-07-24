@@ -511,8 +511,8 @@ class _TaskDetailInputPageState extends State<TaskDetailInputPage> {
     }
 
     // Get providers BEFORE async operations
-    final notificationService = NotificationProvider.maybeOf(context);
-    final activityLogNotifier = ActivityLogProvider.maybeOf(context);
+    final notificationService = NotificationProvider.of(context);
+    final activityLogNotifier = ActivityLogProvider.of(context);
 
     setState(() => _isSubmitting = true);
 
@@ -541,14 +541,14 @@ class _TaskDetailInputPageState extends State<TaskDetailInputPage> {
       );
 
       // Trigger notification
-      if (mounted && notificationService != null) {
+      if (mounted) {
         notificationService.notifyNewReport(
           'Tugas "${widget.task['checkpoint']['name']}" telah diselesaikan',
         );
       }
 
       // Update activity log
-      if (mounted && activityLogNotifier != null) {
+      if (mounted) {
         activityLogNotifier.pushReport(
           reportData: reportData,
           schedule: widget.task,

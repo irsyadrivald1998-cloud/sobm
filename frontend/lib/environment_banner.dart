@@ -29,7 +29,7 @@ class EnvironmentBanner extends StatelessWidget {
           child: IgnorePointer(
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-              color: Color(AppConfig.environmentColor).withOpacity(0.8),
+              color: Color(AppConfig.environmentColor).withValues(alpha: 0.8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
@@ -79,10 +79,10 @@ class EnvironmentSettingsIndicator extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.surface.withOpacity(0.8),
+        color: AppTheme.surface.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Color(AppConfig.environmentColor).withOpacity(0.5),
+          color: Color(AppConfig.environmentColor).withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -168,3 +168,4 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
