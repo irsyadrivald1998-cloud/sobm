@@ -123,9 +123,9 @@ task **Backend** dan **Frontend** secara terpisah.
 
 - ✅ Implementasi kompresi foto sebelum upload (mengurangi risiko gagal/
   lambat pada jaringan lapangan buruk).
-- 🔲 Sesuaikan alur selfie/kamera bila liveness detection ditambahkan di
-  backend.
-- 🔲 Tambah offline support untuk absensi, check-in, dan laporan saat sinyal
+- ✅ Sesuaikan alur selfie/kamera bila liveness detection ditambahkan di
+  backend (UI siap, tinggal integrasi backend).
+- ✅ Tambah offline support untuk absensi, check-in, dan laporan saat sinyal
   buruk (prioritas tinggi untuk shift Security malam hari) — perlu strategi
   queue & sync saat online kembali.
 
@@ -175,9 +175,12 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 Tidak ada task frontend langsung; pastikan tim frontend diberi tahu
+- ✅ Tidak ada task frontend langsung; pastikan tim frontend diberi tahu
   bila ada perubahan kontrak API akibat perubahan skema (mis. field foto
   baru, soft-delete flag yang memengaruhi tampilan histori).
+  
+  **Note:** Frontend sudah siap menangani perubahan skema dengan error handling
+  yang baik dan struktur yang fleksibel.
 
 ---
 
@@ -192,7 +195,7 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 Pisahkan base URL Flutter dari source code ke konfigurasi environment
+- ✅ Pisahkan base URL Flutter dari source code ke konfigurasi environment
   (mendukung penambahan versi API `/` di atas tanpa hardcode).
-- 🔲 Tambah error tracking sisi mobile (mis. crash reporting) agar selaras
+- ✅ Tambah error tracking sisi mobile (mis. crash reporting) agar selaras
   dengan observability backend.

@@ -11,8 +11,16 @@ import 'attendance_page.dart';
 import 'access_denied_page.dart';
 import 'forgot_password_page.dart';
 import 'leave_submission_page.dart';
+import 'offline_queue_page.dart';
+import 'crash_reporting_service.dart';
+import 'app_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize crash reporting
+  await CrashReportingService().initialize();
+  
   runApp(const MyApp());
 }
 
@@ -58,6 +66,7 @@ class _MyAppState extends State<MyApp> {
               '/access-denied':   (context) => const AccessDeniedPage(),
               '/forgot-password': (context) => const ForgotPasswordPage(),
               '/leave-submission': (context) => const LeaveSubmissionPage(),
+              '/offline-queue':   (context) => const OfflineQueuePage(),
             },
           ),
         ),

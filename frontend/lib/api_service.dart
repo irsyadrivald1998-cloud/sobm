@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'app_config.dart';
 
 class ApiService {
   static const String keyToken = 'auth_token';
@@ -9,10 +10,7 @@ class ApiService {
   static const String keyBaseUrl = 'api_base_url';
 
   // Default fallbacks based on platform/environment
-  static String get defaultBaseUrl => const String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: 'https://949f-114-10-94-177.ngrok-free.app/api',
-      );
+  static String get defaultBaseUrl => AppConfig.apiBaseUrl;
 
   // Get active API Base URL
   Future<String> getBaseUrl() async {
