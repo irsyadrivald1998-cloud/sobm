@@ -10,29 +10,29 @@ use App\Http\Responses\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('v1')->group(function () {
-    Route::post('/login', [AuthController::class, 'login'])->middleware('login_rate_limit');
+// Remove v1 prefix - routes now at /api/* directly
+Route::post('/login', [AuthController::class, 'login'])->middleware('login_rate_limit');
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/user', function (Request $request) {
-            return ApiResponse::success($request->user(), 'OK');
-        });
-
-        // Worker routes
-        Route::middleware(['can_access_worker_api', 'report_rate_limit'])->group(function () {
-            Route::get('/schedules', [ScheduleController::class, 'index']);
-            Route::post('/reports', [ReportController::class, 'store']);
-
-            // Attendance
-            Route::get('/attendance/today', [AttendanceController::class, 'today']);
-            Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
-            Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
-            Route::patch('/issues/{issue}/status', [IssueController::class, 'updateStatus']);
-            Route::post('/leave-submissions', [LeaveSubmissionController::class, 'store']);
-        });
-
-        // Reports endpoint - accessible by both worker and user roles
-        Route::get('/reports', [ReportController::class, 'index']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', function (Request $request) {
+        return ApiResponse::success($request->user(), 'OK');
     });
+
+    // Worker routes
+    Route::middleware(['can_access_worker_api', 'report_rate_limit'])->group(function () {
+        Route::get('/schedules', [ScheduleController::class, 'index']);
+        Route::post('/reports', [ReportController::class, 'store']);
+
+        // Attendance
+        Route::get('/attendance/today', [AttendanceController::class, 'today']);
+        Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
+        Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
+        Route::patch('/issues/{issue}/status', [IssueController::class, 'updateStatus']);
+        Route::post('/leave-submissions', [LeaveSubmissionController::class, 'store']);
+    });
+
+    // Reports endpoint - accessible by both worker and user roles
+    Route::get('/reports', [ReportController::class, 'index']);
 });
+
