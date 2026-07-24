@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'activity_log_notifier.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
-import 'main.dart' show ActivityLogProvider;
+import 'main.dart' show ActivityLogProvider, NotificationProvider;
 
 class ActivityLogPage extends StatefulWidget {
   const ActivityLogPage({super.key});
@@ -87,6 +87,12 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
         
         // Show notification if there are new entries
         if (newEntriesCount > 0 && _lastEntryCount > 0) {
+          // Trigger notification service
+          final notificationService = NotificationProvider.of(context);
+          notificationService.notifyNewReport(
+            '$newEntriesCount aktivitas baru dari rekan kerja',
+          );
+          
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
+import 'main.dart' show ThemeProvider;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -233,6 +234,62 @@ class _ProfilePageState extends State<ProfilePage> {
           // Quick Actions
           Text('Pengaturan', style: AppTheme.headlineSm),
           const SizedBox(height: AppTheme.spMd),
+
+          // Theme Toggle - LIGHT MODE SWITCH
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spMd),
+            decoration: BoxDecoration(
+              color: AppTheme.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.spSm),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBrand.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: const Icon(
+                    Icons.brightness_6,
+                    size: 20,
+                    color: AppTheme.primaryBrand,
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mode Terang',
+                        style: AppTheme.bodyMd.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        ThemeProvider.of(context).isLight ? 'Aktif' : 'Nonaktif',
+                        style: AppTheme.labelSm.copyWith(
+                          color: AppTheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: ThemeProvider.of(context).isLight,
+                  onChanged: (value) {
+                    ThemeProvider.of(context).toggle();
+                  },
+                  activeColor: AppTheme.primaryBrand,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppTheme.spSm),
 
           _ActionButton(
             icon: Icons.lock_outline,

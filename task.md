@@ -85,6 +85,11 @@ task **Backend** dan **Frontend** secara terpisah.
   filter tersedia.
 - ✅ Notifikasi in-app untuk aktivitas laporan baru (menyesuaikan mekanisme
   polling/realtime dari backend).
+- ✅ **Light mode toggle**: Fitur toggle mode terang/gelap di halaman profile
+  dengan default mode terang untuk seluruh aplikasi.
+- ✅ **Sistem notifikasi**: Notification service dengan badge unread count di
+  icon notifikasi, halaman daftar notifikasi dengan dismiss/delete, dan 
+  integrasi dengan activity log untuk notifikasi aktivitas baru.
 
 ---
 

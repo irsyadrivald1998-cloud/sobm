@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
-import 'main.dart' show ActivityLogProvider;
+import 'main.dart' show ActivityLogProvider, NotificationProvider;
 import 'task_detail_page.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -226,20 +226,50 @@ class _HomePageState extends State<HomePage> {
             ),
             centerTitle: true,
             actions: [
-              IconButton(
-                icon: Stack(clipBehavior: Clip.none, children: [
-                  const Icon(Icons.notifications_outlined, color: AppTheme.onSurface, size: 26),
-                  Positioned(
-                    right: -2, top: -2,
-                    child: Container(
-                      width: 8, height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.alertCritical, shape: BoxShape.circle,
-                      ),
+              // Notification bell with badge
+              ListenableBuilder(
+                listenable: NotificationProvider.of(context),
+                builder: (context, _) {
+                  final notificationService = NotificationProvider.of(context);
+                  final unreadCount = notificationService.unreadCount;
+                  
+                  return IconButton(
+                    icon: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.notifications_outlined, color: AppTheme.onSurface, size: 26),
+                        if (unreadCount > 0)
+                          Positioned(
+                            right: -2,
+                            top: -2,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: AppTheme.alertCritical,
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                unreadCount > 9 ? '9+' : '$unreadCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                ]),
-                onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/notifications');
+                    },
+                  );
+                },
               ),
               const SizedBox(width: 4),
             ],

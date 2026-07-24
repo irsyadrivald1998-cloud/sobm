@@ -13,13 +13,17 @@ import 'forgot_password_page.dart';
 import 'leave_submission_page.dart';
 import 'offline_queue_page.dart';
 import 'crash_reporting_service.dart';
-import 'app_config.dart';
+import 'notification_service.dart';
+import 'notifications_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize crash reporting
   await CrashReportingService().initialize();
+  
+  // Initialize notification service
+  await NotificationService().initialize();
   
   runApp(const MyApp());
 }
@@ -33,11 +37,13 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final ActivityLogNotifier _logNotifier   = ActivityLogNotifier();
   final ThemeNotifier        _themeNotifier = ThemeNotifier();
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void dispose() {
     _logNotifier.dispose();
     _themeNotifier.dispose();
+    _notificationService.dispose();
     super.dispose();
   }
 
@@ -47,9 +53,11 @@ class _MyAppState extends State<MyApp> {
       notifier: _logNotifier,
       child: ThemeProvider(
         notifier: _themeNotifier,
-        child: ListenableBuilder(
-          listenable: _themeNotifier,
-          builder: (_, __) => MaterialApp(
+        child: NotificationProvider(
+          notifier: _notificationService,
+          child: ListenableBuilder(
+            listenable: _themeNotifier,
+            builder: (_, __) => MaterialApp(
             title: 'SOBM Mobile Check-In',
             debugShowCheckedModeBanner: false,
             theme:      AppTheme.lightTheme,
@@ -67,7 +75,9 @@ class _MyAppState extends State<MyApp> {
               '/forgot-password': (context) => const ForgotPasswordPage(),
               '/leave-submission': (context) => const LeaveSubmissionPage(),
               '/offline-queue':   (context) => const OfflineQueuePage(),
+              '/notifications':   (context) => const NotificationsPage(),
             },
+            ),
           ),
         ),
       ),
@@ -101,6 +111,20 @@ class ThemeProvider extends InheritedNotifier<ThemeNotifier> {
   static ThemeNotifier of(BuildContext context) {
     final p = context.dependOnInheritedWidgetOfExactType<ThemeProvider>();
     assert(p != null, 'No ThemeProvider found');
+    return p!.notifier!;
+  }
+}
+
+class NotificationProvider extends InheritedNotifier<NotificationService> {
+  const NotificationProvider({
+    super.key,
+    required NotificationService notifier,
+    required super.child,
+  }) : super(notifier: notifier);
+
+  static NotificationService of(BuildContext context) {
+    final p = context.dependOnInheritedWidgetOfExactType<NotificationProvider>();
+    assert(p != null, 'No NotificationProvider found');
     return p!.notifier!;
   }
 }
