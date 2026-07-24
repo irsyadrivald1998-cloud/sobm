@@ -152,18 +152,21 @@ class _NotificationTile extends StatelessWidget {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          onTap(); // Mark as read
+          _handleNotificationTap(context, notification);
+        },
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         child: Container(
           padding: const EdgeInsets.all(AppTheme.spMd),
           decoration: BoxDecoration(
             color: notification.isRead 
-                ? AppTheme.surface 
+                ? Theme.of(context).colorScheme.surface
                 : AppTheme.primaryBrand.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             border: Border.all(
               color: notification.isRead 
-                  ? AppTheme.outlineVariant 
+                  ? Theme.of(context).colorScheme.outlineVariant
                   : AppTheme.primaryBrand.withValues(alpha: 0.3),
               width: notification.isRead ? 0.5 : 1.5,
             ),
@@ -197,7 +200,7 @@ class _NotificationTile extends StatelessWidget {
                               fontWeight: notification.isRead 
                                   ? FontWeight.w600 
                                   : FontWeight.w700,
-                              color: AppTheme.onSurface,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -216,7 +219,7 @@ class _NotificationTile extends StatelessWidget {
                     Text(
                       notification.body,
                       style: AppTheme.bodyMd.copyWith(
-                        color: AppTheme.onSurfaceVariant,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -234,6 +237,43 @@ class _NotificationTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleNotificationTap(BuildContext context, AppNotification notification) {
+    // Get schedule ID from notification data
+    final data = notification.data;
+    final scheduleId = data?['schedule_id'] as int?;
+
+    // Navigate based on notification type
+    switch (notification.type) {
+      case NotificationType.schedule:
+      case NotificationType.reminder:
+        // Navigate to My Tasks page with optional schedule ID
+        if (scheduleId != null) {
+          // Navigate to My Tasks page, which will highlight the specific task
+          Navigator.of(context).pushNamed(
+            '/my-tasks',
+            arguments: {'scheduleId': scheduleId},
+          );
+        } else {
+          Navigator.of(context).pushNamed('/my-tasks');
+        }
+        break;
+        
+      case NotificationType.issue:
+        // Navigate to activity log (issues shown there)
+        Navigator.of(context).pushNamed('/activity-log');
+        break;
+        
+      case NotificationType.report:
+        // Navigate to activity log
+        Navigator.of(context).pushNamed('/activity-log');
+        break;
+        
+      case NotificationType.system:
+        // No specific navigation for system notifications
+        break;
+    }
   }
 
   IconData _getTypeIcon(NotificationType type) {

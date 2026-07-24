@@ -333,10 +333,10 @@ class _HomePageState extends State<HomePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
               child: _QuickActions(
-                onBuatLaporan: () => _openTaskDetail(),
-                onScanQR: () => _openTaskDetail(),
+                onBuatLaporan: () => Navigator.of(context).pushNamed('/my-tasks'),
+                onScanQR: () => Navigator.of(context).pushNamed('/my-tasks'),
                 onMonitoring: () {},
-                onJadwalTugas: () => _openTaskDetail(),
+                onJadwalTugas: () => Navigator.of(context).pushNamed('/my-tasks'),
               ),
             ),
           ),

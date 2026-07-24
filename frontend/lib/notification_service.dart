@@ -141,12 +141,62 @@ class NotificationService extends ChangeNotifier {
       // Check for upcoming schedules
       final schedules = await _apiService.getSchedules();
       _checkUpcomingSchedules(schedules);
+      _checkNewSchedules(schedules);
       
       // Check for new reports (from activity log)
       // This is already handled by activity_log_page polling
       
     } catch (e) {
       debugPrint('Error checking notifications: $e');
+    }
+  }
+
+  void _checkNewSchedules(List<dynamic> schedules) {
+    final now = DateTime.now();
+    
+    for (final schedule in schedules) {
+      final status = schedule['status'] as String?;
+      // Only notify for pending tasks
+      if (status != 'pending') continue;
+      
+      final shiftDate = schedule['shift_date'] as String?;
+      if (shiftDate == null) continue;
+      
+      try {
+        final dateTime = DateTime.parse(shiftDate);
+        
+        // Notify if schedule is for today or tomorrow
+        final isToday = dateTime.year == now.year && 
+                       dateTime.month == now.month && 
+                       dateTime.day == now.day;
+        final isTomorrow = dateTime.difference(now).inDays == 0 &&
+                          dateTime.day == now.add(const Duration(days: 1)).day;
+        
+        if (isToday || isTomorrow) {
+          final checkpoint = schedule['checkpoint'] as Map<String, dynamic>? ?? {};
+          final checkpointName = checkpoint['name'] ?? 'Checkpoint';
+          
+          final notifId = 'schedule_new_${schedule['id']}_${dateTime.toIso8601String().split('T')[0]}';
+          
+          // Check if notification already exists
+          if (!_notifications.any((n) => n.id == notifId)) {
+            addNotification(
+              AppNotification(
+                id: notifId,
+                type: NotificationType.schedule,
+                title: '📋 Tugas Baru',
+                body: isToday 
+                    ? 'Anda memiliki tugas di $checkpointName hari ini'
+                    : 'Anda memiliki tugas di $checkpointName besok',
+                timestamp: now,
+                data: {'schedule_id': schedule['id']},
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('Error parsing schedule date: $e');
+      }
     }
   }
 

@@ -15,6 +15,7 @@ import 'offline_queue_page.dart';
 import 'crash_reporting_service.dart';
 import 'notification_service.dart';
 import 'notifications_page.dart';
+import 'my_tasks_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +77,7 @@ class _MyAppState extends State<MyApp> {
               '/leave-submission': (context) => const LeaveSubmissionPage(),
               '/offline-queue':   (context) => const OfflineQueuePage(),
               '/notifications':   (context) => const NotificationsPage(),
+              '/my-tasks':        (context) => const MyTasksPage(),
             },
             ),
           ),
