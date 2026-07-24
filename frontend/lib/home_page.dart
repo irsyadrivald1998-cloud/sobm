@@ -342,11 +342,17 @@ class _HomePageState extends State<HomePage> {
 
   // ── Bottom Navigation ─────────────────────────────────────────────────────
   Widget _buildBottomNav() {
+    final role = _user?['role'] as String? ?? 'worker';
+    final isAdmin = role == 'admin' || role == 'viewer';
+    
     final items = [
       _NavItem(icon: Icons.grid_view_rounded, label: 'Home'),
       _NavItem(icon: Icons.monitor_heart_outlined, label: 'Monitoring'),
       _NavItem(icon: Icons.assignment_outlined, label: 'Reports'),
-      _NavItem(icon: Icons.person_outline, label: 'Profile'),
+      _NavItem(
+        icon: isAdmin ? Icons.admin_panel_settings : Icons.person_outline, 
+        label: isAdmin ? 'Admin' : 'Profile',
+      ),
     ];
 
     return Container(
@@ -364,7 +370,16 @@ class _HomePageState extends State<HomePage> {
               return Expanded(
                 child: InkWell(
                   onTap: () {
-                    if (i == 3) { _handleLogout(); return; }
+                    if (i == 3) { 
+                      // Navigate to profile/admin dashboard based on role
+                      final role = _user?['role'] as String? ?? 'worker';
+                      if (role == 'admin' || role == 'viewer') {
+                        Navigator.of(context).pushNamed('/admin-dashboard');
+                      } else {
+                        Navigator.of(context).pushNamed('/profile');
+                      }
+                      return; 
+                    }
                     if (i == 2) {
                       Navigator.of(context).pushNamed('/activity-log');
                       return;
@@ -658,6 +673,8 @@ class _QAction {
 
 /// Insiden Harian section
 class _InsidenSection extends StatelessWidget {
+  const _InsidenSection({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Column(
