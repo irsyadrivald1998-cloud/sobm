@@ -455,18 +455,14 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
               }
               return _ActivityTile(
                 entry: filteredEntries[index],
-                onTap: () async {
-                  // If it's an alert with issue, open issue detail page
-                  if (filteredEntries[index].type == LogEntryType.alert) {
-                    // We need to pass the issue data, which should be stored in the entry
-                    // For now, show a placeholder or implement navigation
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Detail kendala akan segera tersedia'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                  }
+                onTap: () {
+                  // Navigate to detail page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ActivityDetailPage(entry: filteredEntries[index]),
+                    ),
+                  );
                 },
               );
             },
@@ -571,4 +567,196 @@ class _ActivityTile extends StatelessWidget {
     'in-progress' => AppTheme.statusWarning,
     _ => AppTheme.alertCritical,
   };
+}
+
+/// Detail page for activity log entry
+class ActivityDetailPage extends StatelessWidget {
+  final ActivityLogEntry entry;
+
+  const ActivityDetailPage({super.key, required this.entry});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = switch (entry.type) {
+      LogEntryType.alert => AppTheme.alertCritical,
+      LogEntryType.system => AppTheme.primaryBrand,
+      LogEntryType.user => AppTheme.tertiary,
+    };
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        title: const Text('Detail Aktivitas'),
+        backgroundColor: AppTheme.surfaceLowest,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppTheme.spMd),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Card
+            Container(
+              padding: const EdgeInsets.all(AppTheme.spMd),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                border: Border(left: BorderSide(color: color, width: 4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        entry.type == LogEntryType.alert
+                            ? Icons.warning_amber_rounded
+                            : Icons.person_outline,
+                        color: color,
+                        size: 32,
+                      ),
+                      const SizedBox(width: AppTheme.spSm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(entry.actor, style: AppTheme.headlineSm),
+                            Text(entry.timestamp, style: AppTheme.labelMd),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppTheme.spMd),
+                  const Divider(),
+                  const SizedBox(height: AppTheme.spSm),
+                  Text('Deskripsi', style: AppTheme.labelMd.copyWith(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: AppTheme.spXs),
+                  Text(entry.body, style: AppTheme.bodyLg),
+                  
+                  if (entry.workOrder != null) ...[
+                    const SizedBox(height: AppTheme.spMd),
+                    Text('Tugas', style: AppTheme.labelMd.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: AppTheme.spXs),
+                    Text(entry.workOrder!, style: AppTheme.bodyMd),
+                  ],
+                  
+                  if (entry.status != null) ...[
+                    const SizedBox(height: AppTheme.spMd),
+                    Text('Status', style: AppTheme.labelMd.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: AppTheme.spXs),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: AppTheme.spXs),
+                      decoration: BoxDecoration(
+                        color: _statusColor(entry.status!).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                        border: Border.all(color: _statusColor(entry.status!).withValues(alpha: 0.5)),
+                      ),
+                      child: Text(
+                        _getStatusLabel(entry.status!),
+                        style: AppTheme.labelMd.copyWith(
+                          color: _statusColor(entry.status!),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            
+            // Photo section
+            if (entry.photoUrl != null || entry.photoBytes != null) ...[
+              const SizedBox(height: AppTheme.spLg),
+              Text('Foto Laporan', style: AppTheme.headlineSm),
+              const SizedBox(height: AppTheme.spSm),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                child: entry.photoBytes != null
+                    ? Image.memory(
+                        entry.photoBytes!,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      )
+                    : entry.photoUrl != null
+                        ? Image.network(
+                            entry.photoUrl!,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              height: 200,
+                              color: AppTheme.surface,
+                              child: const Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.broken_image, size: 48, color: AppTheme.outline),
+                                    SizedBox(height: AppTheme.spSm),
+                                    Text('Foto tidak dapat dimuat'),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+              ),
+            ],
+            
+            // Additional Details
+            if (entry.notes != null || entry.issueDescription != null) ...[
+              const SizedBox(height: AppTheme.spLg),
+              Container(
+                padding: const EdgeInsets.all(AppTheme.spMd),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (entry.notes != null) ...[
+                      Row(
+                        children: [
+                          const Icon(Icons.notes, size: 20, color: AppTheme.primaryBrand),
+                          const SizedBox(width: AppTheme.spXs),
+                          Text('Catatan', style: AppTheme.labelMd.copyWith(fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spXs),
+                      Text(entry.notes!, style: AppTheme.bodyMd),
+                    ],
+                    
+                    if (entry.issueDescription != null) ...[
+                      if (entry.notes != null) const SizedBox(height: AppTheme.spMd),
+                      Row(
+                        children: [
+                          const Icon(Icons.report_problem, size: 20, color: AppTheme.alertCritical),
+                          const SizedBox(width: AppTheme.spXs),
+                          Text('Deskripsi Kendala', style: AppTheme.labelMd.copyWith(fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spXs),
+                      Text(entry.issueDescription!, style: AppTheme.bodyMd),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _statusColor(String status) => switch (status) {
+        'resolved' => AppTheme.statusOk,
+        'in-progress' => AppTheme.statusWarning,
+        _ => AppTheme.alertCritical,
+      };
+
+  String _getStatusLabel(String status) => switch (status) {
+        'resolved' => 'Selesai',
+        'in-progress' => 'Sedang Dikerjakan',
+        'open' => 'Terbuka',
+        _ => status.toUpperCase(),
+      };
 }

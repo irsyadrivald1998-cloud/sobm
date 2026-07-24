@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ThemeProvider;
@@ -16,6 +18,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Map<String, dynamic>? _user;
   bool _isLoading = true;
   String _errorMessage = '';
+  File? _avatarFile;
+  bool _isUploadingAvatar = false;
+  String _baseUrl = '';
 
   @override
   void initState() {
@@ -30,11 +35,14 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
+      final baseUrl = await _apiService.getBaseUrl();
       final userData = await _apiService.getUser();
       if (mounted) {
         setState(() {
+          _baseUrl = baseUrl;
           _user = userData;
           _isLoading = false;
+          _avatarFile = null; // Clear local file when loading from server
         });
       }
     } catch (e) {
@@ -43,6 +51,96 @@ class _ProfilePageState extends State<ProfilePage> {
           _errorMessage = e.toString().replaceAll('Exception: ', '');
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  Future<void> _showPhotoOptions() async {
+    final result = await showModalBottomSheet<ImageSource>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppTheme.spMd),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppTheme.outline,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppTheme.spMd),
+            Text('Pilih Sumber Foto', style: AppTheme.headlineSm),
+            const SizedBox(height: AppTheme.spMd),
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: AppTheme.primaryBrand),
+              title: const Text('Ambil Foto'),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: AppTheme.primaryBrand),
+              title: const Text('Pilih dari Galeri'),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+            const SizedBox(height: AppTheme.spSm),
+          ],
+        ),
+      ),
+    );
+
+    if (result != null) {
+      await _pickAndUploadPhoto(result);
+    }
+  }
+
+  Future<void> _pickAndUploadPhoto(ImageSource source) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _avatarFile = File(pickedFile.path);
+        _isUploadingAvatar = true;
+      });
+
+      // Upload avatar to backend
+      await _apiService.updateAvatar(pickedFile.path);
+      
+      // Reload user data to get the new avatar URL
+      await _loadUserData();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diubah'),
+            backgroundColor: AppTheme.statusOk,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengubah foto: ${e.toString().replaceAll('Exception: ', '')}'),
+            backgroundColor: AppTheme.alertCritical,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
       }
     }
   }
@@ -127,6 +225,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final role = _user?['role'] ?? 'worker';
     final company = _user?['company'] ?? '-';
     final createdAt = _user?['created_at'] as String?;
+    final avatarUrl = _user?['avatar'] as String?;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppTheme.spMd),
@@ -144,21 +243,70 @@ class _ProfilePageState extends State<ProfilePage> {
             child: Column(
               children: [
                 // Avatar
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppTheme.primaryBrand.withValues(alpha: 0.15),
-                    border: Border.all(
-                      color: AppTheme.primaryBrand.withValues(alpha: 0.5),
-                      width: 3,
-                    ),
-                  ),
-                  child: Icon(
-                    _getRoleIcon(role),
-                    size: 48,
-                    color: AppTheme.primaryBrand,
+                GestureDetector(
+                  onTap: _isUploadingAvatar ? null : _showPhotoOptions,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppTheme.primaryBrand.withValues(alpha: 0.15),
+                          border: Border.all(
+                            color: AppTheme.primaryBrand.withValues(alpha: 0.5),
+                            width: 3,
+                          ),
+                          image: _avatarFile != null
+                              ? DecorationImage(
+                                  image: FileImage(_avatarFile!),
+                                  fit: BoxFit.cover,
+                                )
+                              : (avatarUrl != null && avatarUrl.isNotEmpty)
+                                  ? DecorationImage(
+                                      image: NetworkImage('$_baseUrl/storage/$avatarUrl'),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                        ),
+                        child: (_avatarFile == null && (avatarUrl == null || avatarUrl.isEmpty))
+                            ? Icon(
+                                _getRoleIcon(role),
+                                size: 48,
+                                color: AppTheme.primaryBrand,
+                              )
+                            : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryBrand,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppTheme.surface,
+                              width: 2,
+                            ),
+                          ),
+                          child: _isUploadingAvatar
+                              ? const Padding(
+                                  padding: EdgeInsets.all(6),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.camera_alt,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: AppTheme.spMd),

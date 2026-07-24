@@ -439,6 +439,45 @@ class ApiService {
     }
   }
 
+  // PUT /api/user/profile - Update user avatar
+  Future<Map<String, dynamic>> updateAvatar(String imagePath) async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('$baseUrl/user/profile'),
+    );
+
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    request.files.add(await http.MultipartFile.fromPath('avatar', imagePath));
+
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+    final response = await http.Response.fromStream(streamedResponse);
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (responseData['status'] == true) {
+        final updatedUser = responseData['data']['user'] as Map<String, dynamic>;
+        
+        // Update stored user data
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(keyUser, jsonEncode(updatedUser));
+        
+        return updatedUser;
+      } else {
+        throw Exception(responseData['message'] ?? 'Gagal mengupload foto.');
+      }
+    } else {
+      throw Exception(responseData['message'] ?? 'Gagal mengupload foto (Error ${response.statusCode}).');
+    }
+  }
+
   // PUT /api/user/profile - Update user profile
   Future<Map<String, dynamic>> updateProfile({
     required String name,

@@ -15,6 +15,7 @@ class ActivityLogEntry {
 
   // system fields
   final String? photoUrl;
+  final Uint8List? photoBytes;  // For local photos
   final String? workOrder;
   final String? source;
 
@@ -25,6 +26,10 @@ class ActivityLogEntry {
   // alert fields
   final String? alertTitle;
   final String? status;
+  
+  // additional details
+  final String? notes;
+  final String? issueDescription;
 
   const ActivityLogEntry({
     required this.type,
@@ -33,12 +38,15 @@ class ActivityLogEntry {
     required this.date,
     required this.body,
     this.photoUrl,
+    this.photoBytes,
     this.workOrder,
     this.source,
     this.avatarIcon,
     this.avatarColor,
     this.alertTitle,
     this.status,
+    this.notes,
+    this.issueDescription,
   });
 }
 
@@ -172,8 +180,11 @@ class ActivityLogNotifier extends ChangeNotifier {
       body:      '$userName menyelesaikan tugas di ${checkpoint['name'] ?? 'Checkpoint'}'
                  ' (${category['name'] ?? '-'})',
       photoUrl:  photoLocalPath.isNotEmpty ? photoLocalPath : null,
+      photoBytes: photoBytes,
       workOrder: 'WO-$reportId',
       source:    'Dikirim via Mobile App',
+      notes:     notes,
+      issueDescription: issueDescription,
     ));
 
     // 2. Notes — user text bubble
@@ -185,6 +196,7 @@ class ActivityLogNotifier extends ChangeNotifier {
         date:       now,
         body:       notes.trim(),
         avatarIcon: Icons.engineering,
+        notes:      notes,
       ));
     }
 
@@ -197,6 +209,7 @@ class ActivityLogNotifier extends ChangeNotifier {
         date:       now,
         alertTitle: 'Kendala: ${checkpoint['name'] ?? 'Checkpoint'}',
         body:       issueDescription.trim(),
+        issueDescription: issueDescription,
       ));
     }
 
