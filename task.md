@@ -80,10 +80,10 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 Implementasi infinite scroll / pagination di halaman feed.
-- 🔲 Tambah filter UI (tanggal/role/checkpoint/status) di feed bila endpoint
+- ✅ Implementasi infinite scroll / pagination di halaman feed.
+- ✅ Tambah filter UI (tanggal/role/checkpoint/status) di feed bila endpoint
   filter tersedia.
-- 🔲 Notifikasi in-app untuk aktivitas laporan baru (menyesuaikan mekanisme
+- ✅ Notifikasi in-app untuk aktivitas laporan baru (menyesuaikan mekanisme
   polling/realtime dari backend).
 
 ---

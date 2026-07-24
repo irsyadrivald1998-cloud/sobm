@@ -11,7 +11,7 @@ class ApiService {
   // Default fallbacks based on platform/environment
   static String get defaultBaseUrl => const String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'https://3c95-114-10-94-177.ngrok-free.app/api',
+        defaultValue: 'https://949f-114-10-94-177.ngrok-free.app/api',
       );
 
   // Get active API Base URL
@@ -336,6 +336,35 @@ class ApiService {
       }
     } else {
       throw Exception(responseData['message'] ?? 'Gagal mengirim laporan (Error ${response.statusCode}).');
+    }
+  }
+
+  // PATCH /issues/{id}/status
+  Future<Map<String, dynamic>> updateIssueStatus(int issueId, String status) async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final response = await http.patch(
+      Uri.parse('$baseUrl/issues/$issueId/status'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'status': status}),
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (responseData['status'] == true) {
+        return responseData['data'] as Map<String, dynamic>;
+      } else {
+        throw Exception(responseData['message'] ?? 'Gagal mengupdate status kendala.');
+      }
+    } else {
+      throw Exception(responseData['message'] ?? 'Gagal mengupdate status kendala (Error ${response.statusCode}).');
     }
   }
 }
