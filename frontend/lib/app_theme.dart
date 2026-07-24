@@ -6,26 +6,36 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // ── Colors ────────────────────────────────────────────────────────────────
-  static const Color background         = Color(0xFF1E0F0E);
-  static const Color surfaceLowest      = Color(0xFF180A09);
-  static const Color surfaceLow        = Color(0xFF271816);
-  static const Color surface           = Color(0xFF2C1B1A);
-  static const Color surfaceHigh       = Color(0xFF372624);
-  static const Color surfaceHighest    = Color(0xFF43302E);
-  static const Color surfaceBright     = Color(0xFF473533);
+  // ── Dark Colors ───────────────────────────────────────────────────────────
+  static const Color _darkBackground         = Color(0xFF1E0F0E);
+  static const Color _darkSurfaceLowest      = Color(0xFF180A09);
+  static const Color _darkSurfaceLow        = Color(0xFF271816);
+  static const Color _darkSurface           = Color(0xFF2C1B1A);
+  static const Color _darkSurfaceHigh       = Color(0xFF372624);
+  static const Color _darkSurfaceHighest    = Color(0xFF43302E);
+  static const Color _darkSurfaceBright     = Color(0xFF473533);
+  static const Color _darkOnSurface        = Color(0xFFF9DCD9);
+  static const Color _darkOnSurfaceVariant = Color(0xFFE4BEBA);
+  static const Color _darkOutline          = Color(0xFFAB8985);
+  static const Color _darkOutlineVariant   = Color(0xFF5B403D);
 
-  static const Color onSurface        = Color(0xFFF9DCD9);
-  static const Color onSurfaceVariant = Color(0xFFE4BEBA);
+  // ── Light Colors ──────────────────────────────────────────────────────────
+  static const Color _lightBackground       = Color(0xFFFFF8F7);
+  static const Color _lightSurface          = Color(0xFFFFFFFF);
+  static const Color _lightSurfaceLowest    = Color(0xFFFFFFFF);
+  static const Color _lightSurfaceLow       = Color(0xFFFFF0EE);
+  static const Color _lightSurfaceHigh      = Color(0xFFF5E0DE);
+  static const Color _lightOnSurface        = Color(0xFF2C0A09);
+  static const Color _lightOnSurfaceVariant = Color(0xFF5C3A38);
+  static const Color _lightOutline          = Color(0xFF8C6360);
+  static const Color _lightOutlineVariant   = Color(0xFFD4A8A5);
 
-  static const Color outline          = Color(0xFFAB8985);
-  static const Color outlineVariant   = Color(0xFF5B403D);
-
+  // ── Static Colors (same for both themes) ──────────────────────────────────
   static const Color primary          = Color(0xFFFFB3AC);
   static const Color onPrimary        = Color(0xFF680008);
   static const Color primaryContainer = Color(0xFFD32F2F);
   static const Color onPrimaryContainer = Color(0xFFFFF2F0);
-  static const Color primaryBrand     = Color(0xFFD32F2F); // solid brand red
+  static const Color primaryBrand     = Color(0xFFD32F2F);
 
   static const Color secondary        = Color(0xFFC8C6C5);
   static const Color onSecondary      = Color(0xFF303030);
@@ -36,13 +46,36 @@ class AppTheme {
 
   static const Color error            = Color(0xFFFFB4AB);
   static const Color errorContainer   = Color(0xFF93000A);
-
   static const Color alertCritical    = Color(0xFFF44336);
 
-  // Functional status
   static const Color statusOk         = Color(0xFF4CAF50);
   static const Color statusWarning    = Color(0xFFFBBF24);
   static const Color statusError      = Color(0xFFD32F2F);
+
+  // ── Static Constants for Dark Theme (for backward compatibility) ─────────
+  // Widgets that use these will stay in dark colors regardless of theme
+  // PREFER using Theme.of(context).colorScheme instead
+  static const Color background         = _darkBackground;
+  static const Color surfaceLowest      = _darkSurfaceLowest;
+  static const Color surfaceLow        = _darkSurfaceLow;
+  static const Color surface           = _darkSurface;
+  static const Color surfaceHigh       = _darkSurfaceHigh;
+  static const Color surfaceHighest    = _darkSurfaceHighest;
+  static const Color surfaceBright     = _darkSurfaceBright;
+  static const Color onSurface        = _darkOnSurface;
+  static const Color onSurfaceVariant = _darkOnSurfaceVariant;
+  static const Color outline          = _darkOutline;
+  static const Color outlineVariant   = _darkOutlineVariant;
+
+  // ── Public Light Colors (for manual theme switching in widgets) ──────────
+  static const Color lightBackground       = _lightBackground;
+  static const Color lightSurface          = _lightSurface;
+  static const Color lightSurfaceLow       = _lightSurfaceLow;
+  static const Color lightSurfaceHigh      = _lightSurfaceHigh;
+  static const Color lightOnSurface        = _lightOnSurface;
+  static const Color lightOnSurfaceVariant = _lightOnSurfaceVariant;
+  static const Color lightOutline          = _lightOutline;
+  static const Color lightOutlineVariant   = _lightOutlineVariant;
 
   // ── Radii ─────────────────────────────────────────────────────────────────
   static const double radiusSm  = 8;
@@ -243,30 +276,20 @@ class AppTheme {
   }
 
   // ── Light Theme ────────────────────────────────────────────────────────────
-  // Light color palette (warm cream/white tones matching the brand identity)
-  static const Color lightBackground       = Color(0xFFFFF8F7);
-  static const Color lightSurface          = Color(0xFFFFFFFF);
-  static const Color lightSurfaceLow       = Color(0xFFFFF0EE);
-  static const Color lightSurfaceHigh      = Color(0xFFF5E0DE);
-  static const Color lightOnSurface        = Color(0xFF2C0A09);
-  static const Color lightOnSurfaceVariant = Color(0xFF5C3A38);
-  static const Color lightOutline          = Color(0xFF8C6360);
-  static const Color lightOutlineVariant   = Color(0xFFD4A8A5);
-
   static ThemeData get lightTheme {
     final interTextTheme = GoogleFonts.interTextTheme(
       ThemeData.light().textTheme,
-    ).apply(bodyColor: lightOnSurface, displayColor: lightOnSurface);
+    ).apply(bodyColor: _lightOnSurface, displayColor: _lightOnSurface);
 
     return ThemeData(
       useMaterial3: true,
       fontFamily: fontFamily,
       brightness: Brightness.light,
-      scaffoldBackgroundColor: lightBackground,
+      scaffoldBackgroundColor: _lightBackground,
       textTheme: interTextTheme,
       colorScheme: const ColorScheme.light(
         brightness: Brightness.light,
-        surface: lightSurface,
+        surface: _lightSurface,
         primary: primaryBrand,
         onPrimary: Colors.white,
         primaryContainer: Color(0xFFFFDAD7),
@@ -277,38 +300,38 @@ class AppTheme {
         onTertiary: Colors.white,
         error: Color(0xFFBA1A1A),
         onError: Colors.white,
-        onSurface: lightOnSurface,
-        onSurfaceVariant: lightOnSurfaceVariant,
-        outline: lightOutline,
-        outlineVariant: lightOutlineVariant,
+        onSurface: _lightOnSurface,
+        onSurfaceVariant: _lightOnSurfaceVariant,
+        outline: _lightOutline,
+        outlineVariant: _lightOutlineVariant,
       ),
       appBarTheme: AppBarTheme(
-        backgroundColor: lightSurface,
-        foregroundColor: lightOnSurface,
+        backgroundColor: _lightSurface,
+        foregroundColor: _lightOnSurface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        shadowColor: lightOutlineVariant.withValues(alpha: 0.3),
-        titleTextStyle: titleLg.copyWith(color: lightOnSurface),
+        shadowColor: _lightOutlineVariant.withValues(alpha: 0.3),
+        titleTextStyle: titleLg.copyWith(color: _lightOnSurface),
       ),
       cardTheme: CardThemeData(
-        color: lightSurface,
+        color: _lightSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
-          side: const BorderSide(color: lightOutlineVariant, width: 0.5),
+          side: const BorderSide(color: _lightOutlineVariant, width: 0.5),
         ),
         margin: const EdgeInsets.symmetric(vertical: spSm),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: lightSurfaceHigh,
+        fillColor: _lightSurfaceHigh,
         contentPadding: const EdgeInsets.symmetric(horizontal: spMd, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: lightOutlineVariant, width: 1)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: _lightOutlineVariant, width: 1)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: primaryBrand, width: 2)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: alertCritical, width: 1)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: alertCritical, width: 2)),
-        hintStyle: labelMd.copyWith(color: lightOutline),
+        hintStyle: labelMd.copyWith(color: _lightOutline),
         errorStyle: labelMd.copyWith(color: alertCritical),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -321,8 +344,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: lightOnSurface,
-          side: const BorderSide(color: lightOutlineVariant, width: 1.5),
+          foregroundColor: _lightOnSurface,
+          side: const BorderSide(color: _lightOutlineVariant, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: spXl, vertical: spMd),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg)),
         ),
@@ -330,21 +353,21 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(foregroundColor: primaryBrand),
       ),
-      dividerTheme: const DividerThemeData(color: lightOutlineVariant, thickness: 0.5, space: 0),
+      dividerTheme: const DividerThemeData(color: _lightOutlineVariant, thickness: 0.5, space: 0),
       dialogTheme: DialogThemeData(
-        backgroundColor: lightSurface, surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg), side: const BorderSide(color: lightOutlineVariant, width: 0.5)),
+        backgroundColor: _lightSurface, surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg), side: const BorderSide(color: _lightOutlineVariant, width: 0.5)),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: lightOnSurface,
-        contentTextStyle: bodyMd.copyWith(color: lightBackground),
+        backgroundColor: _lightOnSurface,
+        contentTextStyle: bodyMd.copyWith(color: _lightBackground),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? primaryBrand : lightSurfaceHigh),
+        fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? primaryBrand : _lightSurfaceHigh),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        side: const BorderSide(color: lightOutlineVariant, width: 1.5),
+        side: const BorderSide(color: _lightOutlineVariant, width: 1.5),
       ),
     );
   }

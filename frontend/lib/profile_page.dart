@@ -77,10 +77,10 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Profil Pengguna', style: AppTheme.titleLg),
-        backgroundColor: AppTheme.surfaceLowest,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

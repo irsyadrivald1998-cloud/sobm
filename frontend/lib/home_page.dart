@@ -156,7 +156,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      // Use theme's scaffold background color for proper light/dark mode support
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand))
           : _errorMessage.isNotEmpty
@@ -201,7 +202,7 @@ class _HomePageState extends State<HomePage> {
           // ── Top App Bar ─────────────────────────────────────────────
           SliverAppBar(
             pinned: true,
-            backgroundColor: AppTheme.surfaceLowest,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             surfaceTintColor: Colors.transparent,
             expandedHeight: 64,
             titleSpacing: AppTheme.spMd,
@@ -390,9 +391,9 @@ class _HomePageState extends State<HomePage> {
     ];
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceLowest,
-        border: Border(top: BorderSide(color: AppTheme.outlineVariant, width: 0.5)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
       ),
       child: SafeArea(
         top: false,

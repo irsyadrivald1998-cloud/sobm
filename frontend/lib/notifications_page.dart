@@ -15,10 +15,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Notifikasi', style: AppTheme.titleLg),
-        backgroundColor: AppTheme.surfaceLowest,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         actions: [
           if (_notificationService.hasUnread)
             TextButton(
