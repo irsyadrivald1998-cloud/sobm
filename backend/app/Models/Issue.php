@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['report_id', 'issue_description', 'is_resolved', 'resolved_at', 'resolved_by', 'resolution_notes'])]
+#[Fillable(['report_id', 'issue_description', 'is_resolved', 'resolved_at', 'resolved_by', 'resolution_notes', 'status'])]
 class Issue extends Model
 {
     use HasFactory, SoftDeletes;
@@ -17,13 +17,30 @@ class Issue extends Model
     protected static function booted()
     {
         static::saving(function ($issue) {
+            // Update status based on is_resolved for backward compatibility
             if ($issue->isDirty('is_resolved') && $issue->is_resolved) {
+                $issue->status = 'resolved';
                 $issue->resolved_at = $issue->resolved_at ?? now();
                 $issue->resolved_by = $issue->resolved_by ?? \Illuminate\Support\Facades\Auth::id();
             } elseif ($issue->isDirty('is_resolved') && !$issue->is_resolved) {
+                $issue->status = 'open';
                 $issue->resolved_at = null;
                 $issue->resolved_by = null;
                 $issue->resolution_notes = null;
+            }
+
+            // Sync is_resolved based on status
+            if ($issue->isDirty('status')) {
+                if ($issue->status === 'resolved') {
+                    $issue->is_resolved = true;
+                    $issue->resolved_at = $issue->resolved_at ?? now();
+                    $issue->resolved_by = $issue->resolved_by ?? \Illuminate\Support\Facades\Auth::id();
+                } elseif ($issue->status === 'open') {
+                    $issue->is_resolved = false;
+                    $issue->resolved_at = null;
+                    $issue->resolved_by = null;
+                    $issue->resolution_notes = null;
+                }
             }
         });
     }

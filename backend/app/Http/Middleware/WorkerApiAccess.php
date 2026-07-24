@@ -16,7 +16,7 @@ class WorkerApiAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $allowedRoles = ['housekeeping', 'teknisi', 'security', 'osb', 'resepsionis', 'bm'];
+        $allowedRoles = ['admin', 'viewer', 'housekeeping', 'teknisi', 'security', 'osb', 'resepsionis', 'bm'];
         $user = $request->user();
 
         if (! $user || ! in_array($user->role, $allowedRoles, true)) {

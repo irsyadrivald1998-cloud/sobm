@@ -3,6 +3,7 @@
 use App\Http\Middleware\WorkerApiAccess;
 use App\Http\Middleware\UserApiAccess;
 use App\Http\Middleware\ReportRateLimiting;
+use App\Http\Middleware\LoginRateLimiting;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'can_access_worker_api' => WorkerApiAccess::class,
             'can_access_user_api' => UserApiAccess::class,
             'report_rate_limit' => ReportRateLimiting::class,
+            'login_rate_limit' => LoginRateLimiting::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

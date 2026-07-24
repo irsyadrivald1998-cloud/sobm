@@ -40,6 +40,23 @@ class ReportController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
+        // Filter checkpoint
+        if ($request->has('checkpoint_id')) {
+            $query->whereHas('schedule.checkpoint', function ($q) use ($request) {
+                $q->where('id', $request->checkpoint_id);
+            });
+        }
+
+        // Filter condition status
+        if ($request->has('condition_status')) {
+            $query->where('condition_status', $request->condition_status);
+        }
+
+        // Filter for polling - only get reports after a certain timestamp
+        if ($request->has('since')) {
+            $query->where('created_at', '>', $request->since);
+        }
+
         $reports = $query->paginate(20);
 
         return ApiResponse::success([
@@ -51,9 +68,10 @@ class ReportController extends Controller
     {
         $user = $request->user();
         $scheduleId = $request->validated('schedule_id') ? (int) $request->validated('schedule_id') : null;
+        $isOsbOrResepsionis = in_array($user->role, ['osb', 'resepsionis']);
 
         try {
-            $report = DB::transaction(function () use ($request, $scheduleId, $user) {
+            $report = DB::transaction(function () use ($request, $scheduleId, $user, $isOsbOrResepsionis) {
                 $data = [
                     'check_in_time' => now(),
                     'check_in_latitude' => $request->validated('check_in_latitude'),
@@ -72,30 +90,33 @@ class ReportController extends Controller
                         ->lockForUpdate()
                         ->firstOrFail();
 
-                    if ($schedule->user_id !== $user->id) {
-                        abort(403, 'Anda tidak berhak mengirim laporan untuk jadwal ini.');
-                    }
+                    // Skip validation for OSB & Resepsionis roles
+                    if (!$isOsbOrResepsionis) {
+                        if ($schedule->user_id !== $user->id) {
+                            abort(403, 'Anda tidak berhak mengirim laporan untuk jadwal ini.');
+                        }
 
-                    if ($schedule->status === 'completed' || $schedule->report()->exists()) {
-                        abort(400, 'Laporan untuk jadwal ini sudah dikirim.');
-                    }
+                        if ($schedule->status === 'completed' || $schedule->report()->exists()) {
+                            abort(400, 'Laporan untuk jadwal ini sudah dikirim.');
+                        }
 
-                    if ($schedule->shift_date->toDateString() !== now()->toDateString()) {
-                        abort(400, 'Laporan hanya bisa disubmit pada hari jadwal yang bersangkutan. Jadwal: '.$schedule->shift_date->toDateString());
-                    }
+                        if ($schedule->shift_date->toDateString() !== now()->toDateString()) {
+                            abort(400, 'Laporan hanya bisa disubmit pada hari jadwal yang bersangkutan. Jadwal: '.$schedule->shift_date->toDateString());
+                        }
 
-                    $distance = $this->haversineGreatCircleDistance(
-                        (float) $schedule->checkpoint->latitude,
-                        (float) $schedule->checkpoint->longitude,
-                        (float) $request->validated('check_in_latitude'),
-                        (float) $request->validated('check_in_longitude')
-                    );
+                        $distance = $this->haversineGreatCircleDistance(
+                            (float) $schedule->checkpoint->latitude,
+                            (float) $schedule->checkpoint->longitude,
+                            (float) $request->validated('check_in_latitude'),
+                            (float) $request->validated('check_in_longitude')
+                        );
 
-                    $radius = (float) $schedule->checkpoint->radius_meter;
+                        $radius = (float) $schedule->checkpoint->radius_meter;
 
-                    if ($distance > $radius) {
-                        $over = (int) max(0, ceil($distance - $radius));
-                        abort(400, "Anda berada {$over} meter di luar jangkauan lokasi tugas ({$schedule->checkpoint->name}).");
+                        if ($distance > $radius) {
+                            $over = (int) max(0, ceil($distance - $radius));
+                            abort(400, "Anda berada {$over} meter di luar jangkauan lokasi tugas ({$schedule->checkpoint->name}).");
+                        }
                     }
 
                     $data['schedule_id'] = $schedule->id;

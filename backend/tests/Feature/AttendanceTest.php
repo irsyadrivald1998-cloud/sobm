@@ -23,7 +23,7 @@ class AttendanceTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->getJson('/api/attendance/today');
+            ->getJson('/api/v1/attendance/today');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -43,7 +43,7 @@ class AttendanceTest extends TestCase
         Carbon::setTestNow(Carbon::today()->setTime(8, 0, 0));
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-in', [
+            ->postJson('/api/v1/attendance/clock-in', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -77,7 +77,7 @@ class AttendanceTest extends TestCase
         Carbon::setTestNow(Carbon::today()->setTime(8, 20, 0));
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-in', [
+            ->postJson('/api/v1/attendance/clock-in', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -108,7 +108,7 @@ class AttendanceTest extends TestCase
 
         // Office is at -0.94326885, 100.35396392. Let's send a coordinate far away.
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-in', [
+            ->postJson('/api/v1/attendance/clock-in', [
                 'latitude' => -1.94326885,
                 'longitude' => 101.35396392,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -134,7 +134,7 @@ class AttendanceTest extends TestCase
 
         // First clock in
         $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-in', [
+            ->postJson('/api/v1/attendance/clock-in', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -142,7 +142,7 @@ class AttendanceTest extends TestCase
 
         // Second clock in
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-in', [
+            ->postJson('/api/v1/attendance/clock-in', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -162,7 +162,7 @@ class AttendanceTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-out', [
+            ->postJson('/api/v1/attendance/clock-out', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie.jpg'),
@@ -181,7 +181,7 @@ class AttendanceTest extends TestCase
         // 1. Clock in
         Carbon::setTestNow(Carbon::today()->setTime(8, 0, 0));
         $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-in', [
+            ->postJson('/api/v1/attendance/clock-in', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie1.jpg'),
@@ -190,7 +190,7 @@ class AttendanceTest extends TestCase
         // 2. Clock out
         Carbon::setTestNow(Carbon::today()->setTime(17, 0, 0));
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-            ->postJson('/api/attendance/clock-out', [
+            ->postJson('/api/v1/attendance/clock-out', [
                 'latitude' => self::OFFICE_LATITUDE,
                 'longitude' => self::OFFICE_LONGITUDE,
                 'photo' => UploadedFile::fake()->image('selfie2.jpg'),

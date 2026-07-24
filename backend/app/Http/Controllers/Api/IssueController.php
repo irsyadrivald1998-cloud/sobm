@@ -20,9 +20,6 @@ class IssueController extends Controller
         $issue->update([
             'status' => $request->status,
             'resolution_notes' => $request->resolution_notes,
-            'is_resolved' => $request->status === 'resolved',
-            'resolved_at' => $request->status === 'resolved' ? now() : null,
-            'resolved_by' => $request->status === 'resolved' ? Auth::id() : null,
         ]);
 
         return ApiResponse::success($issue->load('resolvedBy'), 'Status issue berhasil diupdate.');
