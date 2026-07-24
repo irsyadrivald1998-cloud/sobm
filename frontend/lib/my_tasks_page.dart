@@ -465,7 +465,7 @@ class _TaskDetailInputPageState extends State<TaskDetailInputPage> {
   final _notesController = TextEditingController();
   final _issueDescController = TextEditingController();
   
-  String _conditionStatus = 'Baik';
+  String _conditionStatus = 'Aman/Bersih';
   File? _photoFile;
   bool _isSubmitting = false;
 
@@ -678,7 +678,7 @@ class _TaskDetailInputPageState extends State<TaskDetailInputPage> {
               const SizedBox(height: AppTheme.spSm),
               Wrap(
                 spacing: AppTheme.spSm,
-                children: ['Baik', 'Perlu Perhatian', 'Ada Kendala'].map((condition) {
+                children: ['Aman/Bersih', 'Ada Kendala'].map((condition) {
                   final isSelected = _conditionStatus == condition;
                   return ChoiceChip(
                     label: Text(condition),

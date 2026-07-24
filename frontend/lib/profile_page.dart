@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ThemeProvider;
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -307,10 +308,15 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: Icons.person_outline,
             label: 'Edit Profil',
             onTap: () {
-              // TODO: Navigate to edit profile page
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fitur edit profil akan segera tersedia')),
-              );
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => EditProfilePage(user: _user!),
+                ),
+              ).then((updated) {
+                if (updated == true) {
+                  _loadUserData(); // Refresh user data
+                }
+              });
             },
           ),
           const SizedBox(height: AppTheme.spSm),

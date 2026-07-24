@@ -438,4 +438,47 @@ class ApiService {
       throw Exception(responseData['message'] ?? 'Gagal mengirim reset link (Error ${response.statusCode}).');
     }
   }
+
+  // PUT /api/user/profile - Update user profile
+  Future<Map<String, dynamic>> updateProfile({
+    required String name,
+    required String email,
+    String? phone,
+  }) async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final response = await http.put(
+      Uri.parse('$baseUrl/user/profile'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'name': name,
+        'email': email,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      }),
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (responseData['status'] == true) {
+        final updatedUser = responseData['data']['user'] as Map<String, dynamic>;
+        
+        // Update stored user data
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(keyUser, jsonEncode(updatedUser));
+        
+        return updatedUser;
+      } else {
+        throw Exception(responseData['message'] ?? 'Gagal memperbarui profil.');
+      }
+    } else {
+      throw Exception(responseData['message'] ?? 'Gagal memperbarui profil (Error ${response.statusCode}).');
+    }
+  }
 }
