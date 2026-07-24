@@ -371,9 +371,9 @@ class _DecorativePanel extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: AppTheme.primaryBrand.withOpacity(0.5),
+                          color: AppTheme.primaryBrand.withValues(alpha: 0.5),
                           width: 1.5),
-                      color: AppTheme.primaryBrand.withOpacity(0.1),
+                      color: AppTheme.primaryBrand.withValues(alpha: 0.1),
                     ),
                     child: const Icon(Icons.business,
                         size: 48, color: AppTheme.primary),
@@ -441,9 +441,9 @@ class _CompactBanner extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: AppTheme.primaryBrand.withOpacity(0.5),
+                          color: AppTheme.primaryBrand.withValues(alpha: 0.5),
                           width: 1.5),
-                      color: AppTheme.primaryBrand.withOpacity(0.1),
+                      color: AppTheme.primaryBrand.withValues(alpha: 0.1),
                     ),
                     child: const Icon(Icons.business,
                         size: 26, color: AppTheme.primary),
@@ -606,7 +606,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.outlineVariant.withOpacity(0.15)
+      ..color = AppTheme.outlineVariant.withValues(alpha: 0.15)
       ..strokeWidth = 0.5;
 
     const step = 32.0;

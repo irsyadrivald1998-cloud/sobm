@@ -7,6 +7,8 @@ import 'home_page.dart';
 import 'activity_log_page.dart';
 import 'admin_dashboard_page.dart';
 import 'profile_page.dart';
+import 'attendance_page.dart';
+import 'access_denied_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,6 +52,8 @@ class _MyAppState extends State<MyApp> {
               '/activity-log':    (context) => const ActivityLogPage(),
               '/admin-dashboard': (context) => const AdminDashboardPage(),
               '/profile':         (context) => const ProfilePage(),
+              '/attendance':      (context) => const AttendancePage(),
+              '/access-denied':   (context) => const AccessDeniedPage(),
             },
           ),
         ),

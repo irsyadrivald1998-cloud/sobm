@@ -6,8 +6,11 @@ use App\Models\Checkpoint;
 use App\Models\Schedule;
 use App\Models\TaskCategory;
 use App\Models\User;
+use App\Models\ScheduleGenerationState;
+use App\Models\LeaveSubmission;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class GenerateSchedulesCommand extends Command
 {
@@ -51,30 +54,47 @@ class GenerateSchedulesCommand extends Command
             $this->generateForRole('security', $date, $time);
         }
 
+        // 4. OSB & Resepsionis: Daily 08:00-17:00
+        // Generate only once per day at 08:00
+        if ($hour === 8) {
+            $this->generateForRole('osb', $date, '08:00:00');
+            $this->generateForRole('resepsionis', $date, '08:00:00');
+        }
+
+        // Admin, BM, User: Tidak ada jadwal patroli/checkpoint.
+
         $this->info('Schedules generation completed for current hour: ' . $hour);
     }
 
     private function generateForRole(string $role, string $date, string $time)
     {
-        $users = User::where('role', $role)->get();
+        $users = User::where('role', $role)
+            ->whereDoesntHave('leaveSubmissions', function ($query) use ($date) {
+                $query->where('date', $date);
+            })
+            ->get();
         if ($users->isEmpty()) return;
 
         $taskCategories = TaskCategory::where('target_role', $role)->get();
         if ($taskCategories->isEmpty()) return;
 
-        // Simplified logic: Assign random checkpoint for each user for demo purposes, 
-        // or generate schedules for all checkpoints and split among users.
-        // Assuming we want a schedule for every checkpoint for the role.
         $checkpoints = Checkpoint::all();
         if ($checkpoints->isEmpty()) return;
 
-        foreach ($checkpoints as $index => $checkpoint) {
+        // Get or create state for round-robin
+        $state = ScheduleGenerationState::firstOrCreate(
+            ['role' => $role],
+            ['last_user_index' => 0]
+        );
+
+        $currentIndex = $state->last_user_index;
+
+        foreach ($checkpoints as $checkpoint) {
             // Distribute round-robin among available users for this role
-            $user = $users[$index % $users->count()];
-            // Pick the first relevant task category as default
+            $user = $users[$currentIndex % $users->count()];
             $taskCategory = $taskCategories->first();
 
-            // Check if already generated for this hour to avoid duplicates
+            // Check if already generated for this hour
             $exists = Schedule::where('user_id', $user->id)
                 ->where('checkpoint_id', $checkpoint->id)
                 ->where('task_category_id', $taskCategory->id)
@@ -92,6 +112,11 @@ class GenerateSchedulesCommand extends Command
                     'status' => 'pending',
                 ]);
             }
+
+            $currentIndex++;
         }
+
+        // Save state
+        $state->update(['last_user_index' => $currentIndex % $users->count()]);
     }
 }

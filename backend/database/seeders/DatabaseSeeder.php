@@ -206,6 +206,7 @@ class DatabaseSeeder extends Seeder
                 'check_in_longitude' => 100.35396392,
                 'photo_path' => 'reports/sample_hk.jpg',
                 'condition_status' => 'Aman/Bersih',
+                'work_description' => 'Membersihkan lobby',
                 'notes' => 'Lantai lobby sudah bersih disapu dan dipel.',
             ]
         );
@@ -230,6 +231,7 @@ class DatabaseSeeder extends Seeder
                 'check_in_longitude' => 100.35412000,
                 'photo_path' => 'reports/sample_tk.jpg',
                 'condition_status' => 'Ada Kendala',
+                'work_description' => 'Cek AC Lab',
                 'notes' => 'AC berisik dan bocor air.',
             ]
         );
@@ -265,6 +267,7 @@ class DatabaseSeeder extends Seeder
                 'check_in_longitude' => 100.35381000,
                 'photo_path' => 'reports/sample_sec.jpg',
                 'condition_status' => 'Ada Kendala',
+                'work_description' => 'Patroli Gerbang',
                 'notes' => 'Lampu sorot gerbang utama mati.',
             ]
         );

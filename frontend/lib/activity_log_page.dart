@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'activity_log_notifier.dart';
 import 'app_theme.dart';
@@ -12,37 +14,78 @@ class ActivityLogPage extends StatefulWidget {
 }
 
 class _ActivityLogPageState extends State<ActivityLogPage> {
+  Timer? _timer;
   bool _isLoading = false;
   String _error = '';
+  LogEntryType? _filterType;
+
+  int _currentPage = 1;
+  bool _isFetchingMore = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ActivityLogProvider.of(context);
       if (notifier.entries.isEmpty) _load();
     });
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) => _load(isManual: false));
   }
 
-  Future<void> _load() async {
-    setState(() {
-      _isLoading = true;
-      _error = '';
-    });
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+        !_isFetchingMore) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    setState(() => _isFetchingMore = true);
+    try {
+      final api = ApiService();
+      _currentPage++;
+      final reportsData = await api.getReports(page: _currentPage);
+      final schedules = await api.getSchedules(); // Should ideally cache this
+      if (mounted) {
+        ActivityLogProvider.of(context).appendFromApi(reportsData, schedules);
+      }
+    } catch (e) {
+      // Handle error (perhaps decrement _currentPage)
+    } finally {
+      if (mounted) setState(() => _isFetchingMore = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _load({bool isManual = true}) async {
+    if (isManual) {
+      setState(() {
+        _isLoading = true;
+        _error = '';
+      });
+    }
 
     try {
       final api = ApiService();
-      final reports = await api.getReports();
+      // Updated to fetch paginated reports
+      final reportsData = await api.getReports(page: 1);
       final schedules = await api.getSchedules();
       if (mounted) {
-        ActivityLogProvider.of(context).seedFromApi(reports, schedules);
+        ActivityLogProvider.of(context).seedFromApi(reportsData, schedules);
       }
     } catch (error) {
       if (mounted) {
         setState(() => _error = error.toString().replaceAll('Exception: ', ''));
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && isManual) setState(() => _isLoading = false);
     }
   }
 
@@ -54,9 +97,19 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
         title: Text('Aktivitas Rekan Kerja', style: AppTheme.titleLg),
         backgroundColor: AppTheme.surfaceLowest,
         actions: [
+          PopupMenuButton<LogEntryType?>(
+            icon: Icon(_filterType == null ? Icons.filter_list : Icons.filter_list_alt),
+            onSelected: (type) => setState(() => _filterType = type),
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: null, child: Text('Semua Aktivitas')),
+              const PopupMenuItem(value: LogEntryType.system, child: Text('Sistem')),
+              const PopupMenuItem(value: LogEntryType.user, child: Text('Laporan Pengguna')),
+              const PopupMenuItem(value: LogEntryType.alert, child: Text('Kendala/Alert')),
+            ],
+          ),
           IconButton(
             tooltip: 'Muat ulang aktivitas',
-            onPressed: _load,
+            onPressed: () => _load(),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -81,7 +134,7 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
             Text(_error, textAlign: TextAlign.center),
             const SizedBox(height: AppTheme.spMd),
             OutlinedButton.icon(
-              onPressed: _load,
+              onPressed: () => _load(),
               icon: const Icon(Icons.refresh),
               label: const Text('Coba lagi'),
             ),
@@ -95,18 +148,38 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
     return ListenableBuilder(
       listenable: ActivityLogProvider.of(context),
       builder: (context, _) {
-        final entries = ActivityLogProvider.of(context).entries;
-        if (entries.isEmpty) {
-          return const Center(child: Text('Belum ada aktivitas laporan.'));
+        final allEntries = ActivityLogProvider.of(context).entries;
+        final filteredEntries = _filterType == null
+            ? allEntries
+            : allEntries.where((e) => e.type == _filterType).toList();
+
+        if (filteredEntries.isEmpty) {
+          return Center(
+            child: Text(_filterType == null
+              ? 'Belum ada aktivitas laporan.'
+              : 'Tidak ada aktivitas dengan filter ini.'),
+          );
         }
 
         return RefreshIndicator(
-          onRefresh: _load,
+          onRefresh: () {
+            _currentPage = 1;
+            return _load();
+          },
           child: ListView.separated(
+            controller: _scrollController,
             padding: const EdgeInsets.all(AppTheme.spMd),
-            itemCount: entries.length,
+            itemCount: filteredEntries.length + (_isFetchingMore ? 1 : 0),
             separatorBuilder: (_, __) => const SizedBox(height: AppTheme.spSm),
-            itemBuilder: (_, index) => _ActivityTile(entry: entries[index]),
+            itemBuilder: (_, index) {
+              if (index == filteredEntries.length) {
+                return const Center(child: Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                ));
+              }
+              return _ActivityTile(entry: filteredEntries[index]);
+            },
           ),
         );
       },
@@ -161,6 +234,19 @@ class _ActivityTile extends StatelessWidget {
                   const SizedBox(height: AppTheme.spXs),
                   Text(entry.workOrder!, style: AppTheme.labelSm),
                 ],
+                if (entry.status != null) ...[
+                  const SizedBox(height: AppTheme.spXs),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: _statusColor(entry.status!).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(entry.status!.toUpperCase(),
+                        style: AppTheme.labelSm.copyWith(
+                            color: _statusColor(entry.status!), fontWeight: FontWeight.bold)),
+                  ),
+                ],
               ],
             ),
           ),
@@ -168,4 +254,10 @@ class _ActivityTile extends StatelessWidget {
       ),
     );
   }
+
+  Color _statusColor(String status) => switch (status) {
+    'resolved' => AppTheme.statusOk,
+    'in-progress' => AppTheme.statusWarning,
+    _ => AppTheme.alertCritical,
+  };
 }

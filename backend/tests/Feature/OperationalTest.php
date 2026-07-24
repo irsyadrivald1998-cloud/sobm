@@ -151,6 +151,7 @@ class OperationalTest extends TestCase
                 'check_in_longitude' => 100.3539,
                 'photo' => UploadedFile::fake()->image('report.jpg'),
                 'condition_status' => 'Aman/Bersih',
+                'work_description' => 'Membersihkan lantai area kerja.',
                 'notes' => 'Semua bersih',
             ]);
 
@@ -159,6 +160,7 @@ class OperationalTest extends TestCase
         $this->assertDatabaseHas('reports', [
             'schedule_id' => $schedule->id,
             'condition_status' => 'Aman/Bersih',
+            'work_description' => 'Membersihkan lantai area kerja.',
         ]);
     }
 
@@ -203,6 +205,7 @@ class OperationalTest extends TestCase
                 'check_in_longitude' => 101.3539,
                 'photo' => UploadedFile::fake()->image('report.jpg'),
                 'condition_status' => 'Aman/Bersih',
+                'work_description' => 'Membersihkan lantai area kerja.',
                 'notes' => 'Semua bersih',
             ]);
 
@@ -250,6 +253,7 @@ class OperationalTest extends TestCase
                 'check_in_longitude' => 100.3539,
                 'photo' => UploadedFile::fake()->image('report.jpg'),
                 'condition_status' => 'Ada Kendala',
+                'work_description' => 'Memeriksa kondisi lantai area kerja.',
                 'notes' => 'Ada pipa bocor',
                 'issue_description' => 'Pipa bocor di sudut ruangan',
             ]);

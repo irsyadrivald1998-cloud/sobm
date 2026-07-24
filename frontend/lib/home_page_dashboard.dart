@@ -1,6 +1,5 @@
-import 'dart:math';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'app_theme.dart';
@@ -8,22 +7,18 @@ import 'api_service.dart';
 import 'main.dart' show ActivityLogProvider;
 import 'task_detail_page.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-//  HomePage  (Dashboard)
-// ─────────────────────────────────────────────────────────────────────────────
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePageDashboard extends StatefulWidget {
+  const HomePageDashboard({super.key});
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePageDashboard> createState() => _HomePageDashboardState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageDashboardState extends State<HomePageDashboard> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _user;
   List<dynamic> _schedules = [];
   bool _isLoading = true;
   String _errorMessage = '';
-  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -66,53 +61,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _handleLogout() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Keluar Aplikasi'),
-        content: Text('Apakah Anda yakin ingin keluar?', style: AppTheme.bodyMd),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Batal')),
-          ElevatedButton(
-            onPressed: () async {
-              final nav = Navigator.of(ctx);
-              nav.pop();
-              await _apiService.logout();
-              nav.pushReplacementNamed('/');
-            },
-            child: const Text('Keluar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _openCheckInDialog(Map<String, dynamic> schedule) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => CheckInDialog(
-        schedule: schedule,
-        apiService: _apiService,
-        userName: _user?['name'] ?? 'Pekerja',
-        onSuccess: (reportData, photoBytes, photoPath) {
-          _loadInitialData();
-          // Real-time push to activity log
-          ActivityLogProvider.of(context).pushReport(
-            reportData:     reportData,
-            schedule:       schedule,
-            userName:       _user?['name'] ?? 'Pekerja',
-            photoBytes:     photoBytes,
-            photoLocalPath: photoPath,
-            notes:          reportData['notes'] as String?,
-            issueDescription: reportData['issue_description'] as String?,
-          );
-        },
-      ),
-    );
-  }
-
   void _openTaskDetail({int initialIndex = 0}) {
     if (_schedules.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -143,16 +91,6 @@ class _HomePageState extends State<HomePage> {
     } catch (_) { return false; }
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-      const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
-      return '${days[date.weekday % 7]}, ${date.day} ${months[date.month - 1]} ${date.year}';
-    } catch (_) { return dateStr; }
-  }
-
-  // ── Build ─────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -162,11 +100,9 @@ class _HomePageState extends State<HomePage> {
           : _errorMessage.isNotEmpty
               ? _buildError()
               : _buildDashboard(),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // ── Error State ───────────────────────────────────────────────────────────
   Widget _buildError() {
     return Center(
       child: Padding(
@@ -186,7 +122,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ── Dashboard Body ────────────────────────────────────────────────────────
   Widget _buildDashboard() {
     final pendingCount   = _schedules.where((s) => s['status'] == 'pending').length;
     final completedCount = _schedules.where((s) => s['status'] == 'completed').length;
@@ -198,7 +133,6 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: AppTheme.surface,
       child: CustomScrollView(
         slivers: [
-          // ── Top App Bar ─────────────────────────────────────────────
           SliverAppBar(
             pinned: true,
             backgroundColor: AppTheme.surfaceLowest,
@@ -210,8 +144,8 @@ class _HomePageState extends State<HomePage> {
               child: Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.primaryBrand.withOpacity(0.5), width: 1.5),
-                  color: AppTheme.primaryBrand.withOpacity(0.1),
+                  border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.5), width: 1.5),
+                  color: AppTheme.primaryBrand.withValues(alpha: 0.1),
                 ),
                 child: const Icon(Icons.business, color: AppTheme.primary, size: 20),
               ),
@@ -244,11 +178,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(width: 4),
             ],
           ),
-
-          // ── Critical Alarm Banner ───────────────────────────────────
           SliverToBoxAdapter(child: _CriticalAlarmBanner()),
-
-          // ── Stat Cards 2×2 Grid ─────────────────────────────────────
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
             sliver: SliverGrid(
@@ -272,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 _StatCard(
                   label: 'JADWAL TUGAS',
-                  value: '${pendingCount} Aktif',
+                  value: '$pendingCount Aktif',
                   icon: Icons.people_outline,
                 ),
                 _StatCard(
@@ -285,8 +215,6 @@ class _HomePageState extends State<HomePage> {
               ]),
             ),
           ),
-
-          // ── Check-in Checkpoint wide card ───────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spSm, AppTheme.spMd, 0),
@@ -296,37 +224,28 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
-          // ── Quick Actions ───────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
               child: _QuickActions(
                 onBuatLaporan: () => _openTaskDetail(),
                 onScanQR: () => _openTaskDetail(),
-                onMonitoring: () {},
                 onJadwalTugas: () => _openTaskDetail(),
               ),
             ),
           ),
-
-          // ── Insiden Harian ──────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
               child: _InsidenSection(),
             ),
           ),
-
-          // ── Konsumsi Energi Chart ───────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
               child: _EnergyChart(),
             ),
           ),
-
-          // ── Aktivitas Terbaru ───────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
@@ -337,107 +256,13 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
-
           const SliverToBoxAdapter(child: SizedBox(height: AppTheme.spXl)),
         ],
       ),
     );
   }
-
-  // ── Bottom Navigation ─────────────────────────────────────────────────────
-  Widget _buildBottomNav() {
-    final role = _user?['role'] as String? ?? 'worker';
-    final isAdmin = role == 'admin' || role == 'viewer';
-    
-    final items = [
-      _NavItem(icon: Icons.grid_view_rounded, label: 'Home'),
-      _NavItem(icon: Icons.monitor_heart_outlined, label: 'Monitoring'),
-      _NavItem(icon: Icons.assignment_outlined, label: 'Reports'),
-      _NavItem(
-        icon: isAdmin ? Icons.admin_panel_settings : Icons.person_outline, 
-        label: isAdmin ? 'Admin' : 'Profile',
-      ),
-    ];
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppTheme.surfaceLowest,
-        border: Border(top: BorderSide(color: AppTheme.outlineVariant, width: 0.5)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            children: List.generate(items.length, (i) {
-              final selected = _selectedTab == i;
-              return Expanded(
-                child: InkWell(
-                  onTap: () {
-                    if (i == 3) { 
-                      // Navigate to profile/admin dashboard based on role
-                      final role = _user?['role'] as String? ?? 'worker';
-                      if (role == 'admin' || role == 'viewer') {
-                        Navigator.of(context).pushNamed('/admin-dashboard');
-                      } else {
-                        Navigator.of(context).pushNamed('/profile');
-                      }
-                      return; 
-                    }
-                    if (i == 2) {
-                      Navigator.of(context).pushNamed('/activity-log');
-                      return;
-                    }
-                    setState(() => _selectedTab = i);
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40, height: 28,
-                        decoration: selected
-                            ? BoxDecoration(
-                                color: AppTheme.primaryBrand.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                              )
-                            : null,
-                        child: Icon(
-                          items[i].icon,
-                          color: selected ? AppTheme.primaryBrand : AppTheme.outline,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        items[i].label,
-                        style: AppTheme.labelSm.copyWith(
-                          color: selected ? AppTheme.primaryBrand : AppTheme.outline,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
-class _NavItem {
-  final IconData icon;
-  final String label;
-  const _NavItem({required this.icon, required this.label});
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Section Widgets
-// ─────────────────────────────────────────────────────────────────────────────
-
-/// Red pulse critical alarm banner
 class _CriticalAlarmBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -445,9 +270,9 @@ class _CriticalAlarmBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm + 4),
       decoration: BoxDecoration(
-        color: AppTheme.errorContainer.withOpacity(0.9),
+        color: AppTheme.errorContainer.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.alertCritical.withOpacity(0.5), width: 1),
+        border: Border.all(color: AppTheme.alertCritical.withValues(alpha: 0.5), width: 1),
       ),
       child: Row(
         children: [
@@ -490,7 +315,6 @@ class _CriticalAlarmBanner extends StatelessWidget {
   }
 }
 
-/// 2-column stat card
 class _StatCard extends StatelessWidget {
   final String label;
   final String value;
@@ -546,7 +370,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-/// Wide checkpoint progress card
 class _CheckpointCard extends StatelessWidget {
   final int total;
   final int completed;
@@ -587,7 +410,6 @@ class _CheckpointCard extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          // Progress ring
           SizedBox(
             width: 48, height: 48,
             child: CircularProgressIndicator(
@@ -603,17 +425,14 @@ class _CheckpointCard extends StatelessWidget {
   }
 }
 
-/// Quick action 4-button row
 class _QuickActions extends StatelessWidget {
   final VoidCallback onBuatLaporan;
   final VoidCallback onScanQR;
-  final VoidCallback onMonitoring;
   final VoidCallback onJadwalTugas;
 
   const _QuickActions({
     required this.onBuatLaporan,
     required this.onScanQR,
-    required this.onMonitoring,
     required this.onJadwalTugas,
   });
 
@@ -622,7 +441,6 @@ class _QuickActions extends StatelessWidget {
     final actions = [
       _QAction(icon: Icons.add_circle_outline, label: 'Buat\nLaporan', onTap: onBuatLaporan),
       _QAction(icon: Icons.qr_code_scanner_outlined, label: 'Scan\nQR', onTap: onScanQR),
-      _QAction(icon: Icons.monitor_outlined, label: 'Moni-\ntoring', onTap: onMonitoring),
       _QAction(icon: Icons.calendar_today_outlined, label: 'Jadwal\nTugas', onTap: onJadwalTugas),
     ];
 
@@ -675,16 +493,12 @@ class _QAction {
   const _QAction({required this.icon, required this.label, required this.onTap});
 }
 
-/// Insiden Harian section
 class _InsidenSection extends StatelessWidget {
-  const _InsidenSection({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section header
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -692,9 +506,9 @@ class _InsidenSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryBrand.withOpacity(0.15),
+                color: AppTheme.primaryBrand.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                border: Border.all(color: AppTheme.primaryBrand.withOpacity(0.4), width: 0.5),
+                border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.4), width: 0.5),
               ),
               child: Text('Hari Ini',
                   style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),
@@ -702,8 +516,6 @@ class _InsidenSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: AppTheme.spMd),
-
-        // Incident card
         Container(
           decoration: BoxDecoration(
             color: AppTheme.surface,
@@ -718,7 +530,6 @@ class _InsidenSection extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Thumbnail placeholder
                     Container(
                       width: 72, height: 72,
                       decoration: BoxDecoration(
@@ -764,7 +575,6 @@ class _InsidenSection extends StatelessWidget {
   }
 }
 
-/// Konsumsi Energi line chart (custom painter)
 class _EnergyChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -800,7 +610,6 @@ class _EnergyChart extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppTheme.spSm),
-          // X-axis labels
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['08', '09', '10', '11', '12', '13']
@@ -816,7 +625,6 @@ class _EnergyChart extends StatelessWidget {
 class _EnergyChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Data points (normalized 0-1)
     const data = [0.45, 0.55, 0.40, 0.72, 0.58, 0.50];
     final w = size.width;
     final h = size.height;
@@ -829,9 +637,10 @@ class _EnergyChartPainter extends CustomPainter {
       ));
     }
 
-    // Gradient fill under the line
     final fillPath = Path()..moveTo(points.first.dx, h);
-    for (final p in points) fillPath.lineTo(p.dx, p.dy);
+    for (final p in points) {
+      fillPath.lineTo(p.dx, p.dy);
+    }
     fillPath.lineTo(points.last.dx, h);
     fillPath.close();
 
@@ -842,13 +651,12 @@ class _EnergyChartPainter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            AppTheme.primaryBrand.withOpacity(0.3),
-            AppTheme.primaryBrand.withOpacity(0.0),
+            AppTheme.primaryBrand.withValues(alpha: 0.3),
+            AppTheme.primaryBrand.withValues(alpha: 0.0),
           ],
         ).createShader(Rect.fromLTWH(0, 0, w, h)),
     );
 
-    // Line
     final linePaint = Paint()
       ..color = AppTheme.primaryBrand
       ..strokeWidth = 2
@@ -865,7 +673,6 @@ class _EnergyChartPainter extends CustomPainter {
     linePath.lineTo(points.last.dx, points.last.dy);
     canvas.drawPath(linePath, linePaint);
 
-    // Peak dot at index 3 (value 0.72)
     canvas.drawCircle(
       points[3],
       5,
@@ -875,14 +682,13 @@ class _EnergyChartPainter extends CustomPainter {
       points[3],
       5,
       Paint()
-        ..color = Colors.white.withOpacity(0.5)
+        ..color = Colors.white.withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
 
-    // Dotted vertical line at peak
     final dotPaint = Paint()
-      ..color = AppTheme.primaryBrand.withOpacity(0.4)
+      ..color = AppTheme.primaryBrand.withValues(alpha: 0.4)
       ..strokeWidth = 1;
     const dashH = 4.0;
     const gapH  = 4.0;
@@ -897,7 +703,6 @@ class _EnergyChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter _) => false;
 }
 
-/// Aktivitas Terbaru section + schedule list
 class _AktivitasSection extends StatelessWidget {
   final List<dynamic> schedules;
   final Function(Map<String, dynamic>) onCheckIn;
@@ -906,7 +711,6 @@ class _AktivitasSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Static sample activities that match the design
     final activities = [
       _Activity(
         icon: Icons.elevator_outlined,
@@ -937,7 +741,6 @@ class _AktivitasSection extends StatelessWidget {
         Text('Aktivitas Terbaru', style: AppTheme.headlineSm),
         const SizedBox(height: AppTheme.spMd),
 
-        // Activity items
         Container(
           decoration: BoxDecoration(
             color: AppTheme.surface,
@@ -961,7 +764,6 @@ class _AktivitasSection extends StatelessWidget {
         ),
         const SizedBox(height: AppTheme.spMd),
 
-        // "Lihat Semua" button
         Center(
           child: TextButton(
             onPressed: () => Navigator.of(context).pushNamed('/activity-log'),
@@ -972,7 +774,6 @@ class _AktivitasSection extends StatelessWidget {
           ),
         ),
 
-        // Today's schedule (from API) if any
         if (schedules.isNotEmpty) ...[
           const SizedBox(height: AppTheme.spLg),
           Row(
@@ -1024,7 +825,7 @@ class _ActivityTile extends StatelessWidget {
           Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              color: activity.iconColor.withOpacity(0.15),
+              color: activity.iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(AppTheme.radiusSm),
             ),
             child: Icon(activity.icon, color: activity.iconColor, size: 20),
@@ -1070,7 +871,7 @@ class _ScheduleTile extends StatelessWidget {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: isPending ? AppTheme.primaryBrand.withOpacity(0.4) : AppTheme.outlineVariant,
+          color: isPending ? AppTheme.primaryBrand.withValues(alpha: 0.4) : AppTheme.outlineVariant,
           width: 0.5,
         ),
       ),
@@ -1105,361 +906,5 @@ class _ScheduleTile extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  CheckIn Dialog  (unchanged from previous version)
-// ─────────────────────────────────────────────────────────────────────────────
-class CheckInDialog extends StatefulWidget {
-  final Map<String, dynamic> schedule;
-  final ApiService apiService;
-  final String     userName;
-  // Returns (reportData, photoBytes, photoLocalPath)
-  final void Function(Map<String, dynamic>, Uint8List?, String) onSuccess;
-
-  const CheckInDialog({
-    super.key,
-    required this.schedule,
-    required this.apiService,
-    required this.userName,
-    required this.onSuccess,
-  });
-
-  @override
-  State<CheckInDialog> createState() => _CheckInDialogState();
-}
-
-class _CheckInDialogState extends State<CheckInDialog> {
-  final _formKey         = GlobalKey<FormState>();
-  final _notesController = TextEditingController();
-  final _issueController = TextEditingController();
-  final _picker          = ImagePicker();
-
-  bool      _isGettingLocation = false;
-  Position? _currentPosition;
-  double?   _distance;
-
-  bool      _isCapturingPhoto = false;
-  XFile?    _photoFile;
-  Uint8List? _photoBytes;
-
-  String _conditionStatus = 'Aman/Bersih';
-  bool   _isSubmitting    = false;
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    _issueController.dispose();
-    super.dispose();
-  }
-
-  double _calcDistance(double lat1, double lon1, double lat2, double lon2) {
-    const r = 6371000.0;
-    final dLat = (lat2 - lat1) * (pi / 180);
-    final dLon = (lon2 - lon1) * (pi / 180);
-    final a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(lat1 * (pi / 180)) * cos(lat2 * (pi / 180)) *
-        sin(dLon / 2) * sin(dLon / 2);
-    return r * 2 * atan2(sqrt(a), sqrt(1 - a));
-  }
-
-  Future<void> _getLocation() async {
-    setState(() { _isGettingLocation = true; _distance = null; });
-    try {
-      if (!await Geolocator.isLocationServiceEnabled()) throw Exception('GPS dinonaktifkan.');
-      var perm = await Geolocator.checkPermission();
-      if (perm == LocationPermission.denied) perm = await Geolocator.requestPermission();
-      if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-        throw Exception('Izin lokasi ditolak.');
-      }
-      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      final cp  = widget.schedule['checkpoint'] ?? {};
-      final dist = _calcDistance(pos.latitude, pos.longitude,
-          double.parse(cp['latitude'].toString()), double.parse(cp['longitude'].toString()));
-      setState(() { _currentPosition = pos; _distance = dist; });
-    } catch (e) {
-      _showSnack(e.toString().replaceAll('Exception: ', ''), isError: true);
-    } finally {
-      setState(() => _isGettingLocation = false);
-    }
-  }
-
-  Future<void> _takePhoto() async {
-    setState(() => _isCapturingPhoto = true);
-    try {
-      final photo = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70, maxWidth: 800);
-      if (photo != null) {
-        final bytes = await photo.readAsBytes();
-        setState(() { _photoFile = photo; _photoBytes = bytes; });
-      }
-    } catch (e) {
-      _showSnack('Gagal mengambil foto: $e', isError: true);
-    } finally {
-      setState(() => _isCapturingPhoto = false);
-    }
-  }
-
-  void _showSnack(String msg, {required bool isError}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
-      backgroundColor: isError ? AppTheme.errorContainer : AppTheme.surfaceHighest,
-    ));
-  }
-
-  void _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_currentPosition == null) { _showSnack('Dapatkan GPS terlebih dahulu.', isError: true); return; }
-    if (_photoBytes == null) { _showSnack('Ambil foto terlebih dahulu.', isError: true); return; }
-
-    final cp     = widget.schedule['checkpoint'] ?? {};
-    final radius = int.parse(cp['radius_meter'].toString());
-    if (_distance != null && _distance! > radius) {
-      _showSnack('Anda ${(_distance! - radius).ceil()}m di luar jangkauan!', isError: true);
-      return;
-    }
-    setState(() => _isSubmitting = true);
-    try {
-      final reportData = await widget.apiService.submitReport(
-        scheduleId: widget.schedule['id'],
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        conditionStatus: _conditionStatus,
-        notes: _notesController.text.trim(),
-        issueDescription: _conditionStatus == 'Ada Kendala' ? _issueController.text.trim() : null,
-        photoBytes: _photoBytes!,
-        photoName: _photoFile!.name,
-      );
-      if (mounted) {
-        _showSnack('Laporan berhasil dikirim!', isError: false);
-        Navigator.of(context).pop();
-        widget.onSuccess(
-          {
-            ...reportData,
-            'notes':             _notesController.text.trim(),
-            'issue_description': _conditionStatus == 'Ada Kendala'
-                ? _issueController.text.trim()
-                : null,
-          },
-          _photoBytes,
-          _photoFile?.path ?? '',
-        );
-      }
-    } catch (e) {
-      _showSnack(e.toString().replaceAll('Exception: ', ''), isError: true);
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cp     = widget.schedule['checkpoint'] ?? {};
-    final radius = int.parse(cp['radius_meter'].toString());
-    final withinRange = _distance != null && _distance! <= radius;
-
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm),
-              decoration: const BoxDecoration(
-                color: AppTheme.surfaceLow,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
-              ),
-              child: Row(children: [
-                const Icon(Icons.assignment_outlined, color: AppTheme.primary, size: 22),
-                const SizedBox(width: AppTheme.spSm),
-                Expanded(child: Text('Form Check-In Tugas', style: AppTheme.titleLg)),
-                IconButton(
-                  icon: Icon(Icons.close, color: AppTheme.outline, size: 20),
-                  onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-                ),
-              ]),
-            ),
-            const Divider(height: 1),
-
-            Flexible(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppTheme.spMd),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Checkpoint info
-                      _SectionBox(child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(cp['name'] ?? 'Checkpoint', style: AppTheme.titleLg),
-                          const SizedBox(height: AppTheme.spXs),
-                          Text('Koordinat: ${cp['latitude']}, ${cp['longitude']}', style: AppTheme.labelMd),
-                          Text('Radius: $radius meter', style: AppTheme.labelMd),
-                        ],
-                      )),
-                      const SizedBox(height: AppTheme.spMd),
-
-                      _StepLabel('1. VALIDASI LOKASI GPS', required: true),
-                      const SizedBox(height: AppTheme.spSm),
-                      SizedBox(width: double.infinity, child: OutlinedButton.icon(
-                        onPressed: _isGettingLocation ? null : _getLocation,
-                        icon: _isGettingLocation
-                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.onSurface))
-                            : const Icon(Icons.gps_fixed, size: 18),
-                        label: Text(_isGettingLocation ? 'Mendapatkan lokasi...' : 'Dapatkan GPS'),
-                      )),
-                      if (_currentPosition != null) ...[
-                        const SizedBox(height: AppTheme.spSm),
-                        _SectionBox(child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${_currentPosition!.latitude.toStringAsFixed(6)}, ${_currentPosition!.longitude.toStringAsFixed(6)}', style: AppTheme.bodyMd),
-                            if (_distance != null) ...[
-                              const SizedBox(height: AppTheme.spXs),
-                              Row(children: [
-                                Icon(withinRange ? Icons.check_circle_outline : Icons.warning_amber_outlined,
-                                    size: 16, color: withinRange ? AppTheme.statusOk : AppTheme.alertCritical),
-                                const SizedBox(width: AppTheme.spXs),
-                                Text(
-                                  withinRange
-                                      ? 'Jarak ${_distance!.toStringAsFixed(1)}m — Valid ✓'
-                                      : 'Jarak ${_distance!.toStringAsFixed(1)}m — ${(_distance! - radius).ceil()}m di luar!',
-                                  style: AppTheme.bodyMd.copyWith(
-                                    color: withinRange ? AppTheme.statusOk : AppTheme.alertCritical),
-                                ),
-                              ]),
-                            ],
-                          ],
-                        )),
-                      ],
-                      const SizedBox(height: AppTheme.spMd),
-
-                      _StepLabel('2. FOTO TUGAS', required: true),
-                      const SizedBox(height: AppTheme.spSm),
-                      SizedBox(width: double.infinity, child: OutlinedButton.icon(
-                        onPressed: _isCapturingPhoto ? null : _takePhoto,
-                        icon: _isCapturingPhoto
-                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.onSurface))
-                            : const Icon(Icons.camera_alt_outlined, size: 18),
-                        label: Text(_photoBytes != null ? 'Ambil Ulang Foto' : 'Ambil Foto'),
-                      )),
-                      if (_photoBytes != null) ...[
-                        const SizedBox(height: AppTheme.spSm),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                          child: Image.memory(_photoBytes!, height: 160, width: double.infinity, fit: BoxFit.cover),
-                        ),
-                      ],
-                      const SizedBox(height: AppTheme.spMd),
-
-                      _StepLabel('3. STATUS KONDISI', required: true),
-                      const SizedBox(height: AppTheme.spSm),
-                      DropdownButtonFormField<String>(
-                        value: _conditionStatus,
-                        dropdownColor: AppTheme.surfaceLow,
-                        style: AppTheme.bodyLg.copyWith(color: AppTheme.onSurface),
-                        items: const [
-                          DropdownMenuItem(value: 'Aman/Bersih', child: Text('Aman / Bersih')),
-                          DropdownMenuItem(value: 'Ada Kendala', child: Text('Ada Kendala')),
-                        ],
-                        onChanged: (v) { if (v != null) setState(() => _conditionStatus = v); },
-                      ),
-                      const SizedBox(height: AppTheme.spMd),
-
-                      _StepLabel('4. CATATAN', required: false),
-                      const SizedBox(height: AppTheme.spSm),
-                      TextFormField(
-                        controller: _notesController, maxLines: 2,
-                        style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
-                        decoration: const InputDecoration(hintText: 'Catatan opsional...'),
-                      ),
-
-                      if (_conditionStatus == 'Ada Kendala') ...[
-                        const SizedBox(height: AppTheme.spMd),
-                        _StepLabel('5. DESKRIPSI KENDALA', required: true, color: AppTheme.alertCritical),
-                        const SizedBox(height: AppTheme.spSm),
-                        TextFormField(
-                          controller: _issueController, maxLines: 3,
-                          style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
-                          decoration: const InputDecoration(hintText: 'Deskripsikan kendala...'),
-                          validator: (v) {
-                            if (_conditionStatus == 'Ada Kendala' && (v == null || v.trim().isEmpty)) {
-                              return 'Wajib diisi jika ada kendala';
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            const Divider(height: 1),
-            Padding(
-              padding: const EdgeInsets.all(AppTheme.spMd),
-              child: Row(children: [
-                Expanded(child: OutlinedButton(
-                  onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-                  child: const Text('Batal'),
-                )),
-                const SizedBox(width: AppTheme.spMd),
-                Expanded(flex: 2, child: ElevatedButton.icon(
-                  onPressed: _isSubmitting ? null : _submit,
-                  icon: _isSubmitting
-                      ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.send_outlined, size: 18),
-                  label: Text(_isSubmitting ? 'Mengirim...' : 'Kirim Laporan'),
-                )),
-              ]),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Dialog helpers ────────────────────────────────────────────────────────────
-class _SectionBox extends StatelessWidget {
-  final Widget child;
-  const _SectionBox({required this.child});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppTheme.spMd),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceLow,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
-      ),
-      child: child,
-    );
-  }
-}
-
-class _StepLabel extends StatelessWidget {
-  final String text;
-  final bool required;
-  final Color? color;
-  const _StepLabel(this.text, {required this.required, this.color});
-  @override
-  Widget build(BuildContext context) {
-    return Row(children: [
-      Text(text, style: AppTheme.labelMd.copyWith(
-          letterSpacing: 1.1, color: color ?? AppTheme.onSurfaceVariant)),
-      if (required) ...[
-        const SizedBox(width: 4),
-        Text('(WAJIB)', style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),
-      ],
-    ]);
   }
 }

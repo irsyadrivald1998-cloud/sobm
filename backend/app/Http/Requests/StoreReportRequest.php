@@ -15,7 +15,7 @@ class StoreReportRequest extends FormRequest
             return false;
         }
 
-        return in_array($user->role, ['housekeeping', 'teknisi', 'security'], true);
+        return in_array($user->role, ['housekeeping', 'teknisi', 'security', 'osb', 'resepsionis'], true);
     }
 
     /**
@@ -23,15 +23,23 @@ class StoreReportRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'schedule_id' => 'required|integer|exists:schedules,id',
+        $rules = [
             'check_in_latitude' => 'required|numeric|between:-90,90',
             'check_in_longitude' => 'required|numeric|between:-180,180',
             'photo' => 'required|image|mimes:jpeg,jpg,png,webp|max:2048',
             'condition_status' => 'required|in:Aman/Bersih,Ada Kendala',
+            'work_description' => 'required|string',
             'notes' => 'nullable|string',
             'issue_description' => 'required_if:condition_status,Ada Kendala|string',
         ];
+
+        if (!in_array($this->user()->role, ['osb', 'resepsionis'], true)) {
+            $rules['schedule_id'] = 'required|integer|exists:schedules,id';
+        } else {
+            $rules['schedule_id'] = 'nullable|integer|exists:schedules,id';
+        }
+
+        return $rules;
     }
 
     public function messages(): array
@@ -43,6 +51,7 @@ class StoreReportRequest extends FormRequest
             'photo.required' => 'Foto wajib diunggah.',
             'photo.image' => 'Berkas harus berupa gambar.',
             'photo.max' => 'Ukuran foto maksimal 2 MB.',
+            'work_description.required' => 'Deskripsi pekerjaan wajib diisi.',
         ];
     }
 }
