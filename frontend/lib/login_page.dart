@@ -252,7 +252,31 @@ class _LoginPageState extends State<LoginPage> {
                         ? 'Password wajib diisi'
                         : null,
                   ),
-                  const SizedBox(height: AppTheme.spXl),
+                  const SizedBox(height: AppTheme.spSm),
+
+                  // ── Forgot Password Link ───────────────────────────
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed('/forgot-password');
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppTheme.spSm,
+                          vertical: AppTheme.spXs,
+                        ),
+                      ),
+                      child: Text(
+                        'Lupa Password?',
+                        style: AppTheme.bodyMd.copyWith(
+                          color: AppTheme.primaryBrand,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spMd),
 
                   // ── Masuk Button ───────────────────────────────────
                   _MasukButton(

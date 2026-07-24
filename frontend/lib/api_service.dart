@@ -367,4 +367,77 @@ class ApiService {
       throw Exception(responseData['message'] ?? 'Gagal mengupdate status kendala (Error ${response.statusCode}).');
     }
   }
+
+  // POST /leave-submissions
+  Future<Map<String, dynamic>> submitLeaveRequest({
+    required String leaveType,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String reason,
+    Uint8List? attachmentBytes,
+    required String attachmentName,
+  }) async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final request = http.MultipartRequest('POST', Uri.parse('$baseUrl/leave-submissions'));
+    request.headers.addAll({
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    request.fields['leave_type'] = leaveType;
+    request.fields['start_date'] = startDate.toIso8601String().split('T')[0];
+    request.fields['end_date'] = endDate.toIso8601String().split('T')[0];
+    request.fields['reason'] = reason;
+
+    if (attachmentBytes != null) {
+      request.files.add(http.MultipartFile.fromBytes(
+        'attachment',
+        attachmentBytes,
+        filename: attachmentName,
+      ));
+    }
+
+    final streamedResponse = await request.send().timeout(const Duration(seconds: 20));
+    final response = await http.Response.fromStream(streamedResponse);
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      if (responseData['status'] == true) {
+        return responseData['data'] as Map<String, dynamic>;
+      } else {
+        throw Exception(responseData['message'] ?? 'Gagal mengirim pengajuan.');
+      }
+    } else {
+      throw Exception(responseData['message'] ?? 'Gagal mengirim pengajuan (Error ${response.statusCode}).');
+    }
+  }
+
+  // POST /password/forgot (placeholder - backend belum implementasi)
+  Future<void> requestPasswordReset({required String employeeId}) async {
+    final baseUrl = await getBaseUrl();
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/password/forgot'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'employee_id': employeeId}),
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (responseData['status'] == true) {
+        return;
+      } else {
+        throw Exception(responseData['message'] ?? 'Gagal mengirim reset link.');
+      }
+    } else {
+      throw Exception(responseData['message'] ?? 'Gagal mengirim reset link (Error ${response.statusCode}).');
+    }
+  }
 }

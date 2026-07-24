@@ -5,7 +5,6 @@ import 'activity_log_notifier.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ActivityLogProvider;
-import 'issue_detail_page.dart';
 
 class ActivityLogPage extends StatefulWidget {
   const ActivityLogPage({super.key});

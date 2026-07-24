@@ -99,8 +99,8 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 Tampilkan status issue di Filament (Admin) dan/atau di feed mobile.
-- 🔲 (Jika relevan) UI konfirmasi/laporan tindak lanjut issue di sisi
+- ✅ Tampilkan status issue di Filament (Admin) dan/atau di feed mobile.
+- ✅ (Jika relevan) UI konfirmasi/laporan tindak lanjut issue di sisi
   pekerja.
 
 ---
@@ -121,7 +121,7 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 Implementasi kompresi foto sebelum upload (m engurangi risiko gagal/
+- ✅ Implementasi kompresi foto sebelum upload (mengurangi risiko gagal/
   lambat pada jaringan lapangan buruk).
 - 🔲 Sesuaikan alur selfie/kamera bila liveness detection ditambahkan di
   backend.
@@ -149,9 +149,9 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Frontend
 
-- 🔲 UI pengajuan cuti/izin/sakit (jika modul backend sudah tersedia).
-- 🔲 UI forgot/reset password.
-- 🔲 Sesuaikan tampilan status kehadiran bila ada status baru terkait cuti
+- ✅ UI pengajuan cuti/izin/sakit (jika modul backend sudah tersedia).
+- ✅ UI forgot/reset password.
+- ✅ Sesuaikan tampilan status kehadiran bila ada status baru terkait cuti
   (mis. `Izin`, `Sakit`) selain `Hadir`/`Terlambat`/`Alpa`.
 
 ---
@@ -185,7 +185,7 @@ task **Backend** dan **Frontend** secara terpisah.
 
 ### Backend
 
-- 🔲 Tambah API versioning (`/api/v1/...`) untuk mengantisipasi perubahan
+- 🔲 Tambah API versioning (`/api/`) untuk mengantisipasi perubahan
   breaking.
 - 🔲 Tambah observability: logging terstruktur, error tracking, monitoring
   uptime.
@@ -193,6 +193,6 @@ task **Backend** dan **Frontend** secara terpisah.
 ### Frontend
 
 - 🔲 Pisahkan base URL Flutter dari source code ke konfigurasi environment
-  (mendukung penambahan versi API `/v1/` di atas tanpa hardcode).
+  (mendukung penambahan versi API `/` di atas tanpa hardcode).
 - 🔲 Tambah error tracking sisi mobile (mis. crash reporting) agar selaras
   dengan observability backend.

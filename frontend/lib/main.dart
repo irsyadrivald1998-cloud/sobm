@@ -9,6 +9,8 @@ import 'admin_dashboard_page.dart';
 import 'profile_page.dart';
 import 'attendance_page.dart';
 import 'access_denied_page.dart';
+import 'forgot_password_page.dart';
+import 'leave_submission_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -54,6 +56,8 @@ class _MyAppState extends State<MyApp> {
               '/profile':         (context) => const ProfilePage(),
               '/attendance':      (context) => const AttendancePage(),
               '/access-denied':   (context) => const AccessDeniedPage(),
+              '/forgot-password': (context) => const ForgotPasswordPage(),
+              '/leave-submission': (context) => const LeaveSubmissionPage(),
             },
           ),
         ),
