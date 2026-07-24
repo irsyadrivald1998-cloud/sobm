@@ -21,6 +21,7 @@ class _MyTasksPageState extends State<MyTasksPage> with SingleTickerProviderStat
   bool _isLoading = true;
   String _errorMessage = '';
   int? _highlightScheduleId; // For highlighting specific task from notification
+  bool _hasNavigatedToTask = false; // Prevent multiple navigations
   
   late TabController _tabController;
   
@@ -35,14 +36,17 @@ class _MyTasksPageState extends State<MyTasksPage> with SingleTickerProviderStat
   void didChangeDependencies() {
     super.didChangeDependencies();
     
-    // Get schedule ID from route arguments (from notification)
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null && args.containsKey('scheduleId')) {
-      _highlightScheduleId = args['scheduleId'] as int?;
-      
-      // After schedules loaded, find and navigate to the right tab
-      if (_schedules.isNotEmpty && _highlightScheduleId != null) {
-        _navigateToTask(_highlightScheduleId!);
+    // Only process arguments once
+    if (!_hasNavigatedToTask) {
+      // Get schedule ID from route arguments (from notification)
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null && args.containsKey('scheduleId')) {
+        _highlightScheduleId = args['scheduleId'] as int?;
+        
+        // After schedules loaded, find and navigate to the right tab
+        if (_schedules.isNotEmpty && _highlightScheduleId != null) {
+          _navigateToTask(_highlightScheduleId!);
+        }
       }
     }
   }
@@ -66,8 +70,8 @@ class _MyTasksPageState extends State<MyTasksPage> with SingleTickerProviderStat
         _isLoading = false;
       });
       
-      // After loading, navigate to highlighted task if specified
-      if (_highlightScheduleId != null) {
+      // After loading, navigate to highlighted task if specified and not yet navigated
+      if (_highlightScheduleId != null && !_hasNavigatedToTask) {
         _navigateToTask(_highlightScheduleId!);
       }
     } catch (e) {
@@ -79,6 +83,10 @@ class _MyTasksPageState extends State<MyTasksPage> with SingleTickerProviderStat
   }
 
   void _navigateToTask(int scheduleId) {
+    // Prevent multiple navigations
+    if (_hasNavigatedToTask) return;
+    _hasNavigatedToTask = true;
+    
     // Find the task and determine which tab it's in
     final task = _schedules.firstWhere(
       (s) => s['id'] == scheduleId,
@@ -105,7 +113,7 @@ class _MyTasksPageState extends State<MyTasksPage> with SingleTickerProviderStat
 
     // Auto-open the task detail after a short delay
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
+      if (mounted && _hasNavigatedToTask) {
         _openTaskDetail(task);
       }
     });
