@@ -18,6 +18,9 @@ class MarkAlpaCommand extends Command
             ->whereDoesntHave('attendances', function ($query) use ($today) {
                 $query->where('date', $today);
             })
+            ->whereDoesntHave('leaveSubmissions', function ($query) use ($today) {
+                $query->where('date', $today);
+            })
             ->get();
 
         foreach ($users as $user) {

@@ -23,7 +23,10 @@ class Issue extends Model
                 $issue->resolved_at = $issue->resolved_at ?? now();
                 $issue->resolved_by = $issue->resolved_by ?? \Illuminate\Support\Facades\Auth::id();
             } elseif ($issue->isDirty('is_resolved') && !$issue->is_resolved) {
-                $issue->status = 'open';
+                // Only set to 'open' if not explicitly set to 'in-progress'
+                if ($issue->status !== 'in-progress') {
+                    $issue->status = 'open';
+                }
                 $issue->resolved_at = null;
                 $issue->resolved_by = null;
                 $issue->resolution_notes = null;
@@ -35,7 +38,7 @@ class Issue extends Model
                     $issue->is_resolved = true;
                     $issue->resolved_at = $issue->resolved_at ?? now();
                     $issue->resolved_by = $issue->resolved_by ?? \Illuminate\Support\Facades\Auth::id();
-                } elseif ($issue->status === 'open') {
+                } elseif ($issue->status === 'open' || $issue->status === 'in-progress') {
                     $issue->is_resolved = false;
                     $issue->resolved_at = null;
                     $issue->resolved_by = null;

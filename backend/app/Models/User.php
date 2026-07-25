@@ -14,7 +14,7 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['employee_id', 'name', 'password', 'role'])]
+#[Fillable(['employee_id', 'name', 'password', 'role', 'password_reset_token', 'password_reset_expires_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {

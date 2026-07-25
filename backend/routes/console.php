@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('schedules:generate')->hourly();
+Schedule::command('attendances:mark-alpa')->dailyAt('23:59');

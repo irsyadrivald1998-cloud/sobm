@@ -68,7 +68,7 @@ class ReportController extends Controller
     {
         $user = $request->user();
         $scheduleId = $request->validated('schedule_id') ? (int) $request->validated('schedule_id') : null;
-        $isOsbOrResepsionis = in_array($user->role, ['osb', 'resepsionis']);
+        $isOsbOrResepsionis = in_array($user->role, ['osb', 'resepsionis'], true);
 
         try {
             $report = DB::transaction(function () use ($request, $scheduleId, $user, $isOsbOrResepsionis) {

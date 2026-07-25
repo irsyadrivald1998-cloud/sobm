@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Route;
 
 // Remove v1 prefix - routes now at /api/* directly
 Route::post('/login', [AuthController::class, 'login'])->middleware('login_rate_limit');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('login_rate_limit');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::get('/user', function (Request $request) {
         return ApiResponse::success($request->user(), 'OK');
     });

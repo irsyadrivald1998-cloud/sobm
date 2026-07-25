@@ -145,10 +145,12 @@ task **Backend** dan **Frontend** secara terpisah.
   atau tanggal kalender saat clock-in/out).
 - ✅ Bangun modul manajemen cuti/izin/sakit (Upload surat izin/sakit); pastikan user berstatus izin
   resmi tidak otomatis menjadi `Alpa`.
-- 🔲 Tambah scheduled job/command untuk otomatis menandai status `Alpa`
-  saat user tidak clock-in sama sekali.
-- 🔲 Update `schedules:generate` (round-robin) agar mempertimbangkan user
-  yang sedang cuti/izin.
+- ✅ Tambah command untuk otomatis menandai status `Alpa` saat user tidak
+  clock-in sama sekali (MarkAlpaCommand sudah dibuat).
+- 🔲 Tambah scheduled job (cron/scheduler) untuk menjalankan MarkAlpaCommand
+  setiap hari pada waktu yang ditentukan.
+- ✅ Update `schedules:generate` (round-robin) agar mempertimbangkan user
+  yang sedang cuti/izin (sudah diimplementasi dengan whereDoesntHave leaveSubmissions).
 - 🔲 Tambah mekanisme forgot/reset password untuk pekerja lapangan (saat
   ini hanya mengandalkan password hasil seeding).
 
@@ -172,11 +174,19 @@ task **Backend** dan **Frontend** secara terpisah.
 - ✅ Tambah soft delete pada `schedules`, `reports`, `attendances`.
 - ✅ Tambah index: `schedules (user_id, date, status)` dan
   `reports (created_at)`.
-- 🔲 Putuskan struktur penyimpanan foto (kolom langsung vs tabel `media`
-  polymorphic) sebelum kebutuhan multi-foto per laporan muncul.
-- 🔲 Putuskan apakah `reports` menyimpan referensi langsung ke
-  `checkpoints`/`areas` atau tetap join lewat `schedules`.
-- 🔲 Evaluasi kebijakan arsip data operasional secara keseluruhan.
+- ✅ Putuskan struktur penyimpanan foto: **Gunakan kolom langsung untuk sekarang**
+  (reports.photo_path, attendances.clock_in_photo_path/clock_out_photo_path,
+  leave_submissions.attachment_path). Akan migrasi ke tabel `media` polymorphic
+  bila kebutuhan multi-foto per laporan muncul di masa depan.
+- ✅ Putuskan struktur referensi `reports`: **Tetap join lewat `schedules`**
+  (reports.schedule_id -> schedules.checkpoint_id -> checkpoints.area_id).
+  Struktur ini menjaga integritas data dan konsistensi dengan jadwal. Untuk
+  role OSB/Resepsionis yang bisa submit tanpa jadwal, schedule_id nullable
+  dan tetap bisa diisi bila ada checkpoint terkait.
+- ✅ Evaluasi kebijakan arsip data operasional: **Gunakan soft delete untuk
+  sekarang** (schedules, reports, attendances sudah soft delete). Implementasi
+  archival/backup ke storage terpisah atau cold storage bila data sudah
+  mencapai threshold tertentu (mis. 1 tahun atau 1 juta records).
 
 ### Frontend
 
