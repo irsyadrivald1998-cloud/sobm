@@ -29,6 +29,29 @@ class AttendanceController extends Controller
         return ApiResponse::success($attendance, 'Status absen hari ini.');
     }
 
+    public function history(Request $request)
+    {
+        $request->validate([
+            'month' => 'nullable|integer|min:1|max:12',
+            'year'  => 'nullable|integer|min:2020|max:2100',
+        ]);
+
+        $month = $request->get('month', Carbon::now()->month);
+        $year  = $request->get('year',  Carbon::now()->year);
+
+        $attendances = Attendance::where('user_id', $request->user()->id)
+            ->whereMonth('date', $month)
+            ->whereYear('date', $year)
+            ->orderBy('date')
+            ->get();
+
+        return ApiResponse::success([
+            'month'       => (int) $month,
+            'year'        => (int) $year,
+            'attendances' => $attendances,
+        ], 'Riwayat absensi.');
+    }
+
     public function clockIn(Request $request)
     {
         $request->validate([

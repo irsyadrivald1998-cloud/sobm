@@ -1,3 +1,24 @@
+# Task — Fitur Absensi SOBM
+
+## Backend
+
+- [x] Tambah method `history()` di `AttendanceController.php`
+- [x] Tambah route `GET /attendance/history` di `api.php`
+- [x] Fix `LeaveSubmissionController.php` agar sinkron dengan frontend
+- [x] Buat migration baru untuk update tabel `leave_submissions` (tambah `start_date`, `end_date`, `reason`, buat `attachment_path` nullable)
+- [x] Update model `LeaveSubmission.php` (fillable + casts)
+- [x] Jalankan migration
+
+## Frontend
+
+- [x] Tambah method `getAttendanceHistory()` di `api_service.dart`
+- [x] Redesign `attendance_page.dart` — tambah Clock In & Clock Out dengan alur GPS → Selfie → Konfirmasi → Kirim API
+- [x] Tambah tab Riwayat di `attendance_page.dart` — picker bulan + list riwayat
+- [x] Tambah card status absensi di `home_page.dart` (shortcut ke halaman absensi)
+- [x] Tambah item navigasi Absensi di bottom nav `home_page.dart`
+
+---
+
 # Task — SOBM (per Milestone)
 
 Status: ✅ selesai · 🔲 belum dikerjakan. Setiap milestone dipecah menjadi

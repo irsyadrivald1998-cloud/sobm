@@ -254,6 +254,31 @@ class ApiService {
         photoName: photoName,
       );
 
+  // GET /attendance/history?month=&year=
+  Future<Map<String, dynamic>> getAttendanceHistory({int? month, int? year}) async {
+    final baseUrl = await getBaseUrl();
+    final token = await getToken();
+    if (token == null) throw Exception('Tidak terautentikasi.');
+
+    final now = DateTime.now();
+    final m = month ?? now.month;
+    final y = year ?? now.year;
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/attendance/history?month=$m&year=$y'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+    if (response.statusCode == 200 && responseData['status'] == true) {
+      return Map<String, dynamic>.from(responseData['data'] as Map);
+    }
+    throw Exception(responseData['message'] ?? 'Gagal mengambil riwayat absensi.');
+  }
+
   // GET /reports — activity log with pagination
   Future<Map<String, dynamic>> getReports({int page = 1}) async {
     final baseUrl = await getBaseUrl();

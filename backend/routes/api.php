@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Attendance
         Route::get('/attendance/today', [AttendanceController::class, 'today']);
+        Route::get('/attendance/history', [AttendanceController::class, 'history']);
         Route::post('/attendance/clock-in', [AttendanceController::class, 'clockIn']);
         Route::post('/attendance/clock-out', [AttendanceController::class, 'clockOut']);
         Route::patch('/issues/{issue}/status', [IssueController::class, 'updateStatus']);
