@@ -58,7 +58,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
       if (mounted) {
         setState(() {
-          _currentPhotoUrl = updatedUser['photo_url'] as String?;
+          final rawUrl = updatedUser['photo_url'] as String?;
+          _currentPhotoUrl = rawUrl != null ? '$rawUrl?t=${DateTime.now().millisecondsSinceEpoch}' : null;
           _isUploadingPhoto = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +159,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                     color: AppTheme.primaryBrand,
                                   ),
                                 )
-                              : _currentPhotoUrl != null
+                              : (_currentPhotoUrl != null && _currentPhotoUrl!.isNotEmpty)
                                   ? Image.network(
                                       _currentPhotoUrl!,
                                       fit: BoxFit.cover,

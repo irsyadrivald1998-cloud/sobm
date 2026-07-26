@@ -26,7 +26,8 @@ class ProfileController extends Controller
 
             // Simpan foto baru
             $path = $request->file('avatar')->store('avatars', 'public');
-            $user->update(['photo_path' => $path]);
+            $user->photo_path = $path;
+            $user->save();
 
             return ApiResponse::success([
                 'user' => $user->fresh()

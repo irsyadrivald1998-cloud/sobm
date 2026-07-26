@@ -44,9 +44,35 @@ class ApiService {
     return prefs.getString(keyToken);
   }
 
-  // Load user info
+  // Load user info (fetches fresh from API if online, falls back to local cache)
   Future<Map<String, dynamic>?> getUser() async {
     final prefs = await SharedPreferences.getInstance();
+    final token = await getToken();
+    
+    if (token != null) {
+      try {
+        final baseUrl = await getBaseUrl();
+        final response = await http.get(
+          Uri.parse('$baseUrl/user'),
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ).timeout(const Duration(seconds: 5));
+
+        if (response.statusCode == 200) {
+          final responseData = jsonDecode(response.body);
+          if (responseData['status'] == true && responseData['data'] != null) {
+            final freshUser = Map<String, dynamic>.from(responseData['data'] as Map);
+            await prefs.setString(keyUser, jsonEncode(freshUser));
+            return freshUser;
+          }
+        }
+      } catch (_) {
+        // Fallback to local cache if offline or error
+      }
+    }
+
     final userStr = prefs.getString(keyUser);
     if (userStr != null) {
       try {
