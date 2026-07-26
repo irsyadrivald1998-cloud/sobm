@@ -25,6 +25,10 @@ class _HomePageState extends State<HomePage> {
   String _errorMessage = '';
   int _selectedTab = 0;
 
+  // ── Attendance state ──────────────────────────────────────────────────────
+  Map<String, dynamic>? _todayAttendance;
+  bool _attendanceLoaded = false;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +50,13 @@ class _HomePageState extends State<HomePage> {
       } catch (_) {
         // Ignore reports error, use empty map with empty data array
       }
+
+      // Load today's attendance (non-blocking)
+      _apiService.getTodayAttendance().then((att) {
+        if (mounted) setState(() { _todayAttendance = att; _attendanceLoaded = true; });
+      }).catchError((_) {
+        if (mounted) setState(() => _attendanceLoaded = true);
+      });
 
       setState(() {
         _user      = userData;
@@ -317,6 +328,22 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
+          // ── Attendance Card ──────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spSm, AppTheme.spMd, 0),
+              child: _AttendanceStatusCard(
+                attendance: _todayAttendance,
+                isLoaded: _attendanceLoaded,
+                onTap: () => Navigator.of(context).pushNamed('/attendance').then((_) {
+                  _apiService.getTodayAttendance().then((att) {
+                    if (mounted) setState(() { _todayAttendance = att; _attendanceLoaded = true; });
+                  }).catchError((_) {});
+                }),
+              ),
+            ),
+          ),
+
           // ── Check-in Checkpoint wide card ───────────────────────────
           SliverToBoxAdapter(
             child: Padding(
@@ -379,12 +406,13 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBottomNav() {
     final role = _user?['role'] as String? ?? 'worker';
     final isAdmin = role == 'admin' || role == 'viewer';
-    
+
     final items = [
       _NavItem(icon: Icons.grid_view_rounded, label: 'Home'),
+      _NavItem(icon: Icons.fingerprint_rounded, label: 'Absensi'),
       _NavItem(icon: Icons.assignment_outlined, label: 'Reports'),
       _NavItem(
-        icon: isAdmin ? Icons.admin_panel_settings : Icons.person_outline, 
+        icon: isAdmin ? Icons.admin_panel_settings : Icons.person_outline,
         label: isAdmin ? 'Admin' : 'Profile',
       ),
     ];
@@ -402,22 +430,30 @@ class _HomePageState extends State<HomePage> {
             children: List.generate(items.length, (i) {
               final selected = _selectedTab == i;
               return Expanded(
+              return Expanded(
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      if (i == 2) { 
-                        // Navigate to profile/admin dashboard based on role
+                      if (i == 3) {
                         final role = _user?['role'] as String? ?? 'worker';
                         if (role == 'admin' || role == 'viewer') {
                           Navigator.of(context).pushNamed('/admin-dashboard');
                         } else {
                           Navigator.of(context).pushNamed('/profile');
                         }
-                        return; 
+                        return;
+                      }
+                      if (i == 2) {
+                        Navigator.of(context).pushNamed('/activity-log');
+                        return;
                       }
                       if (i == 1) {
-                        Navigator.of(context).pushNamed('/activity-log');
+                        Navigator.of(context).pushNamed('/attendance').then((_) {
+                          _apiService.getTodayAttendance().then((att) {
+                            if (mounted) setState(() { _todayAttendance = att; _attendanceLoaded = true; });
+                          }).catchError((_) {});
+                        });
                         return;
                       }
                       setState(() => _selectedTab = i);
@@ -467,8 +503,146 @@ class _NavItem {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Section Widgets
+//  Attendance Status Card (Dashboard)
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _AttendanceStatusCard extends StatelessWidget {
+  final Map<String, dynamic>? attendance;
+  final bool isLoaded;
+  final VoidCallback onTap;
+
+  const _AttendanceStatusCard({
+    required this.attendance,
+    required this.isLoaded,
+    required this.onTap,
+  });
+
+  Color _statusColor(String? s) => switch (s) {
+        'Hadir' => AppTheme.statusOk,
+        'Terlambat' => AppTheme.statusWarning,
+        'Alpa' => AppTheme.alertCritical,
+        _ => AppTheme.outline,
+      };
+
+  IconData _statusIcon(String? s) => switch (s) {
+        'Hadir' => Icons.check_circle_rounded,
+        'Terlambat' => Icons.schedule_rounded,
+        'Alpa' => Icons.cancel_rounded,
+        _ => Icons.fingerprint,
+      };
+
+  String _statusLabel(String? s) => switch (s) {
+        'Hadir' => 'Hadir',
+        'Terlambat' => 'Terlambat',
+        'Alpa' => 'Alpa',
+        _ => 'Belum Absen',
+      };
+
+  String _fmtTime(String? raw) {
+    if (raw == null) return '—';
+    try {
+      final parts = raw.contains('T') ? raw.split('T')[1].split(':') : raw.split(':');
+      return '${parts[0].padLeft(2, '0')}:${parts[1]}';
+    } catch (_) {
+      return raw;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final status     = attendance?['status'] as String?;
+    final clockIn    = attendance?['clock_in_time'] as String?;
+    final clockOut   = attendance?['clock_out_time'] as String?;
+    final color      = _statusColor(status);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.spMd),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withValues(alpha: 0.15),
+              color.withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+          border: Border.all(color: color.withValues(alpha: 0.35), width: 1.2),
+        ),
+        child: !isLoaded
+            ? Row(children: [
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.outlineVariant.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spMd),
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Container(width: 80, height: 10, decoration: BoxDecoration(
+                    color: AppTheme.outlineVariant.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  )),
+                  const SizedBox(height: 6),
+                  Container(width: 120, height: 14, decoration: BoxDecoration(
+                    color: AppTheme.outlineVariant.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(4),
+                  )),
+                ]),
+              ])
+            : Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(_statusIcon(status), color: color, size: 24),
+                  ),
+                  const SizedBox(width: AppTheme.spMd),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Absensi Hari Ini',
+                          style: AppTheme.labelMd.copyWith(
+                              color: AppTheme.onSurfaceVariant),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          _statusLabel(status),
+                          style: AppTheme.bodyLg.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
+                        ),
+                        if (clockIn != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'Masuk ${_fmtTime(clockIn)}${clockOut != null ? '  ·  Keluar ${_fmtTime(clockOut)}' : ''}',
+                            style: AppTheme.labelSm.copyWith(
+                                color: AppTheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right_rounded,
+                      color: AppTheme.outline, size: 20),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+
 
 /// Red pulse critical alarm banner
 class _CriticalAlarmBanner extends StatelessWidget {
