@@ -14,9 +14,16 @@ class UsersTable
     {
         return $table
             ->columns([
+                \Filament\Tables\Columns\ImageColumn::make('photo_path')
+                    ->label('Foto')
+                    ->circular(),
                 TextColumn::make('employee_id')
                     ->searchable(),
                 TextColumn::make('name')
+                    ->searchable(),
+                TextColumn::make('email')
+                    ->searchable(),
+                TextColumn::make('phone')
                     ->searchable(),
                 TextColumn::make('role')
                     ->badge(),

@@ -22,6 +22,11 @@ class UserForm
                     ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $context): bool => $context === 'create'),
+                TextInput::make('email')
+                    ->email()
+                    ->unique(ignoreRecord: true),
+                TextInput::make('phone')
+                    ->tel(),
                 Select::make('role')
                     ->options([
                         'admin' => 'Admin',
@@ -35,6 +40,10 @@ class UserForm
                         'user' => 'User',
                     ])
                     ->required(),
+                \Filament\Forms\Components\FileUpload::make('photo_path')
+                    ->label('Foto Profil')
+                    ->image()
+                    ->directory('avatars'),
             ]);
     }
 }
