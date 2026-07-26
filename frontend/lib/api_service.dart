@@ -471,7 +471,7 @@ class ApiService {
     if (token == null) throw Exception('Tidak terautentikasi.');
 
     final request = http.MultipartRequest(
-      'PUT',
+      'POST',
       Uri.parse('$baseUrl/user/profile'),
     );
 

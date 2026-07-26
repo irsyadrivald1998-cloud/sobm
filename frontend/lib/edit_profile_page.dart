@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
+import 'package:image_picker/image_picker.dart';
 
 class EditProfilePage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -20,6 +21,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _phoneController;
   
   bool _isSubmitting = false;
+  String? _currentPhotoUrl;
+  bool _isUploadingPhoto = false;
 
   @override
   void initState() {
@@ -27,6 +30,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _nameController = TextEditingController(text: widget.user['name'] ?? '');
     _emailController = TextEditingController(text: widget.user['email'] ?? '');
     _phoneController = TextEditingController(text: widget.user['phone'] ?? '');
+    _currentPhotoUrl = widget.user['photo_url'] as String?;
   }
 
   @override
@@ -35,6 +39,46 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? file = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+        maxWidth: 800,
+      );
+
+      if (file == null) return;
+
+      setState(() => _isUploadingPhoto = true);
+
+      final updatedUser = await _apiService.updateAvatar(file.path);
+
+      if (mounted) {
+        setState(() {
+          _currentPhotoUrl = updatedUser['photo_url'] as String?;
+          _isUploadingPhoto = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diperbarui'),
+            backgroundColor: AppTheme.statusOk,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isUploadingPhoto = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal memperbarui foto: ${e.toString()}'),
+            backgroundColor: AppTheme.alertCritical,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _saveProfile() async {
@@ -92,54 +136,78 @@ class _EditProfilePageState extends State<EditProfilePage> {
             children: [
               // Avatar Section
               Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppTheme.primaryBrand.withValues(alpha: 0.15),
-                        border: Border.all(
-                          color: AppTheme.primaryBrand.withValues(alpha: 0.5),
-                          width: 3,
-                        ),
-                      ),
-                      child: Icon(
-                        _getRoleIcon(widget.user['role'] ?? 'worker'),
-                        size: 48,
-                        color: AppTheme.primaryBrand,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
+                child: GestureDetector(
+                  onTap: _isUploadingPhoto ? null : _pickAndUploadAvatar,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryBrand,
                           shape: BoxShape.circle,
+                          color: AppTheme.primaryBrand.withValues(alpha: 0.15),
                           border: Border.all(
-                            color: Theme.of(context).scaffoldBackgroundColor,
-                            width: 2,
+                            color: AppTheme.primaryBrand.withValues(alpha: 0.5),
+                            width: 3,
                           ),
                         ),
-                        child: const Icon(
-                          Icons.camera_alt,
-                          size: 16,
-                          color: Colors.white,
+                        child: ClipOval(
+                          child: _isUploadingPhoto
+                              ? const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppTheme.primaryBrand,
+                                  ),
+                                )
+                              : _currentPhotoUrl != null
+                                  ? Image.network(
+                                      _currentPhotoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                        _getRoleIcon(widget.user['role'] ?? 'worker'),
+                                        size: 48,
+                                        color: AppTheme.primaryBrand,
+                                      ),
+                                    )
+                                  : Icon(
+                                      _getRoleIcon(widget.user['role'] ?? 'worker'),
+                                      size: 48,
+                                      color: AppTheme.primaryBrand,
+                                    ),
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryBrand,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: AppTheme.spSm),
               Center(
-                child: Text(
-                  'Tap untuk ubah foto',
-                  style: AppTheme.labelMd.copyWith(
-                    color: AppTheme.primaryBrand,
+                child: GestureDetector(
+                  onTap: _isUploadingPhoto ? null : _pickAndUploadAvatar,
+                  child: Text(
+                    'Tap untuk ubah foto',
+                    style: AppTheme.labelMd.copyWith(
+                      color: AppTheme.primaryBrand,
+                    ),
                   ),
                 ),
               ),
