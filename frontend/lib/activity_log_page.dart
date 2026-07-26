@@ -200,154 +200,172 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
   }
 
   void _showFilterDialog() {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surface,
+      isScrollControlled: true,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
       ),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          return Padding(
-            padding: const EdgeInsets.all(AppTheme.spLg),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: AppTheme.spLg,
+                right: AppTheme.spLg,
+                top: AppTheme.spLg,
+                bottom: MediaQuery.of(context).viewInsets.bottom + AppTheme.spMd,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Filter Aktivitas', style: AppTheme.headlineSm),
-                    TextButton(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Filter Aktivitas', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
+                        TextButton(
+                          onPressed: () {
+                            setModalState(() {
+                              _filterType = null;
+                              _filterRole = null;
+                              _filterStatus = null;
+                              _filterDateRange = null;
+                            });
+                            setState(() {});
+                          },
+                          child: const Text('Reset'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spMd),
+                    
+                    // Filter Type
+                    Text('Tipe Aktivitas', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600, color: cs.onSurfaceVariant)),
+                    const SizedBox(height: AppTheme.spXs),
+                    Wrap(
+                      spacing: AppTheme.spXs,
+                      children: [
+                        FilterChip(
+                          label: const Text('Semua'),
+                          selected: _filterType == null,
+                          onSelected: (selected) {
+                            setModalState(() => _filterType = null);
+                            setState(() {});
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('Sistem'),
+                          selected: _filterType == LogEntryType.system,
+                          onSelected: (selected) {
+                            setModalState(() => _filterType = selected ? LogEntryType.system : null);
+                            setState(() {});
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('Pengguna'),
+                          selected: _filterType == LogEntryType.user,
+                          onSelected: (selected) {
+                            setModalState(() => _filterType = selected ? LogEntryType.user : null);
+                            setState(() {});
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('Kendala'),
+                          selected: _filterType == LogEntryType.alert,
+                          onSelected: (selected) {
+                            setModalState(() => _filterType = selected ? LogEntryType.alert : null);
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spMd),
+                    
+                    // Filter Status (for alerts)
+                    Text('Status Kendala', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600, color: cs.onSurfaceVariant)),
+                    const SizedBox(height: AppTheme.spXs),
+                    Wrap(
+                      spacing: AppTheme.spXs,
+                      children: [
+                        FilterChip(
+                          label: const Text('Semua'),
+                          selected: _filterStatus == null,
+                          onSelected: (selected) {
+                            setModalState(() => _filterStatus = null);
+                            setState(() {});
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('Open'),
+                          selected: _filterStatus == 'open',
+                          onSelected: (selected) {
+                            setModalState(() => _filterStatus = selected ? 'open' : null);
+                            setState(() {});
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('In Progress'),
+                          selected: _filterStatus == 'in-progress',
+                          onSelected: (selected) {
+                            setModalState(() => _filterStatus = selected ? 'in-progress' : null);
+                            setState(() {});
+                          },
+                        ),
+                        FilterChip(
+                          label: const Text('Resolved'),
+                          selected: _filterStatus == 'resolved',
+                          onSelected: (selected) {
+                            setModalState(() => _filterStatus = selected ? 'resolved' : null);
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spMd),
+                    
+                    // Date Range Filter
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cs.onSurface,
+                        side: BorderSide(color: cs.outlineVariant),
+                      ),
+                      icon: Icon(Icons.date_range, color: cs.onSurface),
+                      label: Text(
+                        _filterDateRange == null
+                          ? 'Pilih Rentang Tanggal'
+                          : '${_formatDate(_filterDateRange!.start)} - ${_formatDate(_filterDateRange!.end)}',
+                        style: TextStyle(color: cs.onSurface),
+                      ),
+                      onPressed: () async {
+                        final range = await showDateRangePicker(
+                          context: context,
+                          firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(const Duration(days: 30)),
+                          initialDateRange: _filterDateRange,
+                        );
+                        if (range != null) {
+                          setModalState(() => _filterDateRange = range);
+                          setState(() {});
+                        }
+                      },
+                    ),
+                    
+                    const SizedBox(height: AppTheme.spLg),
+                    ElevatedButton(
                       onPressed: () {
-                        setModalState(() {
-                          _filterType = null;
-                          _filterRole = null;
-                          _filterStatus = null;
-                          _filterDateRange = null;
-                        });
-                        setState(() {});
+                        Navigator.pop(context);
+                        _load();
                       },
-                      child: const Text('Reset'),
+                      child: const Text('Terapkan Filter'),
                     ),
+                    const SizedBox(height: AppTheme.spSm),
                   ],
                 ),
-                const SizedBox(height: AppTheme.spMd),
-                
-                // Filter Type
-                Text('Tipe Aktivitas', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: AppTheme.spXs),
-                Wrap(
-                  spacing: AppTheme.spXs,
-                  children: [
-                    FilterChip(
-                      label: const Text('Semua'),
-                      selected: _filterType == null,
-                      onSelected: (selected) {
-                        setModalState(() => _filterType = null);
-                        setState(() {});
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Sistem'),
-                      selected: _filterType == LogEntryType.system,
-                      onSelected: (selected) {
-                        setModalState(() => _filterType = selected ? LogEntryType.system : null);
-                        setState(() {});
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Pengguna'),
-                      selected: _filterType == LogEntryType.user,
-                      onSelected: (selected) {
-                        setModalState(() => _filterType = selected ? LogEntryType.user : null);
-                        setState(() {});
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Kendala'),
-                      selected: _filterType == LogEntryType.alert,
-                      onSelected: (selected) {
-                        setModalState(() => _filterType = selected ? LogEntryType.alert : null);
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.spMd),
-                
-                // Filter Status (for alerts)
-                Text('Status Kendala', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
-                const SizedBox(height: AppTheme.spXs),
-                Wrap(
-                  spacing: AppTheme.spXs,
-                  children: [
-                    FilterChip(
-                      label: const Text('Semua'),
-                      selected: _filterStatus == null,
-                      onSelected: (selected) {
-                        setModalState(() => _filterStatus = null);
-                        setState(() {});
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Open'),
-                      selected: _filterStatus == 'open',
-                      onSelected: (selected) {
-                        setModalState(() => _filterStatus = selected ? 'open' : null);
-                        setState(() {});
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('In Progress'),
-                      selected: _filterStatus == 'in-progress',
-                      onSelected: (selected) {
-                        setModalState(() => _filterStatus = selected ? 'in-progress' : null);
-                        setState(() {});
-                      },
-                    ),
-                    FilterChip(
-                      label: const Text('Resolved'),
-                      selected: _filterStatus == 'resolved',
-                      onSelected: (selected) {
-                        setModalState(() => _filterStatus = selected ? 'resolved' : null);
-                        setState(() {});
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppTheme.spMd),
-                
-                // Date Range Filter
-                OutlinedButton.icon(
-                  icon: const Icon(Icons.date_range),
-                  label: Text(_filterDateRange == null
-                      ? 'Pilih Rentang Tanggal'
-                      : '${_formatDate(_filterDateRange!.start)} - ${_formatDate(_filterDateRange!.end)}'),
-                  onPressed: () async {
-                    final range = await showDateRangePicker(
-                      context: context,
-                      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                      lastDate: DateTime.now().add(const Duration(days: 30)),
-                      initialDateRange: _filterDateRange,
-                    );
-                    if (range != null) {
-                      setModalState(() => _filterDateRange = range);
-                      setState(() {});
-                    }
-                  },
-                ),
-                
-                const SizedBox(height: AppTheme.spLg),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _load();
-                  },
-                  child: const Text('Terapkan Filter'),
-                ),
-                const SizedBox(height: AppTheme.spSm),
-              ],
+              ),
             ),
           );
         },
