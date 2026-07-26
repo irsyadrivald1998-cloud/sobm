@@ -207,7 +207,7 @@ class _HomePageState extends State<HomePage> {
     return RefreshIndicator(
       onRefresh: _loadInitialData,
       color: AppTheme.primaryBrand,
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       child: CustomScrollView(
         slivers: [
           // ── Top App Bar ─────────────────────────────────────────────
@@ -249,7 +249,7 @@ class _HomePageState extends State<HomePage> {
                     icon: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        const Icon(Icons.notifications_outlined, color: AppTheme.onSurface, size: 26),
+                        Icon(Icons.notifications_outlined, color: Theme.of(context).colorScheme.onSurface, size: 26),
                         if (unreadCount > 0)
                           Positioned(
                             right: -2,
@@ -417,10 +417,11 @@ class _HomePageState extends State<HomePage> {
       ),
     ];
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 0.5)),
+        color: cs.surface,
+        border: Border(top: BorderSide(color: cs.outlineVariant, width: 0.5)),
       ),
       child: SafeArea(
         top: false,
@@ -430,61 +431,58 @@ class _HomePageState extends State<HomePage> {
             children: List.generate(items.length, (i) {
               final selected = _selectedTab == i;
               return Expanded(
-              return Expanded(
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      if (i == 3) {
-                        final role = _user?['role'] as String? ?? 'worker';
-                        if (role == 'admin' || role == 'viewer') {
-                          Navigator.of(context).pushNamed('/admin-dashboard');
-                        } else {
-                          Navigator.of(context).pushNamed('/profile');
-                        }
-                        return;
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (i == 3) {
+                      final role = _user?['role'] as String? ?? 'worker';
+                      if (role == 'admin' || role == 'viewer') {
+                        Navigator.of(context).pushNamed('/admin-dashboard');
+                      } else {
+                        Navigator.of(context).pushNamed('/profile');
                       }
-                      if (i == 2) {
-                        Navigator.of(context).pushNamed('/activity-log');
-                        return;
-                      }
-                      if (i == 1) {
-                        Navigator.of(context).pushNamed('/attendance').then((_) {
-                          _apiService.getTodayAttendance().then((att) {
-                            if (mounted) setState(() { _todayAttendance = att; _attendanceLoaded = true; });
-                          }).catchError((_) {});
-                        });
-                        return;
-                      }
-                      setState(() => _selectedTab = i);
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 40, height: 28,
-                          decoration: selected
-                              ? BoxDecoration(
-                                  color: AppTheme.primaryBrand.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                                )
-                              : null,
-                          child: Icon(
-                            items[i].icon,
-                            color: selected ? AppTheme.primaryBrand : AppTheme.outline,
-                            size: 22,
-                          ),
+                      return;
+                    }
+                    if (i == 2) {
+                      Navigator.of(context).pushNamed('/activity-log');
+                      return;
+                    }
+                    if (i == 1) {
+                      Navigator.of(context).pushNamed('/attendance').then((_) {
+                        _apiService.getTodayAttendance().then((att) {
+                          if (mounted) setState(() { _todayAttendance = att; _attendanceLoaded = true; });
+                        }).catchError((_) {});
+                      });
+                      return;
+                    }
+                    setState(() => _selectedTab = i);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 40, height: 28,
+                        decoration: selected
+                            ? BoxDecoration(
+                                color: AppTheme.primaryBrand.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                              )
+                            : null,
+                        child: Icon(
+                          items[i].icon,
+                          color: selected ? AppTheme.primaryBrand : cs.onSurfaceVariant,
+                          size: 22,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          items[i].label,
-                          style: AppTheme.labelSm.copyWith(
-                            color: selected ? AppTheme.primaryBrand : AppTheme.outline,
-                            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        items[i].label,
+                        style: AppTheme.labelSm.copyWith(
+                          color: selected ? AppTheme.primaryBrand : cs.onSurfaceVariant,
+                          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
@@ -550,6 +548,7 @@ class _AttendanceStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs         = Theme.of(context).colorScheme;
     final status     = attendance?['status'] as String?;
     final clockIn    = attendance?['clock_in_time'] as String?;
     final clockOut   = attendance?['clock_out_time'] as String?;
@@ -576,19 +575,19 @@ class _AttendanceStatusCard extends StatelessWidget {
                 Container(
                   width: 40, height: 40,
                   decoration: BoxDecoration(
-                    color: AppTheme.outlineVariant.withValues(alpha: 0.3),
+                    color: cs.outlineVariant.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: AppTheme.spMd),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Container(width: 80, height: 10, decoration: BoxDecoration(
-                    color: AppTheme.outlineVariant.withValues(alpha: 0.3),
+                    color: cs.outlineVariant.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   )),
                   const SizedBox(height: 6),
                   Container(width: 120, height: 14, decoration: BoxDecoration(
-                    color: AppTheme.outlineVariant.withValues(alpha: 0.3),
+                    color: cs.outlineVariant.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(4),
                   )),
                 ]),
@@ -612,7 +611,7 @@ class _AttendanceStatusCard extends StatelessWidget {
                         Text(
                           'Absensi Hari Ini',
                           style: AppTheme.labelMd.copyWith(
-                              color: AppTheme.onSurfaceVariant),
+                              color: cs.onSurfaceVariant),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -627,14 +626,14 @@ class _AttendanceStatusCard extends StatelessWidget {
                           Text(
                             'Masuk ${_fmtTime(clockIn)}${clockOut != null ? '  ·  Keluar ${_fmtTime(clockOut)}' : ''}',
                             style: AppTheme.labelSm.copyWith(
-                                color: AppTheme.onSurfaceVariant),
+                                color: cs.onSurfaceVariant),
                           ),
                         ],
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right_rounded,
-                      color: AppTheme.outline, size: 20),
+                  Icon(Icons.chevron_right_rounded,
+                      color: cs.outline, size: 20),
                 ],
               ),
       ),
@@ -648,6 +647,7 @@ class _AttendanceStatusCard extends StatelessWidget {
 class _CriticalAlarmBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm + 4),
@@ -667,13 +667,13 @@ class _CriticalAlarmBanner extends StatelessWidget {
                 Text(
                   '4 Alarm Kritis',
                   style: AppTheme.bodyLg.copyWith(
-                    color: AppTheme.onSurface,
+                    color: cs.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 Text(
                   'Tindakan segera diperlukan di Sektor B',
-                  style: AppTheme.labelMd.copyWith(color: AppTheme.onSurfaceVariant),
+                  style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
             ),
@@ -998,12 +998,13 @@ class _InsidenSection extends StatelessWidget {
 class _EnergyChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+        border: Border.all(color: cs.outlineVariant, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1014,8 +1015,8 @@ class _EnergyChart extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Konsumsi Energi', style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700)),
-                  Text('kWh / Jam Terakhir', style: AppTheme.labelMd),
+                  Text('Konsumsi Energi', style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface)),
+                  Text('kWh / Jam Terakhir', style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant)),
                 ],
               ),
               const Icon(Icons.bolt_outlined, color: AppTheme.tertiary, size: 22),
@@ -1034,7 +1035,7 @@ class _EnergyChart extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: ['08', '09', '10', '11', '12', '13']
-                .map((t) => Text(t, style: AppTheme.labelSm))
+                .map((t) => Text(t, style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant)))
                 .toList(),
           ),
         ],
@@ -1163,18 +1164,19 @@ class _AktivitasSection extends StatelessWidget {
       ),
     ];
 
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Aktivitas Terbaru', style: AppTheme.headlineSm),
+        Text('Aktivitas Terbaru', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
         const SizedBox(height: AppTheme.spMd),
 
         // Activity items
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+            border: Border.all(color: cs.outlineVariant, width: 0.5),
           ),
           child: Column(
             children: [
@@ -1184,7 +1186,7 @@ class _AktivitasSection extends StatelessWidget {
                   children: [
                     _ActivityTile(activity: e.value),
                     if (!isLast)
-                      const Divider(height: 1, indent: 56),
+                      Divider(height: 1, indent: 56, color: cs.outlineVariant),
                   ],
                 );
               }),
@@ -1217,7 +1219,7 @@ class _AktivitasSection extends StatelessWidget {
               ),
               const SizedBox(width: AppTheme.spSm),
               Text('Jadwal Hari Ini',
-                  style: AppTheme.labelMd.copyWith(letterSpacing: 1.2)),
+                  style: AppTheme.labelMd.copyWith(letterSpacing: 1.2, color: cs.onSurface)),
             ],
           ),
           const SizedBox(height: AppTheme.spSm),
@@ -1249,6 +1251,7 @@ class _ActivityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(AppTheme.spMd),
       child: Row(
@@ -1268,16 +1271,16 @@ class _ActivityTile extends StatelessWidget {
               children: [
                 Text(activity.title,
                     style: AppTheme.bodyMd.copyWith(
-                      color: AppTheme.onSurface, fontWeight: FontWeight.w600)),
+                      color: cs.onSurface, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(activity.subtitle,
-                    style: AppTheme.labelMd,
+                    style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant),
                     overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
           const SizedBox(width: AppTheme.spSm),
-          Text(activity.time, style: AppTheme.labelSm),
+          Text(activity.time, style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant)),
         ],
       ),
     );
@@ -1295,14 +1298,15 @@ class _ScheduleTile extends StatelessWidget {
     final status     = schedule['status'] ?? 'pending';
     final isPending  = status == 'pending';
 
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: AppTheme.spSm),
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: isPending ? AppTheme.primaryBrand.withValues(alpha: 0.4) : AppTheme.outlineVariant,
+          color: isPending ? AppTheme.primaryBrand.withValues(alpha: 0.4) : cs.outlineVariant,
           width: 0.5,
         ),
       ),
@@ -1316,7 +1320,7 @@ class _ScheduleTile extends StatelessWidget {
           const SizedBox(width: AppTheme.spSm),
           Expanded(
             child: Text(checkpoint['name'] ?? '-',
-                style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
+                style: AppTheme.bodyMd.copyWith(color: cs.onSurface)),
           ),
           if (isPending)
             SizedBox(
@@ -1435,8 +1439,8 @@ class _CheckInDialogState extends State<CheckInDialog> {
   void _showSnack(String msg, {required bool isError}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
-      backgroundColor: isError ? AppTheme.errorContainer : AppTheme.surfaceHighest,
+      content: Text(msg, style: AppTheme.bodyMd.copyWith(color: Theme.of(context).colorScheme.onSurface)),
+      backgroundColor: isError ? AppTheme.errorContainer : Theme.of(context).colorScheme.surfaceBright,
     ));
   }
 
@@ -1501,16 +1505,16 @@ class _CheckInDialogState extends State<CheckInDialog> {
             // Header
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm),
-              decoration: const BoxDecoration(
-                color: AppTheme.surfaceLow,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
               ),
               child: Row(children: [
                 const Icon(Icons.assignment_outlined, color: AppTheme.primary, size: 22),
                 const SizedBox(width: AppTheme.spSm),
-                Expanded(child: Text('Form Check-In Tugas', style: AppTheme.titleLg)),
+                Expanded(child: Text('Form Check-In Tugas', style: AppTheme.titleLg.copyWith(color: Theme.of(context).colorScheme.onSurface))),
                 IconButton(
-                  icon: Icon(Icons.close, color: AppTheme.outline, size: 20),
+                  icon: Icon(Icons.close, color: Theme.of(context).colorScheme.outline, size: 20),
                   onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
                 ),
               ]),
@@ -1542,7 +1546,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                       SizedBox(width: double.infinity, child: OutlinedButton.icon(
                         onPressed: _isGettingLocation ? null : _getLocation,
                         icon: _isGettingLocation
-                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.onSurface))
+                            ? SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onSurface))
                             : const Icon(Icons.gps_fixed, size: 18),
                         label: Text(_isGettingLocation ? 'Mendapatkan lokasi...' : 'Dapatkan GPS'),
                       )),
@@ -1577,7 +1581,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                       SizedBox(width: double.infinity, child: OutlinedButton.icon(
                         onPressed: _isCapturingPhoto ? null : _takePhoto,
                         icon: _isCapturingPhoto
-                            ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.onSurface))
+                            ? SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onSurface))
                             : const Icon(Icons.camera_alt_outlined, size: 18),
                         label: Text(_photoBytes != null ? 'Ambil Ulang Foto' : 'Ambil Foto'),
                       )),
@@ -1594,8 +1598,8 @@ class _CheckInDialogState extends State<CheckInDialog> {
                       const SizedBox(height: AppTheme.spSm),
                       DropdownButtonFormField<String>(
                         initialValue: _conditionStatus,
-                        dropdownColor: AppTheme.surfaceLow,
-                        style: AppTheme.bodyLg.copyWith(color: AppTheme.onSurface),
+                        dropdownColor: Theme.of(context).colorScheme.surfaceContainerLow,
+                        style: AppTheme.bodyLg.copyWith(color: Theme.of(context).colorScheme.onSurface),
                         items: const [
                           DropdownMenuItem(value: 'Aman/Bersih', child: Text('Aman / Bersih')),
                           DropdownMenuItem(value: 'Ada Kendala', child: Text('Ada Kendala')),
@@ -1608,7 +1612,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                       const SizedBox(height: AppTheme.spSm),
                       TextFormField(
                         controller: _notesController, maxLines: 2,
-                        style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                        style: AppTheme.bodyMd.copyWith(color: Theme.of(context).colorScheme.onSurface),
                         decoration: const InputDecoration(hintText: 'Catatan opsional...'),
                       ),
 
@@ -1618,7 +1622,7 @@ class _CheckInDialogState extends State<CheckInDialog> {
                         const SizedBox(height: AppTheme.spSm),
                         TextFormField(
                           controller: _issueController, maxLines: 3,
-                          style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
+                          style: AppTheme.bodyMd.copyWith(color: Theme.of(context).colorScheme.onSurface),
                           decoration: const InputDecoration(hintText: 'Deskripsikan kendala...'),
                           validator: (v) {
                             if (_conditionStatus == 'Ada Kendala' && (v == null || v.trim().isEmpty)) {
@@ -1665,13 +1669,14 @@ class _SectionBox extends StatelessWidget {
   const _SectionBox({required this.child});
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceLow,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+        border: Border.all(color: cs.outlineVariant, width: 0.5),
       ),
       child: child,
     );
@@ -1685,9 +1690,10 @@ class _StepLabel extends StatelessWidget {
   const _StepLabel(this.text, {required this.required, this.color});
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(children: [
       Text(text, style: AppTheme.labelMd.copyWith(
-          letterSpacing: 1.1, color: color ?? AppTheme.onSurfaceVariant)),
+          letterSpacing: 1.1, color: color ?? cs.onSurfaceVariant)),
       if (required) ...[
         const SizedBox(width: 4),
         Text('(WAJIB)', style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),

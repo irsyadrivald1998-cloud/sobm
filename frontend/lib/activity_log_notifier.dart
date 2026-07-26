@@ -104,6 +104,8 @@ class ActivityLogNotifier extends ChangeNotifier {
           photoUrl:  photo,
           workOrder: 'WO-${report['id'] ?? '0000'}',
           source:    'Ditambahkan via Mobile App',
+          notes:     notes.isNotEmpty ? notes : null,
+          issueDescription: issue != null ? (issue['description'] as String?) : null,
         ));
       }
 
@@ -114,7 +116,11 @@ class ActivityLogNotifier extends ChangeNotifier {
           timestamp:  _fmt(createdAt),
           date:       _parse(createdAt),
           body:       notes,
+          photoUrl:   photo,
           avatarIcon: Icons.person,
+          notes:      notes,
+          workOrder:  'WO-${report['id'] ?? '0000'}',
+          issueDescription: issue != null ? (issue['description'] as String?) : null,
         ));
       }
 
@@ -127,6 +133,10 @@ class ActivityLogNotifier extends ChangeNotifier {
           alertTitle: 'Alarm Kritis: ${checkpoint['name'] ?? 'Checkpoint'}',
           body:       issue['description'] as String? ?? 'Kendala terdeteksi.',
           status:     issue['status'] as String? ?? 'open',
+          photoUrl:   photo,
+          notes:      notes.isNotEmpty ? notes : null,
+          workOrder:  'WO-${report['id'] ?? '0000'}',
+          issueDescription: issue['description'] as String?,
         ));
       }
     }

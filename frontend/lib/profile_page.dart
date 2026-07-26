@@ -238,61 +238,7 @@ class _ProfilePageState extends State<ProfilePage> {
           Text('Pengaturan', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
           const SizedBox(height: AppTheme.spMd),
 
-          // Theme Toggle - LIGHT MODE SWITCH
-          Container(
-            padding: const EdgeInsets.all(AppTheme.spMd),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              border: Border.all(color: cs.outlineVariant, width: 0.5),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppTheme.spSm),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryBrand.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                  ),
-                  child: const Icon(
-                    Icons.brightness_6,
-                    size: 20,
-                    color: AppTheme.primaryBrand,
-                  ),
-                ),
-                const SizedBox(width: AppTheme.spMd),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Mode Terang',
-                        style: AppTheme.bodyMd.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: cs.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        ThemeProvider.of(context).isLight ? 'Aktif' : 'Nonaktif',
-                        style: AppTheme.labelSm.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Switch(
-                  value: ThemeProvider.of(context).isLight,
-                  onChanged: (value) {
-                    ThemeProvider.of(context).toggle();
-                  },
-                  activeThumbColor: AppTheme.primaryBrand,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppTheme.spSm),
+
 
           _ActionButton(
             icon: Icons.lock_outline,
@@ -475,34 +421,30 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        child: Container(
-          padding: const EdgeInsets.all(AppTheme.spMd),
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-            border: Border.all(color: cs.outlineVariant, width: 0.5),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 24, color: cs.onSurface),
-              const SizedBox(width: AppTheme.spMd),
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppTheme.bodyMd.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
-                  ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.spMd),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: cs.outlineVariant, width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: cs.onSurface),
+            const SizedBox(width: AppTheme.spMd),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTheme.bodyMd.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
                 ),
               ),
-              Icon(Icons.chevron_right, size: 20, color: cs.outline),
-            ],
-          ),
+            ),
+            Icon(Icons.chevron_right, size: 20, color: cs.outline),
+          ],
         ),
       ),
     );

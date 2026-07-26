@@ -64,7 +64,7 @@ class _MyAppState extends State<MyApp> {
                 debugShowCheckedModeBanner: false,
                 theme: AppTheme.lightTheme,
                 darkTheme: AppTheme.darkTheme,
-                themeMode: _themeNotifier.themeMode,
+                themeMode: ThemeMode.system,
                 initialRoute: '/',
                 routes: {
                   '/': (context) => const LoginPage(),
@@ -91,44 +91,62 @@ class _MyAppState extends State<MyApp> {
 
 // ── InheritedWidget wrappers ──────────────────────────────────────────────────
 
-class ActivityLogProvider extends InheritedNotifier<ActivityLogNotifier> {
+class ActivityLogProvider extends InheritedWidget {
+  final ActivityLogNotifier notifier;
+
   const ActivityLogProvider({
     super.key,
-    required ActivityLogNotifier notifier,
+    required this.notifier,
     required super.child,
-  }) : super(notifier: notifier);
+  });
+
+  @override
+  bool updateShouldNotify(covariant ActivityLogProvider oldWidget) =>
+      notifier != oldWidget.notifier;
 
   static ActivityLogNotifier of(BuildContext context) {
     final p = context.dependOnInheritedWidgetOfExactType<ActivityLogProvider>();
     assert(p != null, 'No ActivityLogProvider found');
-    return p!.notifier!;
+    return p!.notifier;
   }
 }
 
-class ThemeProvider extends InheritedNotifier<ThemeNotifier> {
+class ThemeProvider extends InheritedWidget {
+  final ThemeNotifier notifier;
+
   const ThemeProvider({
     super.key,
-    required ThemeNotifier notifier,
+    required this.notifier,
     required super.child,
-  }) : super(notifier: notifier);
+  });
+
+  @override
+  bool updateShouldNotify(covariant ThemeProvider oldWidget) =>
+      notifier != oldWidget.notifier;
 
   static ThemeNotifier of(BuildContext context) {
     final p = context.dependOnInheritedWidgetOfExactType<ThemeProvider>();
     assert(p != null, 'No ThemeProvider found');
-    return p!.notifier!;
+    return p!.notifier;
   }
 }
 
-class NotificationProvider extends InheritedNotifier<NotificationService> {
+class NotificationProvider extends InheritedWidget {
+  final NotificationService notifier;
+
   const NotificationProvider({
     super.key,
-    required NotificationService notifier,
+    required this.notifier,
     required super.child,
-  }) : super(notifier: notifier);
+  });
+
+  @override
+  bool updateShouldNotify(covariant NotificationProvider oldWidget) =>
+      notifier != oldWidget.notifier;
 
   static NotificationService of(BuildContext context) {
     final p = context.dependOnInheritedWidgetOfExactType<NotificationProvider>();
     assert(p != null, 'No NotificationProvider found');
-    return p!.notifier!;
+    return p!.notifier;
   }
 }

@@ -160,24 +160,27 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        title: Text('Aktivitas Rekan Kerja', style: AppTheme.titleLg),
-        backgroundColor: AppTheme.surfaceLowest,
+        title: Text('Aktivitas Rekan Kerja', style: AppTheme.titleLg.copyWith(color: cs.onSurface)),
+        backgroundColor: cs.surface,
+        iconTheme: IconThemeData(color: cs.onSurface),
+        elevation: 0,
         actions: [
           IconButton(
             tooltip: 'Filter',
             icon: Icon(
               _hasActiveFilters() ? Icons.filter_alt : Icons.filter_alt_outlined,
-              color: _hasActiveFilters() ? AppTheme.primaryBrand : null,
+              color: _hasActiveFilters() ? AppTheme.primaryBrand : cs.onSurface,
             ),
             onPressed: _showFilterDialog,
           ),
           IconButton(
             tooltip: 'Muat ulang aktivitas',
             onPressed: () => _load(),
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: cs.onSurface),
           ),
         ],
       ),
@@ -455,18 +458,8 @@ class _ActivityLogPageState extends State<ActivityLogPage> {
               }
               return _ActivityTile(
                 entry: filteredEntries[index],
-                onTap: () async {
-                  // If it's an alert with issue, open issue detail page
-                  if (filteredEntries[index].type == LogEntryType.alert) {
-                    // We need to pass the issue data, which should be stored in the entry
-                    // For now, show a placeholder or implement navigation
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Detail kendala akan segera tersedia'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                  }
+                onTap: () {
+                  _showActivityDetailSheet(context, filteredEntries[index]);
                 },
               );
             },
@@ -485,6 +478,7 @@ class _ActivityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final color = switch (entry.type) {
       LogEntryType.alert => AppTheme.alertCritical,
       LogEntryType.system => AppTheme.primaryBrand,
@@ -497,9 +491,9 @@ class _ActivityTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppTheme.spMd),
         decoration: BoxDecoration(
-          color: AppTheme.surface,
+          color: cs.surface,
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border(left: BorderSide(color: color, width: 3)),
+          border: Border.all(color: cs.outlineVariant, width: 0.5),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,17 +510,19 @@ class _ActivityTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(entry.actor,
-                            style: AppTheme.bodyMd
-                                .copyWith(fontWeight: FontWeight.w700)),
+                            style: AppTheme.bodyMd.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            )),
                       ),
-                      Text(entry.timestamp, style: AppTheme.labelSm),
+                      Text(entry.timestamp, style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant)),
                     ],
                   ),
                   const SizedBox(height: AppTheme.spXs),
-                  Text(entry.body, style: AppTheme.bodyMd),
+                  Text(entry.body, style: AppTheme.bodyMd.copyWith(color: cs.onSurface)),
                   if (entry.workOrder != null) ...[
                     const SizedBox(height: AppTheme.spXs),
-                    Text(entry.workOrder!, style: AppTheme.labelSm),
+                    Text(entry.workOrder!, style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant)),
                   ],
                   if (entry.status != null) ...[
                     const SizedBox(height: AppTheme.spXs),
@@ -571,4 +567,206 @@ class _ActivityTile extends StatelessWidget {
     'in-progress' => AppTheme.statusWarning,
     _ => AppTheme.alertCritical,
   };
+}
+
+void _showActivityDetailSheet(BuildContext context, ActivityLogEntry entry) {
+  final cs = Theme.of(context).colorScheme;
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: cs.surface,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppTheme.radiusLg)),
+    ),
+    builder: (context) {
+      final color = switch (entry.type) {
+        LogEntryType.alert => AppTheme.alertCritical,
+        LogEntryType.system => AppTheme.primaryBrand,
+        LogEntryType.user => AppTheme.tertiary,
+      };
+
+      return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.65,
+        maxChildSize: 0.9,
+        minChildSize: 0.4,
+        builder: (context, scrollController) {
+          return SingleChildScrollView(
+            controller: scrollController,
+            padding: const EdgeInsets.all(AppTheme.spLg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle Bar
+                Center(
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(
+                      color: cs.outlineVariant,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spMd),
+
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppTheme.spSm),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                      ),
+                      child: Icon(
+                        entry.type == LogEntryType.alert
+                            ? Icons.warning_amber_rounded
+                            : Icons.assignment_outlined,
+                        color: color,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.spMd),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.alertTitle ?? entry.actor,
+                            style: AppTheme.headlineSm.copyWith(
+                              color: cs.onSurface,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Waktu: ${entry.timestamp}',
+                            style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spLg),
+
+                // Work order & status badges
+                Row(
+                  children: [
+                    if (entry.workOrder != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryBrand.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                        ),
+                        child: Text(
+                          entry.workOrder!,
+                          style: AppTheme.labelSm.copyWith(
+                            color: AppTheme.primaryBrand,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppTheme.spSm),
+                    ],
+                    if (entry.status != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: (entry.status == 'resolved'
+                                  ? AppTheme.statusOk
+                                  : AppTheme.alertCritical)
+                              .withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                        ),
+                        child: Text(
+                          'STATUS: ${entry.status!.toUpperCase()}',
+                          style: AppTheme.labelSm.copyWith(
+                            color: entry.status == 'resolved'
+                                ? AppTheme.statusOk
+                                : AppTheme.alertCritical,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spLg),
+
+                // Description section
+                Text(
+                  'Deskripsi / Catatan Kegiatan:',
+                  style: AppTheme.bodyMd.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: cs.onSurface,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spXs),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppTheme.spMd),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceVariant.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    border: Border.all(color: cs.outlineVariant, width: 0.5),
+                  ),
+                  child: Text(
+                    entry.body,
+                    style: AppTheme.bodyMd.copyWith(color: cs.onSurface),
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spLg),
+
+                // Photo preview if available
+                if (entry.photoBytes != null || (entry.photoUrl != null && entry.photoUrl!.isNotEmpty)) ...[
+                  Text(
+                    'Foto Bukti / Kendala:',
+                    style: AppTheme.bodyMd.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: AppTheme.spSm),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    child: entry.photoBytes != null
+                        ? Image.memory(
+                            entry.photoBytes!,
+                            width: double.infinity,
+                            height: 220,
+                            fit: BoxFit.cover,
+                          )
+                        : Image.network(
+                            entry.photoUrl!,
+                            width: double.infinity,
+                            height: 220,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              height: 120,
+                              color: cs.surfaceVariant,
+                              child: const Center(
+                                child: Icon(Icons.broken_image, size: 40, color: AppTheme.outline),
+                              ),
+                            ),
+                          ),
+                  ),
+                  const SizedBox(height: AppTheme.spLg),
+                ],
+
+                // Action button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Tutup'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    },
+  );
 }

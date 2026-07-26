@@ -222,16 +222,18 @@ class _AttendancePageState extends State<AttendancePage>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        title: Text('Absensi', style: AppTheme.titleLg),
-        backgroundColor: AppTheme.surfaceLowest,
+        title: Text('Absensi', style: AppTheme.titleLg.copyWith(color: cs.onSurface)),
+        backgroundColor: cs.surface,
         elevation: 0,
+        iconTheme: IconThemeData(color: cs.onSurface),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppTheme.primaryBrand,
-          unselectedLabelColor: AppTheme.outline,
+          unselectedLabelColor: cs.onSurfaceVariant,
           indicatorColor: AppTheme.primaryBrand,
           indicatorWeight: 3,
           tabs: const [
