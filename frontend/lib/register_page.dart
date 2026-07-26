@@ -251,18 +251,26 @@ class _RegisterPageState extends State<RegisterPage>
                             // Header Icon & Title
                             Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    color: jobColor.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Icon(
-                                    currentMeta['icon'] as IconData,
-                                    color: jobColor,
-                                    size: 26,
-                                  ),
+                                Image.asset(
+                                  'assets/images/logo.png',
+                                  width: 54,
+                                  height: 54,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 48,
+                                      height: 48,
+                                      decoration: BoxDecoration(
+                                        color: jobColor.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Icon(
+                                        currentMeta['icon'] as IconData,
+                                        color: jobColor,
+                                        size: 26,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(

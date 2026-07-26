@@ -383,27 +383,26 @@ class _LoginPageState extends State<LoginPage>
   // ── Logo ───────────────────────────────────────────────────────────────────
   Widget _buildLogo() {
     return Center(
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          color: const Color(0xFFF0F0F5),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+      child: Image.asset(
+        'assets/images/logo.png',
+        width: 90,
+        height: 90,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0F0F5),
+              borderRadius: BorderRadius.circular(20),
             ),
-          ],
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.business_rounded,
-            size: 36,
-            color: Color(0xFF1A1A2E),
-          ),
-        ),
+            child: const Icon(
+              Icons.business_rounded,
+              size: 36,
+              color: Color(0xFF1A1A2E),
+            ),
+          );
+        },
       ),
     );
   }
