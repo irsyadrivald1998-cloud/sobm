@@ -44,6 +44,39 @@ class AuthController extends Controller
         ], 'Login berhasil.');
     }
 
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'employee_id' => 'required|string|max:255|unique:users,employee_id',
+            'email' => 'nullable|string|email|max:255|unique:users,email',
+            'phone' => 'nullable|string|max:20',
+            'role' => 'required|string|in:housekeeping,teknisi,security,osb,resepsionis,bm,user,viewer',
+            'password' => 'required|string|min:8|confirmed',
+        ], [
+            'employee_id.unique' => 'ID Karyawan / NIP sudah terdaftar.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.min' => 'Password minimal 8 karakter.',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'employee_id' => $request->employee_id,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'role' => $request->role,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $token = $user->createToken('mobile-app', ['*'], now()->addDays(7))->plainTextToken;
+
+        return ApiResponse::success([
+            'user' => $user,
+            'token' => $token,
+        ], 'Registrasi akun berhasil.');
+    }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

@@ -527,8 +527,7 @@ class _LoginPageState extends State<LoginPage>
       height: 50,
       child: OutlinedButton(
         onPressed: () {
-          // Register action placeholder
-          _showSnack('Fitur pendaftaran belum tersedia', isError: false);
+          Navigator.of(context).pushNamed('/register');
         },
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFF1A1A2E),

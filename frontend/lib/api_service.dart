@@ -138,6 +138,59 @@ class ApiService {
     }
   }
 
+  // POST /register
+  Future<Map<String, dynamic>> register({
+    required String name,
+    required String employeeId,
+    required String role,
+    required String password,
+    required String passwordConfirmation,
+    String? email,
+    String? phone,
+  }) async {
+    final baseUrl = await getBaseUrl();
+    final response = await http.post(
+      Uri.parse('$baseUrl/register'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'name': name,
+        'employee_id': employeeId,
+        'role': role,
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+        if (email != null && email.isNotEmpty) 'email': email,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
+      }),
+    ).timeout(const Duration(seconds: 10));
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      if (responseData['status'] == true) {
+        final data = responseData['data'];
+        final token = data['token'];
+        final user = data['user'];
+        await saveAuthSession(token, user);
+        return data;
+      } else {
+        throw Exception(responseData['message'] ?? 'Registrasi gagal.');
+      }
+    } else {
+      final msg = responseData['message'] ?? 'Registrasi gagal (Error ${response.statusCode})';
+      if (responseData['errors'] != null) {
+        final errors = responseData['errors'] as Map<String, dynamic>;
+        final firstError = errors.values.first;
+        if (firstError is List && firstError.isNotEmpty) {
+          throw Exception(firstError.first);
+        }
+      }
+      throw Exception(msg);
+    }
+  }
+
   // POST /logout
   Future<void> logout() async {
     final baseUrl = await getBaseUrl();

@@ -16,6 +16,7 @@ import 'crash_reporting_service.dart';
 import 'notification_service.dart';
 import 'notifications_page.dart';
 import 'my_tasks_page.dart';
+import 'register_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +80,7 @@ class _MyAppState extends State<MyApp> {
                   '/offline-queue': (context) => const OfflineQueuePage(),
                   '/notifications': (context) => const NotificationsPage(),
                   '/my-tasks': (context) => const MyTasksPage(),
+                  '/register': (context) => const RegisterPage(),
                 },
               );
             },
