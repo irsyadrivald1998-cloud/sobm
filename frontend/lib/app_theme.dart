@@ -1,72 +1,70 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Design system: Industrial Futurist BMS
-/// Based on DESIGN.md
+/// Design system: Clean Modern BMS
+/// Updated to match login page color palette
 class AppTheme {
   AppTheme._();
 
   // ── Dark Colors ───────────────────────────────────────────────────────────
-  static const Color _darkBackground         = Color(0xFF1E0F0E);
-  static const Color _darkSurfaceLowest      = Color(0xFF180A09);
-  static const Color _darkSurfaceLow        = Color(0xFF271816);
-  static const Color _darkSurface           = Color(0xFF2C1B1A);
-  static const Color _darkSurfaceHigh       = Color(0xFF372624);
-  static const Color _darkSurfaceHighest    = Color(0xFF43302E);
-  static const Color _darkSurfaceBright     = Color(0xFF473533);
-  static const Color _darkOnSurface        = Color(0xFFF9DCD9);
-  static const Color _darkOnSurfaceVariant = Color(0xFFE4BEBA);
-  static const Color _darkOutline          = Color(0xFFAB8985);
-  static const Color _darkOutlineVariant   = Color(0xFF5B403D);
+  static const Color _darkBackground         = Color(0xFF0F0F14);
+  static const Color _darkSurfaceLowest      = Color(0xFF0A0A0F);
+  static const Color _darkSurfaceLow        = Color(0xFF16161E);
+  static const Color _darkSurface           = Color(0xFF1C1C26);
+  static const Color _darkSurfaceHigh       = Color(0xFF252530);
+  static const Color _darkSurfaceHighest    = Color(0xFF2E2E3A);
+  static const Color _darkSurfaceBright     = Color(0xFF363642);
+  static const Color _darkOnSurface        = Color(0xFFF0F0F5);
+  static const Color _darkOnSurfaceVariant = Color(0xFFB0B0C0);
+  static const Color _darkOutline          = Color(0xFF7A7A8E);
+  static const Color _darkOutlineVariant   = Color(0xFF3A3A48);
 
   // ── Light Colors ──────────────────────────────────────────────────────────
-  static const Color _lightBackground       = Color(0xFFFFF8F7);
+  static const Color _lightBackground       = Color(0xFFF5F5F8);
   static const Color _lightSurface          = Color(0xFFFFFFFF);
-  static const Color _lightSurfaceLow       = Color(0xFFFFF0EE);
-  static const Color _lightSurfaceHigh      = Color(0xFFF5E0DE);
-  static const Color _lightOnSurface        = Color(0xFF2C0A09);
-  static const Color _lightOnSurfaceVariant = Color(0xFF5C3A38);
-  static const Color _lightOutline          = Color(0xFF8C6360);
-  static const Color _lightOutlineVariant   = Color(0xFFD4A8A5);
+  static const Color _lightSurfaceLow       = Color(0xFFF8F8FA);
+  static const Color _lightSurfaceHigh      = Color(0xFFF0F0F5);
+  static const Color _lightOnSurface        = Color(0xFF1A1A2E);
+  static const Color _lightOnSurfaceVariant = Color(0xFF5A5A6E);
+  static const Color _lightOutline          = Color(0xFF7A7A8E);
+  static const Color _lightOutlineVariant   = Color(0xFFE8E8EE);
 
   // ── Static Colors (same for both themes) ──────────────────────────────────
-  static const Color primary          = Color(0xFFFFB3AC);
-  static const Color onPrimary        = Color(0xFF680008);
-  static const Color primaryContainer = Color(0xFFD32F2F);
-  static const Color onPrimaryContainer = Color(0xFFFFF2F0);
+  static const Color primary          = Color(0xFFFF6B6B);
+  static const Color onPrimary        = Color(0xFFFFFFFF);
+  static const Color primaryContainer = Color(0xFFFFDAD7);
+  static const Color onPrimaryContainer = Color(0xFF410003);
   static const Color primaryBrand     = Color(0xFFD32F2F);
 
-  static const Color secondary        = Color(0xFFC8C6C5);
-  static const Color onSecondary      = Color(0xFF303030);
-  static const Color secondaryContainer = Color(0xFF474746);
+  static const Color secondary        = Color(0xFFB0B0C0);
+  static const Color onSecondary      = Color(0xFF1A1A2E);
+  static const Color secondaryContainer = Color(0xFF3A3A48);
 
   static const Color tertiary         = Color(0xFF7BD1F8);
   static const Color tertiaryContainer = Color(0xFF00799C);
 
   static const Color error            = Color(0xFFFFB4AB);
   static const Color errorContainer   = Color(0xFF93000A);
-  static const Color alertCritical    = Color(0xFFF44336);
+  static const Color alertCritical    = Color(0xFFD32F2F);
 
   static const Color statusOk         = Color(0xFF4CAF50);
   static const Color statusWarning    = Color(0xFFFBBF24);
   static const Color statusError      = Color(0xFFD32F2F);
 
-  // ── Static Constants for Dark Theme (for backward compatibility) ─────────
-  // Widgets that use these will stay in dark colors regardless of theme
-  // PREFER using Theme.of(context).colorScheme instead
-  static const Color background         = _darkBackground;
-  static const Color surfaceLowest      = _darkSurfaceLowest;
-  static const Color surfaceLow        = _darkSurfaceLow;
-  static const Color surface           = _darkSurface;
-  static const Color surfaceHigh       = _darkSurfaceHigh;
-  static const Color surfaceHighest    = _darkSurfaceHighest;
-  static const Color surfaceBright     = _darkSurfaceBright;
-  static const Color onSurface        = _darkOnSurface;
-  static const Color onSurfaceVariant = _darkOnSurfaceVariant;
-  static const Color outline          = _darkOutline;
-  static const Color outlineVariant   = _darkOutlineVariant;
+  // ── Color Constants (Mapped to Light Mode for clean light UI) ────────────
+  static const Color background         = _lightBackground;
+  static const Color surfaceLowest      = _lightSurfaceHigh;
+  static const Color surfaceLow        = _lightSurfaceLow;
+  static const Color surface           = _lightSurface;
+  static const Color surfaceHigh       = _lightSurfaceHigh;
+  static const Color surfaceHighest    = Color(0xFFE8E8EE);
+  static const Color surfaceBright     = _lightSurface;
+  static const Color onSurface        = _lightOnSurface;
+  static const Color onSurfaceVariant = _lightOnSurfaceVariant;
+  static const Color outline          = _lightOutline;
+  static const Color outlineVariant   = _lightOutlineVariant;
 
-  // ── Public Light Colors (for manual theme switching in widgets) ──────────
+  // ── Public Light Colors ──────────────────────────────────────────────────
   static const Color lightBackground       = _lightBackground;
   static const Color lightSurface          = _lightSurface;
   static const Color lightSurfaceLow       = _lightSurfaceLow;
@@ -105,7 +103,6 @@ class AppTheme {
     fontWeight: FontWeight.w700,
     height: 1.25,
     letterSpacing: -0.02 * 32,
-    color: onSurface,
   );
 
   static const TextStyle headlineMd = TextStyle(
@@ -114,7 +111,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.33,
     letterSpacing: -0.01 * 24,
-    color: onSurface,
   );
 
   static const TextStyle headlineSm = TextStyle(
@@ -122,7 +118,6 @@ class AppTheme {
     fontSize: 20,
     fontWeight: FontWeight.w600,
     height: 1.4,
-    color: onSurface,
   );
 
   static const TextStyle titleLg = TextStyle(
@@ -130,7 +125,6 @@ class AppTheme {
     fontSize: 18,
     fontWeight: FontWeight.w600,
     height: 1.33,
-    color: onSurface,
   );
 
   static const TextStyle bodyLg = TextStyle(
@@ -138,7 +132,6 @@ class AppTheme {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
-    color: onSurface,
   );
 
   static const TextStyle bodyMd = TextStyle(
@@ -146,7 +139,6 @@ class AppTheme {
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.43,
-    color: onSurfaceVariant,
   );
 
   static const TextStyle labelMd = TextStyle(
@@ -155,7 +147,6 @@ class AppTheme {
     fontWeight: FontWeight.w500,
     height: 1.33,
     letterSpacing: 0.05 * 12,
-    color: onSurfaceVariant,
   );
 
   static const TextStyle labelSm = TextStyle(
@@ -164,7 +155,6 @@ class AppTheme {
     fontWeight: FontWeight.w600,
     height: 1.2,
     letterSpacing: 0.05 * 10,
-    color: onSurfaceVariant,
   );
 
   // ── MaterialTheme ─────────────────────────────────────────────────────────
@@ -173,17 +163,17 @@ class AppTheme {
   static ThemeData get darkTheme {
     final interTextTheme = GoogleFonts.interTextTheme(
       ThemeData.dark().textTheme,
-    ).apply(bodyColor: onSurface, displayColor: onSurface);
+    ).apply(bodyColor: _darkOnSurface, displayColor: _darkOnSurface);
 
     return ThemeData(
       useMaterial3: true,
       fontFamily: fontFamily,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: background,
+      scaffoldBackgroundColor: _darkBackground,
       textTheme: interTextTheme,
       colorScheme: const ColorScheme.dark(
         brightness: Brightness.dark,
-        surface: surface,
+        surface: _darkSurface,
         primary: primaryBrand,
         onPrimary: Colors.white,
         primaryContainer: primaryContainer,
@@ -193,44 +183,46 @@ class AppTheme {
         tertiary: tertiary,
         error: alertCritical,
         onError: Colors.white,
-        onSurface: onSurface,
-        onSurfaceVariant: onSurfaceVariant,
-        outline: outline,
-        outlineVariant: outlineVariant,
+        onSurface: _darkOnSurface,
+        onSurfaceVariant: _darkOnSurfaceVariant,
+        outline: _darkOutline,
+        outlineVariant: _darkOutlineVariant,
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: surfaceLowest,
-        foregroundColor: onSurface,
+        backgroundColor: _darkSurfaceLowest,
+        foregroundColor: _darkOnSurface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: titleLg,
       ),
       cardTheme: CardThemeData(
-        color: surface,
+        color: _darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
-          side: const BorderSide(color: outlineVariant, width: 0.5),
+          side: const BorderSide(color: _darkOutlineVariant, width: 0.5),
         ),
         margin: const EdgeInsets.symmetric(vertical: spSm),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: surfaceHigh,
+        fillColor: _darkSurfaceHigh,
         contentPadding: const EdgeInsets.symmetric(horizontal: spMd, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: outlineVariant, width: 1)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: _darkOutlineVariant, width: 1)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: primaryBrand, width: 2)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: alertCritical, width: 1)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: alertCritical, width: 2)),
-        hintStyle: labelMd.copyWith(color: outline),
-        labelStyle: labelMd,
+        hintStyle: labelMd.copyWith(color: _darkOutline),
+        labelStyle: labelMd.copyWith(color: _darkOnSurfaceVariant),
+        prefixIconColor: _darkOnSurfaceVariant,
+        suffixIconColor: _darkOnSurfaceVariant,
         errorStyle: labelMd.copyWith(color: alertCritical),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryBrand, foregroundColor: Colors.white,
-          disabledBackgroundColor: outlineVariant, disabledForegroundColor: outline,
+          disabledBackgroundColor: _darkOutlineVariant, disabledForegroundColor: _darkOutline,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: spXl, vertical: spMd),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg)),
@@ -239,8 +231,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: onSurface,
-          side: const BorderSide(color: outlineVariant, width: 1.5),
+          foregroundColor: _darkOnSurface,
+          side: const BorderSide(color: _darkOutlineVariant, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: spXl, vertical: spMd),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg)),
           textStyle: bodyLg.copyWith(fontWeight: FontWeight.w600),
@@ -249,27 +241,27 @@ class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(foregroundColor: primary, textStyle: bodyMd.copyWith(fontWeight: FontWeight.w500)),
       ),
-      dividerTheme: const DividerThemeData(color: outlineVariant, thickness: 0.5, space: 0),
+      dividerTheme: const DividerThemeData(color: _darkOutlineVariant, thickness: 0.5, space: 0),
       dialogTheme: DialogThemeData(
-        backgroundColor: surfaceLow, surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg), side: const BorderSide(color: outlineVariant, width: 0.5)),
+        backgroundColor: _darkSurfaceLow, surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusLg), side: const BorderSide(color: _darkOutlineVariant, width: 0.5)),
         titleTextStyle: headlineSm, contentTextStyle: bodyMd,
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: surfaceHighest, contentTextStyle: bodyMd.copyWith(color: onSurface),
+        backgroundColor: _darkSurfaceHighest, contentTextStyle: bodyMd.copyWith(color: _darkOnSurface),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusSm)),
       ),
       dropdownMenuTheme: DropdownMenuThemeData(
         menuStyle: MenuStyle(
-          backgroundColor: WidgetStatePropertyAll(surfaceLow),
-          shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMd), side: const BorderSide(color: outlineVariant))),
+          backgroundColor: WidgetStatePropertyAll(_darkSurfaceLow),
+          shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMd), side: const BorderSide(color: _darkOutlineVariant))),
         ),
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? primaryBrand : surfaceHigh),
+        fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? primaryBrand : _darkSurfaceHigh),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        side: const BorderSide(color: outlineVariant, width: 1.5),
+        side: const BorderSide(color: _darkOutlineVariant, width: 1.5),
       ),
     );
   }
@@ -293,7 +285,7 @@ class AppTheme {
         onPrimary: Colors.white,
         primaryContainer: Color(0xFFFFDAD7),
         onPrimaryContainer: Color(0xFF410003),
-        secondary: Color(0xFF775655),
+        secondary: Color(0xFF5A5A6E),
         onSecondary: Colors.white,
         tertiary: Color(0xFF006686),
         onTertiary: Colors.white,
@@ -323,14 +315,17 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: _lightSurfaceHigh,
+        fillColor: _lightSurfaceLow,
         contentPadding: const EdgeInsets.symmetric(horizontal: spMd, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: _lightOutlineVariant, width: 1)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: primaryBrand, width: 2)),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: alertCritical, width: 1)),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(radiusLg), borderSide: const BorderSide(color: alertCritical, width: 2)),
-        hintStyle: labelMd.copyWith(color: _lightOutline),
+        hintStyle: labelMd.copyWith(color: const Color(0xFF9999AA)),
+        labelStyle: labelMd.copyWith(color: _lightOnSurfaceVariant),
+        prefixIconColor: _lightOnSurfaceVariant,
+        suffixIconColor: _lightOnSurfaceVariant,
         errorStyle: labelMd.copyWith(color: alertCritical),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

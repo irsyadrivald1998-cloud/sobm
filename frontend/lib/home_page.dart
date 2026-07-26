@@ -402,50 +402,53 @@ class _HomePageState extends State<HomePage> {
             children: List.generate(items.length, (i) {
               final selected = _selectedTab == i;
               return Expanded(
-                child: InkWell(
-                  onTap: () {
-                    if (i == 2) { 
-                      // Navigate to profile/admin dashboard based on role
-                      final role = _user?['role'] as String? ?? 'worker';
-                      if (role == 'admin' || role == 'viewer') {
-                        Navigator.of(context).pushNamed('/admin-dashboard');
-                      } else {
-                        Navigator.of(context).pushNamed('/profile');
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      if (i == 2) { 
+                        // Navigate to profile/admin dashboard based on role
+                        final role = _user?['role'] as String? ?? 'worker';
+                        if (role == 'admin' || role == 'viewer') {
+                          Navigator.of(context).pushNamed('/admin-dashboard');
+                        } else {
+                          Navigator.of(context).pushNamed('/profile');
+                        }
+                        return; 
                       }
-                      return; 
-                    }
-                    if (i == 1) {
-                      Navigator.of(context).pushNamed('/activity-log');
-                      return;
-                    }
-                    setState(() => _selectedTab = i);
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40, height: 28,
-                        decoration: selected
-                            ? BoxDecoration(
-                                color: AppTheme.primaryBrand.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                              )
-                            : null,
-                        child: Icon(
-                          items[i].icon,
-                          color: selected ? AppTheme.primaryBrand : AppTheme.outline,
-                          size: 22,
+                      if (i == 1) {
+                        Navigator.of(context).pushNamed('/activity-log');
+                        return;
+                      }
+                      setState(() => _selectedTab = i);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40, height: 28,
+                          decoration: selected
+                              ? BoxDecoration(
+                                  color: AppTheme.primaryBrand.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                                )
+                              : null,
+                          child: Icon(
+                            items[i].icon,
+                            color: selected ? AppTheme.primaryBrand : AppTheme.outline,
+                            size: 22,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        items[i].label,
-                        style: AppTheme.labelSm.copyWith(
-                          color: selected ? AppTheme.primaryBrand : AppTheme.outline,
-                          fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                        const SizedBox(height: 2),
+                        Text(
+                          items[i].label,
+                          style: AppTheme.labelSm.copyWith(
+                            color: selected ? AppTheme.primaryBrand : AppTheme.outline,
+                            fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -538,12 +541,13 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+        border: Border.all(color: cs.outlineVariant, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -555,18 +559,21 @@ class _StatCard extends StatelessWidget {
               Flexible(
                 child: Text(
                   label,
-                  style: AppTheme.labelSm.copyWith(letterSpacing: 0.8),
+                  style: AppTheme.labelSm.copyWith(
+                    letterSpacing: 0.8,
+                    color: cs.onSurfaceVariant,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(icon, size: 18, color: AppTheme.outline),
+              Icon(icon, size: 18, color: cs.outline),
             ],
           ),
           Text(
             value,
             style: AppTheme.displayLg.copyWith(
               fontSize: valueSize,
-              color: valueColor ?? AppTheme.onSurface,
+              color: valueColor ?? cs.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -584,32 +591,46 @@ class _CheckpointCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+        border: Border.all(color: cs.outlineVariant, width: 0.5),
       ),
       child: Row(
         children: [
-          const Icon(Icons.location_on_outlined, size: 18, color: AppTheme.outline),
+          Icon(Icons.location_on_outlined, size: 18, color: cs.outline),
           const SizedBox(width: AppTheme.spSm),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('CHECK-IN CHECKPOINT', style: AppTheme.labelSm.copyWith(letterSpacing: 0.8)),
+              Text(
+                'CHECK-IN CHECKPOINT',
+                style: AppTheme.labelSm.copyWith(
+                  letterSpacing: 0.8,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
               const SizedBox(height: 4),
               RichText(
                 text: TextSpan(
                   children: [
                     TextSpan(
                       text: '$completed',
-                      style: AppTheme.displayLg.copyWith(fontSize: 28, fontWeight: FontWeight.w700),
+                      style: AppTheme.displayLg.copyWith(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
                     ),
                     TextSpan(
                       text: ' / $total',
-                      style: AppTheme.bodyMd.copyWith(fontSize: 16, color: AppTheme.outline),
+                      style: AppTheme.bodyMd.copyWith(
+                        fontSize: 16,
+                        color: cs.outline,
+                      ),
                     ),
                   ],
                 ),
@@ -623,7 +644,7 @@ class _CheckpointCard extends StatelessWidget {
             child: CircularProgressIndicator(
               value: total > 0 ? completed / total : 0,
               strokeWidth: 4,
-              backgroundColor: AppTheme.outlineVariant,
+              backgroundColor: cs.outlineVariant,
               valueColor: const AlwaysStoppedAnimation(AppTheme.primaryBrand),
             ),
           ),
@@ -649,6 +670,7 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final actions = [
       _QAction(icon: Icons.add_circle_outline, label: 'Buat\nLaporan', onTap: onBuatLaporan),
       _QAction(icon: Icons.qr_code_scanner_outlined, label: 'Scan\nQR', onTap: onScanQR),
@@ -670,20 +692,20 @@ class _QuickActions extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: AppTheme.spMd, horizontal: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.surface,
+                  color: cs.surface,
                   borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                  border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+                  border: Border.all(color: cs.outlineVariant, width: 0.5),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(a.icon, size: 26, color: AppTheme.primary),
+                    Icon(a.icon, size: 26, color: AppTheme.primaryBrand),
                     const SizedBox(height: AppTheme.spXs + 2),
                     Text(
                       a.label,
                       textAlign: TextAlign.center,
                       style: AppTheme.labelMd.copyWith(
-                        color: AppTheme.onSurfaceVariant,
+                        color: cs.onSurface,
                         height: 1.3,
                       ),
                     ),
@@ -711,6 +733,7 @@ class _InsidenSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -718,7 +741,7 @@ class _InsidenSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Insiden Harian', style: AppTheme.headlineSm),
+            Text('Insiden Harian', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: 4),
               decoration: BoxDecoration(
@@ -736,9 +759,9 @@ class _InsidenSection extends StatelessWidget {
         // Incident card
         Container(
           decoration: BoxDecoration(
-            color: AppTheme.surface,
+            color: cs.surface,
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+            border: Border.all(color: cs.outlineVariant, width: 0.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -752,11 +775,11 @@ class _InsidenSection extends StatelessWidget {
                     Container(
                       width: 72, height: 72,
                       decoration: BoxDecoration(
-                        color: AppTheme.surfaceHigh,
+                        color: cs.brightness == Brightness.dark ? const Color(0xFF252530) : AppTheme.surfaceHigh,
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                       ),
-                      child: const Icon(Icons.videocam_outlined,
-                          color: AppTheme.outline, size: 28),
+                      child: Icon(Icons.videocam_outlined,
+                          color: cs.outline, size: 28),
                     ),
                     const SizedBox(width: AppTheme.spMd),
                     Expanded(
@@ -764,11 +787,14 @@ class _InsidenSection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Kebocoran Pipa HVAC',
-                              style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700)),
+                              style: AppTheme.bodyLg.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: cs.onSurface,
+                              )),
                           const SizedBox(height: AppTheme.spXs),
                           Text(
                             'Terdeteksi penurunan tekanan pada jalur sekunder Lantai 4. Teknisi...',
-                            style: AppTheme.bodyMd,
+                            style: AppTheme.bodyMd.copyWith(color: cs.onSurfaceVariant),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           ),

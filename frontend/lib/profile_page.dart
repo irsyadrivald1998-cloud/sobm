@@ -76,14 +76,15 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Profil Pengguna', style: AppTheme.titleLg),
+        title: Text('Profil Pengguna', style: AppTheme.titleLg.copyWith(color: cs.onSurface)),
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: cs.onSurface),
             onPressed: _loadUserData,
             tooltip: 'Muat ulang',
           ),
@@ -98,6 +99,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildError() {
+    final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppTheme.spLg),
@@ -106,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             const Icon(Icons.error_outline, size: 56, color: AppTheme.alertCritical),
             const SizedBox(height: AppTheme.spMd),
-            Text(_errorMessage, style: AppTheme.bodyLg, textAlign: TextAlign.center),
+            Text(_errorMessage, style: AppTheme.bodyLg.copyWith(color: cs.onSurface), textAlign: TextAlign.center),
             const SizedBox(height: AppTheme.spLg),
             ElevatedButton.icon(
               onPressed: _loadUserData,
@@ -120,6 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfile() {
+    final cs = Theme.of(context).colorScheme;
     final name = _user?['name'] ?? 'Nama tidak tersedia';
     final employeeId = _user?['employee_id'] ?? '-';
     final email = _user?['email'] ?? '-';
@@ -136,9 +139,9 @@ class _ProfilePageState extends State<ProfilePage> {
           Container(
             padding: const EdgeInsets.all(AppTheme.spLg),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-              border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+              border: Border.all(color: cs.outlineVariant, width: 0.5),
             ),
             child: Column(
               children: [
@@ -165,7 +168,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Name
                 Text(
                   name,
-                  style: AppTheme.headlineMd,
+                  style: AppTheme.headlineMd.copyWith(color: cs.onSurface),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppTheme.spXs),
@@ -197,7 +200,7 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: AppTheme.spLg),
 
           // Account Information
-          Text('Informasi Akun', style: AppTheme.headlineSm),
+          Text('Informasi Akun', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
           const SizedBox(height: AppTheme.spMd),
 
           _InfoCard(
@@ -232,16 +235,16 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: AppTheme.spXl),
 
           // Quick Actions
-          Text('Pengaturan', style: AppTheme.headlineSm),
+          Text('Pengaturan', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
           const SizedBox(height: AppTheme.spMd),
 
           // Theme Toggle - LIGHT MODE SWITCH
           Container(
             padding: const EdgeInsets.all(AppTheme.spMd),
             decoration: BoxDecoration(
-              color: AppTheme.surface,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+              border: Border.all(color: cs.outlineVariant, width: 0.5),
             ),
             child: Row(
               children: [
@@ -266,14 +269,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         'Mode Terang',
                         style: AppTheme.bodyMd.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: AppTheme.onSurface,
+                          color: cs.onSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         ThemeProvider.of(context).isLight ? 'Aktif' : 'Nonaktif',
                         style: AppTheme.labelSm.copyWith(
-                          color: AppTheme.onSurfaceVariant,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -295,7 +298,6 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: Icons.lock_outline,
             label: 'Ubah Password',
             onTap: () {
-           
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Fitur ubah password akan segera tersedia')),
               );
@@ -307,7 +309,6 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: Icons.person_outline,
             label: 'Edit Profil',
             onTap: () {
-        
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Fitur edit profil akan segera tersedia')),
               );
@@ -334,9 +335,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 applicationVersion: '1.0.0',
                 applicationIcon: const Icon(Icons.business, size: 48, color: AppTheme.primaryBrand),
                 children: [
-                  Text('Smart Office Building Management', style: AppTheme.bodyMd),
+                  Text('Smart Office Building Management', style: AppTheme.bodyMd.copyWith(color: cs.onSurface)),
                   const SizedBox(height: AppTheme.spSm),
-                  Text('Sistem manajemen gedung cerdas untuk operasional yang lebih efisien.', style: AppTheme.bodyMd),
+                  Text('Sistem manajemen gedung cerdas untuk operasional yang lebih efisien.', style: AppTheme.bodyMd.copyWith(color: cs.onSurfaceVariant)),
                 ],
               );
             },
@@ -419,12 +420,13 @@ class _InfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
-        color: AppTheme.surface,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+        border: Border.all(color: cs.outlineVariant, width: 0.5),
       ),
       child: Row(
         children: [
@@ -441,13 +443,13 @@ class _InfoCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: AppTheme.labelMd),
+                Text(label, style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant)),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: AppTheme.bodyMd.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.onSurface,
+                    color: cs.onSurface,
                   ),
                 ),
               ],
@@ -472,28 +474,35 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-      child: Container(
-        padding: const EdgeInsets.all(AppTheme.spMd),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-          border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 24, color: AppTheme.onSurface),
-            const SizedBox(width: AppTheme.spMd),
-            Expanded(
-              child: Text(
-                label,
-                style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600),
+    final cs = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        child: Container(
+          padding: const EdgeInsets.all(AppTheme.spMd),
+          decoration: BoxDecoration(
+            color: cs.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            border: Border.all(color: cs.outlineVariant, width: 0.5),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 24, color: cs.onSurface),
+              const SizedBox(width: AppTheme.spMd),
+              Expanded(
+                child: Text(
+                  label,
+                  style: AppTheme.bodyMd.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: cs.onSurface,
+                  ),
+                ),
               ),
-            ),
-            const Icon(Icons.chevron_right, size: 20, color: AppTheme.outline),
-          ],
+              Icon(Icons.chevron_right, size: 20, color: cs.outline),
+            ],
+          ),
         ),
       ),
     );
