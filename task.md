@@ -22,17 +22,17 @@
 # Task — Fitur Foto Profil User
 
 ## Backend
-- [ ] Buat migration untuk tambah kolom `photo_path` di tabel `users`
-- [ ] Update model `User.php` (tambahkan `photo_path` ke fillable)
-- [ ] Buat `ProfileController.php` untuk menangani update profil dan upload foto
-- [ ] Tambahkan route API untuk update profil dan foto user di `api.php`
-- [ ] Jalankan migration
+- [x] Buat migration untuk tambah kolom `photo_path` di tabel `users`
+- [x] Update model `User.php` (tambahkan `photo_path` ke fillable)
+- [x] Buat `ProfileController.php` untuk menangani update profil dan upload foto
+- [x] Tambahkan route API untuk update profil dan foto user di `api.php`
+- [x] Jalankan migration
 
 ## Frontend
-- [ ] Update `api_service.dart` agar method `updateAvatar` dan `updateProfile` memanggil endpoint yang tepat
-- [ ] Update `profile_page.dart` agar tombol "Edit Profil" membuka `EditProfilePage` dan memuat ulang data saat kembali
-- [ ] Tampilkan foto profil/avatar di `profile_page.dart` dan `edit_profile_page.dart` (jika ada `photo_path`, ambil via URL, jika tidak tampilkan icon default)
-- [ ] Implementasikan pemilihan foto dari galeri/kamera di `edit_profile_page.dart` menggunakan `image_picker` dan upload ke backend
+- [x] Update `api_service.dart` agar method `updateAvatar` dan `updateProfile` memanggil endpoint yang tepat
+- [x] Update `profile_page.dart` agar tombol "Edit Profil" membuka `EditProfilePage` dan memuat ulang data saat kembali
+- [x] Tampilkan foto profil/avatar di `profile_page.dart` dan `edit_profile_page.dart` (jika ada `photo_path`, ambil via URL, jika tidak tampilkan icon default)
+- [x] Implementasikan pemilihan foto dari galeri/kamera di `edit_profile_page.dart` menggunakan `image_picker` dan upload ke backend
 
 
 ## Milestone 0 — Fondasi (Selesai)

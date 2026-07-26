@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ThemeProvider;
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -157,10 +158,22 @@ class _ProfilePageState extends State<ProfilePage> {
                       width: 3,
                     ),
                   ),
-                  child: Icon(
-                    _getRoleIcon(role),
-                    size: 48,
-                    color: AppTheme.primaryBrand,
+                  child: ClipOval(
+                    child: _user?['photo_url'] != null
+                        ? Image.network(
+                            _user!['photo_url'] as String,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              _getRoleIcon(role),
+                              size: 48,
+                              color: AppTheme.primaryBrand,
+                            ),
+                          )
+                        : Icon(
+                            _getRoleIcon(role),
+                            size: 48,
+                            color: AppTheme.primaryBrand,
+                          ),
                   ),
                 ),
                 const SizedBox(height: AppTheme.spMd),
@@ -309,9 +322,17 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: Icons.person_outline,
             label: 'Edit Profil',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Fitur edit profil akan segera tersedia')),
-              );
+              if (_user != null) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => EditProfilePage(user: _user!),
+                  ),
+                ).then((value) {
+                  if (value == true) {
+                    _loadUserData();
+                  }
+                });
+              }
             },
           ),
           const SizedBox(height: AppTheme.spSm),
