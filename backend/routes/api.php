@@ -20,6 +20,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return ApiResponse::success($request->user(), 'OK');
     });
+    Route::put('/user/profile', [\App\Http\Controllers\Api\ProfileController::class, 'update']);
+    Route::post('/user/profile', [\App\Http\Controllers\Api\ProfileController::class, 'update']);
 
     // Worker routes
     Route::middleware(['can_access_worker_api', 'report_rate_limit'])->group(function () {

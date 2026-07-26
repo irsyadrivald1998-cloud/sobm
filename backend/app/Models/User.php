@@ -14,12 +14,19 @@ use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['employee_id', 'name', 'password', 'role', 'password_reset_token', 'password_reset_expires_at'])]
+#[Fillable(['employee_id', 'name', 'email', 'phone', 'password', 'role', 'photo_path', 'password_reset_token', 'password_reset_expires_at'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
+
+    protected $appends = ['photo_url'];
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
+    }
 
     /**
      * Get the attributes that should be cast.
