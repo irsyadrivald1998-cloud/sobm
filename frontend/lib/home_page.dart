@@ -229,7 +229,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             title: Text(
-              _user?['company'] ?? 'COMPANY X',
+              _user?['company'] ?? 'Building Management',
               style: AppTheme.titleLg.copyWith(
                 color: AppTheme.primaryBrand,
                 fontWeight: FontWeight.w700,

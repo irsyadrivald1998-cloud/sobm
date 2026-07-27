@@ -17,7 +17,7 @@ class AppConfig {
   // Default API URL based on environment
   static const String _defaultApiBaseUrl = environment == 'prod'
       ? 'https://production.sobm.api/api'
-      : 'https://d529-103-41-79-141.ngrok-free.app/api';
+      : 'https://284c-114-10-95-115.ngrok-free.app/api';
 
   // App name
   static const String appName = 'SOBM - Smart Office Building Management';
