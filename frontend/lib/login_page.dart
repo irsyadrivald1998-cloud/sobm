@@ -241,7 +241,7 @@ class _LoginPageState extends State<LoginPage>
                                   const SizedBox(height: 8),
                                   _buildTextField(
                                     controller: _emailController,
-                                    hint: 'nama@email.com',
+                                    hint: 'ID Karyawan',
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (v) =>
                                         (v == null || v.trim().isEmpty)
