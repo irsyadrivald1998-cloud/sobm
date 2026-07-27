@@ -314,11 +314,10 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
                               initialValue: _selectedRole,
+                              isExpanded: true,
+                              dropdownColor: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
                               decoration: InputDecoration(
-                                prefixIcon: Icon(
-                                  currentMeta['icon'] as IconData,
-                                  color: jobColor,
-                                ),
                                 filled: true,
                                 fillColor: const Color(0xFFF8F8FA),
                                 border: OutlineInputBorder(
