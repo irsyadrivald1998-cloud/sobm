@@ -245,7 +245,7 @@ class _LoginPageState extends State<LoginPage>
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (v) =>
                                         (v == null || v.trim().isEmpty)
-                                            ? 'Email wajib diisi'
+                                            ? 'ID Karyawan wajib diisi'
                                             : null,
                                   ),
                                   const SizedBox(height: 22),
