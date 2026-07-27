@@ -97,12 +97,13 @@ class AttendanceController extends Controller
             return ApiResponse::error("Anda berada {$over} meter di luar jangkauan lokasi kantor untuk absensi.", 400);
         }
 
-        // 4. Determine Lateness Status (Limit: 08:15:00 Asia/Jakarta)
+        // 4. Determine Lateness Status based on schedule
         $now = Carbon::now('Asia/Jakarta');
         $currentTimeString = $now->toTimeString();
-        $limitTime = Carbon::today('Asia/Jakarta')->setTime(8, 15, 0);
-
-        $status = $now->greaterThan($limitTime) ? 'Terlambat' : 'Hadir';
+        
+        // Use shift_start from schedule instead of hardcoded time
+        $scheduleTime = Carbon::parse($schedule->date . ' ' . $schedule->shift_start, 'Asia/Jakarta');
+        $status = $now->greaterThan($scheduleTime) ? 'Terlambat' : 'Hadir';
 
         // 5. Store Photo
         $photoPath = $request->file('photo')->store('attendances/clock_in', 'public');
