@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -17,6 +18,9 @@ class _AttendancePageState extends State<AttendancePage>
     with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   late TabController _tabController;
+
+  Timer? _liveTimer;
+  DateTime _now = DateTime.now();
 
   // ── Today tab state ──────────────────────────────────────────────────────
   Map<String, dynamic>? _todayAttendance;
@@ -40,11 +44,17 @@ class _AttendancePageState extends State<AttendancePage>
         _loadHistory();
       }
     });
+    _liveTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) {
+        setState(() => _now = DateTime.now());
+      }
+    });
     _loadToday();
   }
 
   @override
   void dispose() {
+    _liveTimer?.cancel();
     _tabController.dispose();
     super.dispose();
   }
@@ -275,8 +285,9 @@ class _AttendancePageState extends State<AttendancePage>
     final hasClockIn  = clockInRaw != null;
     final hasClockOut = clockOutRaw != null;
 
-    final now   = DateTime.now();
-    final today = '${_dayName(now.weekday)}, ${now.day} ${_monthName(now.month)} ${now.year}';
+    final today = '${_dayName(_now.weekday)}, ${_now.day} ${_monthName(_now.month)} ${_now.year}';
+    final liveClockStr = '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
+    final liveClockSecStr = '$liveClockStr:${_now.second.toString().padLeft(2, '0')}';
 
     return RefreshIndicator(
       onRefresh: _loadToday,
@@ -287,8 +298,25 @@ class _AttendancePageState extends State<AttendancePage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // ── Date header ─────────────────────────────────────────────────
-            Text(today, style: AppTheme.labelMd, textAlign: TextAlign.center),
+            // ── Real-time HP Clock Header ─────────────────────────────────────
+            Text(today, style: AppTheme.labelMd.copyWith(color: AppTheme.onSurfaceVariant), textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.access_time_filled_rounded, color: AppTheme.statusOk, size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  '$liveClockSecStr WIB',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: AppTheme.spMd),
 
             // ── Big status card ──────────────────────────────────────────────
@@ -302,8 +330,9 @@ class _AttendancePageState extends State<AttendancePage>
 
             // ── Timeline clock-in / clock-out ─────────────────────────────────
             _TimelineCard(
-              clockIn: hasClockIn ? _fmtTime(clockInRaw) : null,
+              clockIn: hasClockIn ? _fmtTime(clockInRaw) : liveClockStr,
               clockOut: hasClockOut ? _fmtTime(clockOutRaw) : null,
+              isClockInLive: !hasClockIn,
             ),
             const SizedBox(height: AppTheme.spLg),
 
@@ -579,9 +608,14 @@ class _AttendancePageState extends State<AttendancePage>
   String _fmtTime(String? raw) {
     if (raw == null) return '—';
     try {
-      // raw could be "HH:mm:ss" or ISO datetime
-      final parts = raw.contains('T') ? raw.split('T')[1].split(':') : raw.split(':');
-      return '${parts[0].padLeft(2, '0')}:${parts[1]}';
+      if (raw.contains('T') || raw.endsWith('Z')) {
+        final dt = DateTime.parse(raw).toLocal();
+        return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      }
+      final parts = raw.split(':');
+      final h = int.parse(parts[0]);
+      final m = int.parse(parts[1]);
+      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
     } catch (_) {
       return raw;
     }
@@ -674,13 +708,12 @@ class _StatusCard extends StatelessWidget {
 class _TimelineCard extends StatelessWidget {
   final String? clockIn;
   final String? clockOut;
+  final bool isClockInLive;
 
-  const _TimelineCard({this.clockIn, this.clockOut});
+  const _TimelineCard({this.clockIn, this.clockOut, this.isClockInLive = false});
 
   @override
   Widget build(BuildContext context) {
-    if (clockIn == null && clockOut == null) return const SizedBox.shrink();
-
     return Container(
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
@@ -692,9 +725,9 @@ class _TimelineCard extends StatelessWidget {
         children: [
           Expanded(child: _TimeCell(
             icon: Icons.login_rounded,
-            label: 'Clock In',
+            label: isClockInLive ? 'Clock In (Real-time)' : 'Clock In',
             time: clockIn ?? '—',
-            color: AppTheme.statusOk,
+            color: isClockInLive ? AppTheme.statusOk : (clockIn != null ? AppTheme.statusOk : AppTheme.outline),
           )),
           Container(width: 1, height: 48, color: AppTheme.outlineVariant),
           Expanded(child: _TimeCell(

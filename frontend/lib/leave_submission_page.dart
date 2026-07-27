@@ -115,11 +115,23 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
 
   @override
   Widget build(BuildContext context) {
+    const bgDark = Color(0xFF0F0F14);
+    const cardBg = Color(0xFF1C1C26);
+    const textColor = Color(0xFFF0F0F5);
+    const subtextColor = Color(0xFFB0B0C0);
+    const borderCol = Color(0xFF3A3A48);
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
+      backgroundColor: bgDark,
       appBar: AppBar(
-        title: Text('Pengajuan Izin/Cuti/Sakit', style: AppTheme.titleLg),
-        backgroundColor: AppTheme.surfaceLowest,
+        title: const Text(
+          'Pengajuan Izin/Cuti/Sakit',
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+        backgroundColor: const Color(0xFF16161E),
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppTheme.spMd),
@@ -129,23 +141,33 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Leave Type Selection
-              Text('Jenis Pengajuan', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
+              const Text(
+                'Jenis Pengajuan',
+                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: AppTheme.spSm),
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'cuti', label: Text('Cuti'), icon: Icon(Icons.beach_access)),
-                  ButtonSegment(value: 'izin', label: Text('Izin'), icon: Icon(Icons.event_note)),
-                  ButtonSegment(value: 'sakit', label: Text('Sakit'), icon: Icon(Icons.local_hospital)),
-                ],
-                selected: {_leaveType},
-                onSelectionChanged: (Set<String> selection) {
-                  setState(() => _leaveType = selection.first);
-                },
+              Container(
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: borderCol),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: Row(
+                  children: [
+                    _buildTypeChip('cuti', 'Cuti', Icons.beach_access_rounded),
+                    _buildTypeChip('izin', 'Izin', Icons.event_note_rounded),
+                    _buildTypeChip('sakit', 'Sakit', Icons.local_hospital_rounded),
+                  ],
+                ),
               ),
               const SizedBox(height: AppTheme.spLg),
 
               // Start Date
-              Text('Tanggal Mulai', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
+              const Text(
+                'Tanggal Mulai',
+                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: AppTheme.spSm),
               InkWell(
                 onTap: () async {
@@ -165,17 +187,20 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(AppTheme.spMd),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    border: Border.all(color: AppTheme.outlineVariant),
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: borderCol),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 20),
-                      const SizedBox(width: AppTheme.spSm),
-                      Text(_formatDate(_startDate), style: AppTheme.bodyMd),
+                      const Icon(Icons.calendar_today_rounded, size: 20, color: AppTheme.primaryBrand),
+                      const SizedBox(width: AppTheme.spSm + 4),
+                      Text(
+                        _formatDate(_startDate),
+                        style: const TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
                     ],
                   ),
                 ),
@@ -183,7 +208,10 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
               const SizedBox(height: AppTheme.spMd),
 
               // End Date
-              Text('Tanggal Selesai', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
+              const Text(
+                'Tanggal Selesai',
+                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: AppTheme.spSm),
               InkWell(
                 onTap: () async {
@@ -198,17 +226,20 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.all(AppTheme.spMd),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
-                    color: AppTheme.surface,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    border: Border.all(color: AppTheme.outlineVariant),
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: borderCol),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 20),
-                      const SizedBox(width: AppTheme.spSm),
-                      Text(_formatDate(_endDate), style: AppTheme.bodyMd),
+                      const Icon(Icons.calendar_today_rounded, size: 20, color: AppTheme.primaryBrand),
+                      const SizedBox(width: AppTheme.spSm + 4),
+                      Text(
+                        _formatDate(_endDate),
+                        style: const TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w600),
+                      ),
                     ],
                   ),
                 ),
@@ -216,23 +247,36 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
               const SizedBox(height: AppTheme.spSm),
               Text(
                 'Durasi: ${_endDate.difference(_startDate).inDays + 1} hari',
-                style: AppTheme.labelMd.copyWith(color: AppTheme.primaryBrand),
+                style: const TextStyle(color: AppTheme.primaryBrand, fontSize: 13, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppTheme.spLg),
 
               // Reason
-              Text('Alasan', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
+              const Text(
+                'Alasan',
+                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: AppTheme.spSm),
               TextFormField(
                 controller: _reasonController,
                 maxLines: 4,
+                style: const TextStyle(color: textColor, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Jelaskan alasan pengajuan $_leaveType...',
+                  hintStyle: const TextStyle(color: Color(0xFF7A7A8E), fontSize: 14),
                   filled: true,
-                  fillColor: AppTheme.surface,
+                  fillColor: cardBg,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                    borderSide: const BorderSide(color: AppTheme.outlineVariant),
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: borderCol),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: borderCol),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: AppTheme.primaryBrand, width: 1.5),
                   ),
                 ),
                 validator: (value) {
@@ -250,33 +294,44 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
               // Attachment
               Text(
                 'Lampiran ${_leaveType == 'cuti' ? '(Opsional)' : '(Wajib)'}',
-                style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600),
+                style: const TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppTheme.spSm),
               OutlinedButton.icon(
                 onPressed: _pickAttachment,
-                icon: Icon(_attachmentFile == null ? Icons.attach_file : Icons.check_circle),
-                label: Text(_attachmentFile == null 
-                    ? 'Pilih Surat ${_leaveType == 'sakit' ? 'Dokter' : 'Izin'}'
-                    : 'File terlampir: ${_attachmentFile!.name}'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(AppTheme.spMd),
-                  side: BorderSide(
-                    color: _attachmentFile == null 
-                        ? AppTheme.outlineVariant 
-                        : AppTheme.statusOk,
+                icon: Icon(
+                  _attachmentFile == null ? Icons.attach_file_rounded : Icons.check_circle_rounded,
+                  color: _attachmentFile == null ? subtextColor : AppTheme.statusOk,
+                ),
+                label: Text(
+                  _attachmentFile == null
+                      ? 'Pilih Surat ${_leaveType == 'sakit' ? 'Dokter' : 'Izin'}'
+                      : 'File terlampir: ${_attachmentFile!.name}',
+                  style: TextStyle(
+                    color: _attachmentFile == null ? subtextColor : AppTheme.statusOk,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  side: BorderSide(
+                    color: _attachmentFile == null ? borderCol : AppTheme.statusOk,
+                  ),
+                  backgroundColor: cardBg,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
               if (_leaveType != 'cuti')
                 Padding(
-                  padding: const EdgeInsets.only(top: AppTheme.spXs),
+                  padding: const EdgeInsets.only(top: AppTheme.spXs + 2),
                   child: Text(
-                    _leaveType == 'sakit' 
+                    _leaveType == 'sakit'
                         ? 'Wajib melampirkan surat keterangan dokter'
                         : 'Wajib melampirkan surat izin resmi',
-                    style: AppTheme.labelSm.copyWith(
+                    style: const TextStyle(
                       color: AppTheme.statusWarning,
+                      fontSize: 12,
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -284,24 +339,61 @@ class _LeaveSubmissionPageState extends State<LeaveSubmissionPage> {
               const SizedBox(height: AppTheme.spXl),
 
               // Submit Button
-              ElevatedButton(
-                onPressed: _isSubmitting ? null : _submitLeave,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryBrand,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: AppTheme.spMd),
-                  disabledBackgroundColor: AppTheme.outline,
-                ),
-                child: _isSubmitting
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submitLeave,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryBrand,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    elevation: 0,
+                  ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                          ),
+                        )
+                      : const Text(
+                          'Kirim Pengajuan',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                         ),
-                      )
-                    : const Text('Kirim Pengajuan'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeChip(String type, String label, IconData icon) {
+    final isSelected = _leaveType == type;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _leaveType = type),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primaryBrand : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18, color: isSelected ? Colors.white : const Color(0xFFB0B0C0)),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFFB0B0C0),
+                  fontSize: 13,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                ),
               ),
             ],
           ),

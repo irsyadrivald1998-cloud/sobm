@@ -19,7 +19,7 @@ class AttendanceController extends Controller
     public function today(Request $request)
     {
         $attendance = Attendance::where('user_id', $request->user()->id)
-            ->whereDate('date', Carbon::today())
+            ->whereDate('date', Carbon::today('Asia/Jakarta'))
             ->first();
 
         if (!$attendance) {
@@ -36,8 +36,9 @@ class AttendanceController extends Controller
             'year'  => 'nullable|integer|min:2020|max:2100',
         ]);
 
-        $month = $request->get('month', Carbon::now()->month);
-        $year  = $request->get('year',  Carbon::now()->year);
+        $now = Carbon::now('Asia/Jakarta');
+        $month = $request->get('month', $now->month);
+        $year  = $request->get('year',  $now->year);
 
         $attendances = Attendance::where('user_id', $request->user()->id)
             ->whereMonth('date', $month)
@@ -62,7 +63,7 @@ class AttendanceController extends Controller
         ]);
 
         $userId = $request->user()->id;
-        $today = Carbon::today()->toDateString();
+        $today = Carbon::today('Asia/Jakarta')->toDateString();
 
         // 1. Check if already clocked in
         $exists = Attendance::where('user_id', $userId)
@@ -86,10 +87,10 @@ class AttendanceController extends Controller
             return ApiResponse::error("Anda berada {$over} meter di luar jangkauan lokasi kantor untuk absensi.", 400);
         }
 
-        // 3. Determine Lateness Status (Limit: 08:15:00)
-        $now = Carbon::now();
+        // 3. Determine Lateness Status (Limit: 08:15:00 Asia/Jakarta)
+        $now = Carbon::now('Asia/Jakarta');
         $currentTimeString = $now->toTimeString();
-        $limitTime = Carbon::today()->setTime(8, 15, 0);
+        $limitTime = Carbon::today('Asia/Jakarta')->setTime(8, 15, 0);
 
         $status = $now->greaterThan($limitTime) ? 'Terlambat' : 'Hadir';
 
@@ -127,7 +128,7 @@ class AttendanceController extends Controller
 
         // 1. Get today's attendance record using whereDate for reliable date matching
         $attendance = Attendance::where('user_id', $userId)
-            ->whereDate('date', Carbon::today())
+            ->whereDate('date', Carbon::today('Asia/Jakarta'))
             ->first();
 
         if (!$attendance) {
@@ -156,7 +157,7 @@ class AttendanceController extends Controller
         $photoPath = $request->file('photo')->store('attendances/clock_out', 'public');
 
         $attendance->update([
-            'clock_out_time' => Carbon::now()->toTimeString(),
+            'clock_out_time' => Carbon::now('Asia/Jakarta')->toTimeString(),
             'clock_out_latitude' => $request->latitude,
             'clock_out_longitude' => $request->longitude,
             'clock_out_photo_path' => $photoPath,

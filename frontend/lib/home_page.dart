@@ -287,8 +287,16 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
 
-          // ── Critical Alarm Banner ───────────────────────────────────
-          SliverToBoxAdapter(child: _CriticalAlarmBanner()),
+          // ── Real-time Employee Task Status Banner ────────────────────
+          SliverToBoxAdapter(
+            child: _TaskStatusBanner(
+              pendingCount: pendingCount,
+              completedCount: completedCount,
+              totalCount: _schedules.length,
+              schedules: _schedules,
+              onTinjau: () => Navigator.of(context).pushNamed('/my-tasks'),
+            ),
+          ),
 
           // ── Stat Cards 2×2 Grid ─────────────────────────────────────
           SliverPadding(
@@ -539,8 +547,14 @@ class _AttendanceStatusCard extends StatelessWidget {
   String _fmtTime(String? raw) {
     if (raw == null) return '—';
     try {
-      final parts = raw.contains('T') ? raw.split('T')[1].split(':') : raw.split(':');
-      return '${parts[0].padLeft(2, '0')}:${parts[1]}';
+      if (raw.contains('T') || raw.endsWith('Z')) {
+        final dt = DateTime.parse(raw).toLocal();
+        return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      }
+      final parts = raw.split(':');
+      final h = int.parse(parts[0]);
+      final m = int.parse(parts[1]);
+      return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
     } catch (_) {
       return raw;
     }
@@ -643,53 +657,129 @@ class _AttendanceStatusCard extends StatelessWidget {
 
 
 
-/// Red pulse critical alarm banner
-class _CriticalAlarmBanner extends StatelessWidget {
+/// Real-time employee task status banner replacing legacy critical alarm banner
+class _TaskStatusBanner extends StatelessWidget {
+  final int pendingCount;
+  final int completedCount;
+  final int totalCount;
+  final List<dynamic> schedules;
+  final VoidCallback onTinjau;
+
+  const _TaskStatusBanner({
+    required this.pendingCount,
+    required this.completedCount,
+    required this.totalCount,
+    required this.schedules,
+    required this.onTinjau,
+  });
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final hasPending = pendingCount > 0;
+    
+    // Find first pending schedule for real-time hint
+    String hintText = '';
+    if (hasPending) {
+      final firstPending = schedules.firstWhere(
+        (s) => s['status'] == 'pending',
+        orElse: () => null,
+      );
+      if (firstPending != null && firstPending is Map) {
+        final cp = firstPending['checkpoint'] as Map<String, dynamic>?;
+        final cpName = cp?['name'] as String? ?? 'Tugas Lapangan';
+        final timeStr = firstPending['scheduled_time']?.toString();
+        final time = (timeStr != null && timeStr.length >= 5) ? timeStr.substring(0, 5) : '';
+        hintText = time.isNotEmpty ? '$cpName ($time WIB)' : cpName;
+      } else {
+        hintText = '$completedCount dari $totalCount tugas telah diselesaikan';
+      }
+    } else if (totalCount > 0) {
+      hintText = 'Seluruh $totalCount tugas hari ini telah diselesaikan';
+    } else {
+      hintText = 'Tidak ada penugasan aktif hari ini';
+    }
+
+    final accentColor = hasPending ? const Color(0xFFD32F2F) : const Color(0xFF2E7D32);
+    final bgColor = hasPending
+        ? (isDark ? const Color(0xFF331414) : const Color(0xFFFFEBEE))
+        : (isDark ? const Color(0xFF142918) : const Color(0xFFE8F5E9));
+    final borderColor = accentColor.withValues(alpha: 0.5);
+
     return Container(
       margin: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
       padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spSm + 4),
       decoration: BoxDecoration(
-        color: AppTheme.errorContainer.withValues(alpha: 0.9),
+        color: bgColor,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        border: Border.all(color: AppTheme.alertCritical.withValues(alpha: 0.5), width: 1),
+        border: Border.all(color: borderColor, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppTheme.alertCritical, size: 22),
-          const SizedBox(width: AppTheme.spSm),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              hasPending ? Icons.warning_amber_rounded : Icons.task_alt_rounded,
+              color: accentColor,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: AppTheme.spSm + 2),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '4 Alarm Kritis',
+                  hasPending
+                      ? '$pendingCount Tugas Karyawan Perlu Dikerjakan'
+                      : 'Semua Tugas Selesai',
                   style: AppTheme.bodyLg.copyWith(
                     color: cs.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
-                  'Tindakan segera diperlukan di Sektor B',
-                  style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant),
+                  hintText,
+                  style: AppTheme.labelMd.copyWith(
+                    color: cs.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           const SizedBox(width: AppTheme.spSm),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: onTinjau,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryBrand,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd, vertical: AppTheme.spXs + 2),
+              padding: const EdgeInsets.symmetric(horizontal: AppTheme.spMd + 2, vertical: AppTheme.spXs + 4),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSm)),
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppTheme.radiusSm + 4)),
             ),
-            child: Text('Tinjau', style: AppTheme.labelMd.copyWith(color: Colors.white, fontWeight: FontWeight.w600)),
+            child: Text(
+              'Tinjau',
+              style: AppTheme.labelMd.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
