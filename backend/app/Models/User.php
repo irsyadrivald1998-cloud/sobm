@@ -55,6 +55,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(LeaveSubmission::class);
     }
 
+    public function attendanceSchedules(): HasMany
+    {
+        return $this->hasMany(\App\Models\AttendanceSchedule::class);
+    }
+
     public function canAccessPanel(Panel $panel): bool
     {
         return in_array($this->role, ['admin', 'viewer']);

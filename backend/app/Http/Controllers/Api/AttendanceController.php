@@ -74,7 +74,17 @@ class AttendanceController extends Controller
             return ApiResponse::error('Anda sudah melakukan absen masuk hari ini.', 400);
         }
 
-        // 2. Validate Geolocation (Geofence to main office)
+        // 2. Check if user has attendance schedule for today
+        $schedule = \App\Models\AttendanceSchedule::where('user_id', $userId)
+            ->where('date', $today)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$schedule) {
+            return ApiResponse::error('Anda tidak memiliki jadwal absensi untuk hari ini.', 400);
+        }
+
+        // 3. Validate Geolocation (Geofence to main office)
         $distance = $this->haversineGreatCircleDistance(
             self::OFFICE_LATITUDE,
             self::OFFICE_LONGITUDE,
@@ -87,14 +97,14 @@ class AttendanceController extends Controller
             return ApiResponse::error("Anda berada {$over} meter di luar jangkauan lokasi kantor untuk absensi.", 400);
         }
 
-        // 3. Determine Lateness Status (Limit: 08:15:00 Asia/Jakarta)
+        // 4. Determine Lateness Status (Limit: 08:15:00 Asia/Jakarta)
         $now = Carbon::now('Asia/Jakarta');
         $currentTimeString = $now->toTimeString();
         $limitTime = Carbon::today('Asia/Jakarta')->setTime(8, 15, 0);
 
         $status = $now->greaterThan($limitTime) ? 'Terlambat' : 'Hadir';
 
-        // 4. Store Photo
+        // 5. Store Photo
         $photoPath = $request->file('photo')->store('attendances/clock_in', 'public');
 
         try {
@@ -133,6 +143,16 @@ class AttendanceController extends Controller
 
         if (!$attendance) {
             return ApiResponse::error('Anda belum melakukan absen masuk hari ini.', 400);
+        }
+
+        // Check if user has attendance schedule for today
+        $schedule = \App\Models\AttendanceSchedule::where('user_id', $userId)
+            ->where('date', Carbon::today('Asia/Jakarta')->toDateString())
+            ->where('is_active', true)
+            ->first();
+
+        if (!$schedule) {
+            return ApiResponse::error('Anda tidak memiliki jadwal absensi untuk hari ini.', 400);
         }
 
         // Use getRawOriginal to check raw null value before cast transforms it
