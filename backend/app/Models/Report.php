@@ -15,6 +15,8 @@ class Report extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $appends = ['photo_url'];
+
     protected function casts(): array
     {
         return [
@@ -22,6 +24,11 @@ class Report extends Model
             'check_in_latitude' => 'decimal:8',
             'check_in_longitude' => 'decimal:8',
         ];
+    }
+
+    public function getPhotoUrlAttribute(): ?string
+    {
+        return $this->photo_path ? asset('storage/' . $this->photo_path) : null;
     }
 
     public function schedule(): BelongsTo

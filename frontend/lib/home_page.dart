@@ -21,6 +21,7 @@ class _HomePageState extends State<HomePage> {
   final ApiService _apiService = ApiService();
   Map<String, dynamic>? _user;
   List<dynamic> _schedules = [];
+  List<dynamic> _reports = [];
   bool _isLoading = true;
   String _errorMessage = '';
   int _selectedTab = 0;
@@ -58,9 +59,12 @@ class _HomePageState extends State<HomePage> {
         if (mounted) setState(() => _attendanceLoaded = true);
       });
 
+      final reportsList = (reportsData['data'] as List<dynamic>?) ?? [];
+
       setState(() {
         _user      = userData;
         _schedules = schedulesData;
+        _reports   = reportsList;
         _isLoading = false;
       });
 
@@ -368,9 +372,6 @@ class _HomePageState extends State<HomePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spMd, AppTheme.spMd, 0),
               child: _QuickActions(
-                onBuatLaporan: () => Navigator.of(context).pushNamed('/my-tasks'),
-                onScanQR: () => Navigator.of(context).pushNamed('/my-tasks'),
-                onMonitoring: () {},
                 onJadwalTugas: () => Navigator.of(context).pushNamed('/my-tasks'),
               ),
             ),
@@ -380,15 +381,15 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
-              child: _InsidenSection(),
+              child: _InsidenSection(reports: _reports),
             ),
           ),
 
-          // ── Konsumsi Energi Chart ───────────────────────────────────
+          // ── Progres Tugas Hari Ini ─────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
-              child: _EnergyChart(),
+              child: _TaskProgressCard(schedules: todaySchedules),
             ),
           ),
 
@@ -397,6 +398,7 @@ class _HomePageState extends State<HomePage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(AppTheme.spMd, AppTheme.spXl, AppTheme.spMd, 0),
               child: _AktivitasSection(
+                reports: _reports,
                 schedules: todaySchedules,
                 onCheckIn: (s) => _openTaskDetail(
                     initialIndex: _schedules.indexOf(s)),
@@ -918,86 +920,83 @@ class _CheckpointCard extends StatelessWidget {
   }
 }
 
-/// Quick action 4-button row
+/// Quick action – single Jadwal Tugas button
 class _QuickActions extends StatelessWidget {
-  final VoidCallback onBuatLaporan;
-  final VoidCallback onScanQR;
-  final VoidCallback onMonitoring;
   final VoidCallback onJadwalTugas;
 
   const _QuickActions({
-    required this.onBuatLaporan,
-    required this.onScanQR,
-    required this.onMonitoring,
     required this.onJadwalTugas,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final actions = [
-      _QAction(icon: Icons.add_circle_outline, label: 'Buat\nLaporan', onTap: onBuatLaporan),
-      _QAction(icon: Icons.qr_code_scanner_outlined, label: 'Scan\nQR', onTap: onScanQR),
-      _QAction(icon: Icons.monitor_outlined, label: 'Moni-\ntoring', onTap: onMonitoring),
-      _QAction(icon: Icons.calendar_today_outlined, label: 'Jadwal\nTugas', onTap: onJadwalTugas),
-    ];
 
-    return Row(
-      children: actions.map((a) {
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: a == actions.first ? 0 : AppTheme.spXs,
-              right: a == actions.last ? 0 : AppTheme.spXs,
+    return InkWell(
+      onTap: onJadwalTugas,
+      borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: AppTheme.spMd, horizontal: AppTheme.spMd),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.35), width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryBrand.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.calendar_today_outlined, size: 24, color: AppTheme.primaryBrand),
             ),
-            child: InkWell(
-              onTap: a.onTap,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: AppTheme.spMd, horizontal: 4),
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                  border: Border.all(color: cs.outlineVariant, width: 0.5),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(a.icon, size: 26, color: AppTheme.primaryBrand),
-                    const SizedBox(height: AppTheme.spXs + 2),
-                    Text(
-                      a.label,
-                      textAlign: TextAlign.center,
-                      style: AppTheme.labelMd.copyWith(
-                        color: cs.onSurface,
-                        height: 1.3,
-                      ),
+            const SizedBox(width: AppTheme.spMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Jadwal Tugas',
+                    style: AppTheme.bodyLg.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.onSurface,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Lihat jadwal & tugas hari ini',
+                    style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ],
               ),
             ),
-          ),
-        );
-      }).toList(),
+            Icon(Icons.chevron_right_rounded, color: cs.outline, size: 22),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _QAction {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _QAction({required this.icon, required this.label, required this.onTap});
-}
-
-/// Insiden Harian section
+/// Insiden Harian section — shows real issues from reports
 class _InsidenSection extends StatelessWidget {
-  const _InsidenSection();
+  final List<dynamic> reports;
+  const _InsidenSection({required this.reports});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
+    // Filter reports that have issues (condition_status == 'Ada Kendala')
+    final incidents = reports.where((r) {
+      final report = r as Map<String, dynamic>;
+      return report['issue'] != null;
+    }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1009,86 +1008,214 @@ class _InsidenSection extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: 4),
               decoration: BoxDecoration(
-                color: AppTheme.primaryBrand.withValues(alpha: 0.15),
+                color: incidents.isEmpty
+                    ? AppTheme.statusOk.withValues(alpha: 0.15)
+                    : AppTheme.primaryBrand.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(AppTheme.radiusSm),
-                border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.4), width: 0.5),
+                border: Border.all(
+                  color: incidents.isEmpty
+                      ? AppTheme.statusOk.withValues(alpha: 0.4)
+                      : AppTheme.primaryBrand.withValues(alpha: 0.4),
+                  width: 0.5,
+                ),
               ),
-              child: Text('Hari Ini',
-                  style: AppTheme.labelSm.copyWith(color: AppTheme.primaryBrand)),
+              child: Text(
+                incidents.isEmpty ? 'Aman' : '${incidents.length} Insiden',
+                style: AppTheme.labelSm.copyWith(
+                  color: incidents.isEmpty ? AppTheme.statusOk : AppTheme.primaryBrand,
+                ),
+              ),
             ),
           ],
         ),
         const SizedBox(height: AppTheme.spMd),
 
-        // Incident card
-        Container(
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: cs.outlineVariant, width: 0.5),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(AppTheme.spMd),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Thumbnail placeholder
-                    Container(
-                      width: 72, height: 72,
-                      decoration: BoxDecoration(
-                        color: cs.brightness == Brightness.dark ? const Color(0xFF252530) : AppTheme.surfaceHigh,
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                      ),
-                      child: Icon(Icons.videocam_outlined,
-                          color: cs.outline, size: 28),
-                    ),
-                    const SizedBox(width: AppTheme.spMd),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Kebocoran Pipa HVAC',
-                              style: AppTheme.bodyLg.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: cs.onSurface,
-                              )),
-                          const SizedBox(height: AppTheme.spXs),
-                          Text(
-                            'Terdeteksi penurunan tekanan pada jalur sekunder Lantai 4. Teknisi...',
-                            style: AppTheme.bodyMd.copyWith(color: cs.onSurfaceVariant),
-                            maxLines: 3,
-                            overflow: TextOverflow.ellipsis,
+        if (incidents.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppTheme.spLg),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              border: Border.all(color: cs.outlineVariant, width: 0.5),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.check_circle_outline, color: AppTheme.statusOk, size: 36),
+                const SizedBox(height: AppTheme.spSm),
+                Text('Tidak ada insiden hari ini',
+                    style: AppTheme.bodyMd.copyWith(color: cs.onSurfaceVariant)),
+                const SizedBox(height: 4),
+                Text('Semua checkpoint dalam kondisi baik',
+                    style: AppTheme.labelSm.copyWith(color: cs.outline)),
+              ],
+            ),
+          )
+        else
+          ...incidents.take(3).map((r) {
+            final report = r as Map<String, dynamic>;
+            final issue = report['issue'] as Map<String, dynamic>;
+            final schedule = report['schedule'] as Map<String, dynamic>? ?? {};
+            final checkpoint = schedule['checkpoint'] as Map<String, dynamic>? ?? {};
+            final user = schedule['user'] as Map<String, dynamic>? ?? {};
+            final createdAt = report['created_at'] as String? ?? '';
+            final status = issue['status'] as String? ?? 'open';
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: AppTheme.spSm),
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+                border: Border.all(
+                  color: status == 'resolved'
+                      ? AppTheme.statusOk.withValues(alpha: 0.4)
+                      : AppTheme.primaryBrand.withValues(alpha: 0.4),
+                  width: 0.8,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(AppTheme.spMd),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 44, height: 44,
+                          decoration: BoxDecoration(
+                            color: status == 'resolved'
+                                ? AppTheme.statusOk.withValues(alpha: 0.12)
+                                : AppTheme.primaryBrand.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                           ),
-                        ],
-                      ),
+                          child: Icon(
+                            status == 'resolved'
+                                ? Icons.check_circle_outline
+                                : Icons.warning_amber_rounded,
+                            color: status == 'resolved'
+                                ? AppTheme.statusOk
+                                : AppTheme.primaryBrand,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: AppTheme.spMd),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                checkpoint['name'] ?? 'Checkpoint',
+                                style: AppTheme.bodyLg.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: AppTheme.spXs),
+                              Text(
+                                issue['issue_description'] as String? ?? 'Kendala terdeteksi',
+                                style: AppTheme.bodyMd.copyWith(color: cs.onSurfaceVariant),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: AppTheme.spXs),
+                              Row(
+                                children: [
+                                  Icon(Icons.person_outline, size: 14, color: cs.outline),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    user['name'] ?? 'Pekerja',
+                                    style: AppTheme.labelSm.copyWith(color: cs.outline),
+                                  ),
+                                  const SizedBox(width: AppTheme.spSm),
+                                  Icon(Icons.access_time, size: 14, color: cs.outline),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _relativeTime(createdAt),
+                                    style: AppTheme.labelSm.copyWith(color: cs.outline),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const Divider(height: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppTheme.spSm, vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: _statusColor(status).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _statusLabel(status),
+                            style: AppTheme.labelSm.copyWith(
+                              color: _statusColor(status),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pushNamed('/activity-log'),
+                          child: const Text('Lihat Detail'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const Divider(height: 1),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: const Text('Lihat Detail'),
-                ),
-              ),
-            ],
-          ),
-        ),
+            );
+          }),
       ],
     );
   }
+
+  Color _statusColor(String status) => switch (status) {
+        'resolved' => AppTheme.statusOk,
+        'in-progress' => AppTheme.statusWarning,
+        _ => AppTheme.primaryBrand,
+      };
+
+  String _statusLabel(String status) => switch (status) {
+        'resolved' => 'Selesai',
+        'in-progress' => 'Ditangani',
+        _ => 'Terbuka',
+      };
+
+  String _relativeTime(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 1) return 'Baru saja';
+      if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';
+      if (diff.inHours < 24) return '${diff.inHours} jam lalu';
+      return '${diff.inDays} hari lalu';
+    } catch (_) {
+      return '';
+    }
+  }
 }
 
-/// Konsumsi Energi line chart (custom painter)
-class _EnergyChart extends StatelessWidget {
+/// Task Progress Card — replaces static energy chart with real schedule completion
+class _TaskProgressCard extends StatelessWidget {
+  final List<dynamic> schedules;
+  const _TaskProgressCard({required this.schedules});
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final total = schedules.length;
+    final completed = schedules.where((s) => (s as Map)['status'] == 'completed').length;
+    final pending = total - completed;
+    final progress = total > 0 ? completed / total : 0.0;
+
     return Container(
       padding: const EdgeInsets.all(AppTheme.spMd),
       decoration: BoxDecoration(
@@ -1105,154 +1232,149 @@ class _EnergyChart extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Konsumsi Energi', style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700, color: cs.onSurface)),
-                  Text('kWh / Jam Terakhir', style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant)),
+                  Text('Progres Tugas Hari Ini',
+                      style: AppTheme.bodyLg.copyWith(
+                          fontWeight: FontWeight.w700, color: cs.onSurface)),
+                  Text('$completed dari $total tugas selesai',
+                      style: AppTheme.labelMd.copyWith(color: cs.onSurfaceVariant)),
                 ],
               ),
-              const Icon(Icons.bolt_outlined, color: AppTheme.tertiary, size: 22),
+              Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(
+                  color: progress >= 1.0
+                      ? AppTheme.statusOk.withValues(alpha: 0.12)
+                      : AppTheme.primaryBrand.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '${(progress * 100).round()}%',
+                    style: AppTheme.labelSm.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: progress >= 1.0 ? AppTheme.statusOk : AppTheme.primaryBrand,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppTheme.spMd),
-          SizedBox(
-            height: 100,
-            child: CustomPaint(
-              size: const Size(double.infinity, 100),
-              painter: _EnergyChartPainter(),
+
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 10,
+              backgroundColor: cs.outlineVariant.withValues(alpha: 0.3),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                progress >= 1.0 ? AppTheme.statusOk : AppTheme.primaryBrand,
+              ),
             ),
           ),
-          const SizedBox(height: AppTheme.spSm),
-          // X-axis labels
+          const SizedBox(height: AppTheme.spMd),
+
+          // Legend
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: ['08', '09', '10', '11', '12', '13']
-                .map((t) => Text(t, style: AppTheme.labelSm.copyWith(color: cs.onSurfaceVariant)))
-                .toList(),
+            children: [
+              _LegendDot(color: AppTheme.statusOk, label: 'Selesai ($completed)'),
+              const SizedBox(width: AppTheme.spMd),
+              _LegendDot(color: AppTheme.statusWarning, label: 'Pending ($pending)'),
+            ],
           ),
+
+          if (total == 0) ...[
+            const SizedBox(height: AppTheme.spSm),
+            Text(
+              'Tidak ada jadwal tugas hari ini.',
+              style: AppTheme.labelSm.copyWith(color: cs.outline),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _EnergyChartPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Data points (normalized 0-1)
-    const data = [0.45, 0.55, 0.40, 0.72, 0.58, 0.50];
-    final w = size.width;
-    final h = size.height;
-
-    final points = <Offset>[];
-    for (int i = 0; i < data.length; i++) {
-      points.add(Offset(
-        i / (data.length - 1) * w,
-        h - data[i] * h * 0.85 - 8,
-      ));
-    }
-
-    // Gradient fill under the line
-    final fillPath = Path()..moveTo(points.first.dx, h);
-    for (final p in points) {
-      fillPath.lineTo(p.dx, p.dy);
-    }
-    fillPath.lineTo(points.last.dx, h);
-    fillPath.close();
-
-    canvas.drawPath(
-      fillPath,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            AppTheme.primaryBrand.withValues(alpha: 0.3),
-            AppTheme.primaryBrand.withValues(alpha: 0.0),
-          ],
-        ).createShader(Rect.fromLTWH(0, 0, w, h)),
-    );
-
-    // Line
-    final linePaint = Paint()
-      ..color = AppTheme.primaryBrand
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeJoin = StrokeJoin.round;
-
-    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
-    for (int i = 1; i < points.length; i++) {
-      final prev = points[i - 1];
-      final curr = points[i];
-      final mid = Offset((prev.dx + curr.dx) / 2, (prev.dy + curr.dy) / 2);
-      linePath.quadraticBezierTo(prev.dx, prev.dy, mid.dx, mid.dy);
-    }
-    linePath.lineTo(points.last.dx, points.last.dy);
-    canvas.drawPath(linePath, linePaint);
-
-    // Peak dot at index 3 (value 0.72)
-    canvas.drawCircle(
-      points[3],
-      5,
-      Paint()..color = AppTheme.primaryBrand,
-    );
-    canvas.drawCircle(
-      points[3],
-      5,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
-    );
-
-    // Dotted vertical line at peak
-    final dotPaint = Paint()
-      ..color = AppTheme.primaryBrand.withValues(alpha: 0.4)
-      ..strokeWidth = 1;
-    const dashH = 4.0;
-    const gapH  = 4.0;
-    double y = points[3].dy + 8;
-    while (y < h) {
-      canvas.drawLine(Offset(points[3].dx, y), Offset(points[3].dx, y + dashH), dotPaint);
-      y += dashH + gapH;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter _) => false;
-}
-
-/// Aktivitas Terbaru section + schedule list
-class _AktivitasSection extends StatelessWidget {
-  final List<dynamic> schedules;
-  final Function(Map<String, dynamic>) onCheckIn;
-
-  const _AktivitasSection({required this.schedules, required this.onCheckIn});
+class _LegendDot extends StatelessWidget {
+  final Color color;
+  final String label;
+  const _LegendDot({required this.color, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    // Static sample activities that match the design
-    final activities = [
-      _Activity(
-        icon: Icons.elevator_outlined,
-        iconColor: AppTheme.statusOk,
-        title: 'Lift 4 Maintenance Complete',
-        subtitle: 'Teknisi: Budi S. • Gedung Utama',
-        time: '10 Min lalu',
-      ),
-      _Activity(
-        icon: Icons.electric_bolt_outlined,
-        iconColor: AppTheme.statusWarning,
-        title: 'Genset Backup Tested',
-        subtitle: 'Sistem otomatis berjalan normal',
-        time: '45 Min lalu',
-      ),
-      _Activity(
-        icon: Icons.assignment_outlined,
-        iconColor: AppTheme.tertiary,
-        title: 'Laporan Dibuat: Panel Listrik',
-        subtitle: 'Status: Rusak Ringan • Teknisi: Budi S.',
-        time: '2 Jam lalu',
-      ),
-    ];
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10, height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: AppTheme.labelSm.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant)),
+      ],
+    );
+  }
+}
+
+/// Aktivitas Terbaru section — real-time from API reports
+class _AktivitasSection extends StatelessWidget {
+  final List<dynamic> reports;
+  final List<dynamic> schedules;
+  final Function(Map<String, dynamic>) onCheckIn;
+
+  const _AktivitasSection({
+    required this.reports,
+    required this.schedules,
+    required this.onCheckIn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Build activity list from real reports
+    final activities = <_Activity>[];
+    for (final r in reports.take(5)) {
+      final report = r as Map<String, dynamic>;
+      final schedule = report['schedule'] as Map<String, dynamic>? ?? {};
+      final checkpoint = schedule['checkpoint'] as Map<String, dynamic>? ?? {};
+      final taskCategory = schedule['task_category'] as Map<String, dynamic>? ?? {};
+      final user = schedule['user'] as Map<String, dynamic>? ?? {};
+      final issue = report['issue'] as Map<String, dynamic>?;
+      final createdAt = report['created_at'] as String? ?? '';
+      final conditionStatus = report['condition_status'] as String? ?? '';
+
+      final IconData icon;
+      final Color iconColor;
+      final String title;
+      final String subtitle;
+
+      if (issue != null) {
+        icon = Icons.warning_amber_rounded;
+        iconColor = AppTheme.primaryBrand;
+        title = 'Kendala: ${checkpoint['name'] ?? 'Checkpoint'}';
+        subtitle = issue['issue_description'] as String? ?? 'Kendala terdeteksi';
+      } else if (conditionStatus == 'Baik') {
+        icon = Icons.check_circle_outline;
+        iconColor = AppTheme.statusOk;
+        title = '${checkpoint['name'] ?? 'Checkpoint'} — Baik';
+        subtitle = '${user['name'] ?? 'Pekerja'} • ${taskCategory['name'] ?? 'Tugas'}';
+      } else {
+        icon = Icons.assignment_outlined;
+        iconColor = AppTheme.tertiary;
+        title = 'Laporan: ${checkpoint['name'] ?? 'Checkpoint'}';
+        subtitle = 'Status: $conditionStatus • ${user['name'] ?? 'Pekerja'}';
+      }
+
+      activities.add(_Activity(
+        icon: icon,
+        iconColor: iconColor,
+        title: title,
+        subtitle: subtitle,
+        time: _relativeTime(createdAt),
+      ));
+    }
 
     final cs = Theme.of(context).colorScheme;
     return Column(
@@ -1261,28 +1383,50 @@ class _AktivitasSection extends StatelessWidget {
         Text('Aktivitas Terbaru', style: AppTheme.headlineSm.copyWith(color: cs.onSurface)),
         const SizedBox(height: AppTheme.spMd),
 
-        // Activity items
-        Container(
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: cs.outlineVariant, width: 0.5),
+        if (activities.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppTheme.spLg),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              border: Border.all(color: cs.outlineVariant, width: 0.5),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.inbox_outlined, color: cs.outline, size: 36),
+                const SizedBox(height: AppTheme.spSm),
+                Text('Belum ada aktivitas',
+                    style: AppTheme.bodyMd.copyWith(color: cs.onSurfaceVariant)),
+                const SizedBox(height: 4),
+                Text('Aktivitas akan muncul setelah laporan dikirim',
+                    style: AppTheme.labelSm.copyWith(color: cs.outline)),
+              ],
+            ),
+          )
+        else
+          // Activity items
+          Container(
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: BorderRadius.circular(AppTheme.radiusLg),
+              border: Border.all(color: cs.outlineVariant, width: 0.5),
+            ),
+            child: Column(
+              children: [
+                ...activities.asMap().entries.map((e) {
+                  final isLast = e.key == activities.length - 1;
+                  return Column(
+                    children: [
+                      _ActivityTile(activity: e.value),
+                      if (!isLast)
+                        Divider(height: 1, indent: 56, color: cs.outlineVariant),
+                    ],
+                  );
+                }),
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              ...activities.asMap().entries.map((e) {
-                final isLast = e.key == activities.length - 1;
-                return Column(
-                  children: [
-                    _ActivityTile(activity: e.value),
-                    if (!isLast)
-                      Divider(height: 1, indent: 56, color: cs.outlineVariant),
-                  ],
-                );
-              }),
-            ],
-          ),
-        ),
         const SizedBox(height: AppTheme.spMd),
 
         // "Lihat Semua" button
@@ -1320,6 +1464,19 @@ class _AktivitasSection extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  String _relativeTime(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 1) return 'Baru saja';
+      if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';
+      if (diff.inHours < 24) return '${diff.inHours} jam lalu';
+      return '${diff.inDays} hari lalu';
+    } catch (_) {
+      return '';
+    }
   }
 }
 

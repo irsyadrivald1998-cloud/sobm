@@ -88,9 +88,9 @@ class ActivityLogNotifier extends ChangeNotifier {
       final report     = r as Map<String, dynamic>;
       final schedule   = report['schedule']    as Map<String, dynamic>? ?? {};
       final checkpoint = schedule['checkpoint'] as Map<String, dynamic>? ?? {};
-      final user       = report['user']        as Map<String, dynamic>? ?? {};
+      final user       = (report['user'] ?? schedule['user']) as Map<String, dynamic>? ?? {};
       final issue      = report['issue']       as Map<String, dynamic>?;
-      final photo      = report['photo_url']   as String?;
+      final photo      = (report['photo_url'] ?? report['photo_path']) as String?;
       final createdAt  = report['created_at']  as String? ?? '';
       final notes      = report['notes']       as String? ?? '';
 

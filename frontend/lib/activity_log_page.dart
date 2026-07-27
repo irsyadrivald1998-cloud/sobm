@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'activity_log_notifier.dart';
+import 'app_config.dart';
 import 'app_theme.dart';
 import 'api_service.dart';
 import 'main.dart' show ActivityLogProvider, NotificationProvider;
@@ -756,7 +757,9 @@ void _showActivityDetailSheet(BuildContext context, ActivityLogEntry entry) {
                             fit: BoxFit.cover,
                           )
                         : Image.network(
-                            entry.photoUrl!,
+                            entry.photoUrl!.startsWith('http')
+                                ? entry.photoUrl!
+                                : '${AppConfig.apiBaseUrl.replaceAll(RegExp(r'/api/?$'), '')}/${entry.photoUrl!.replaceFirst(RegExp(r'^/'), '')}',
                             width: double.infinity,
                             height: 220,
                             fit: BoxFit.cover,
