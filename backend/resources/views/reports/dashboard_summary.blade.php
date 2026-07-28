@@ -21,10 +21,20 @@
             color: #333;
         }
         .header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 30px;
             padding-bottom: 15px;
             border-bottom: 3px solid #1e40af;
+        }
+        .header .logo {
+            width: 80px;
+            height: 80px;
+            margin-right: 20px;
+        }
+        .header .title-group {
+            text-align: center;
         }
         .header h1 {
             font-size: 24px;
@@ -106,11 +116,12 @@
         th {
             padding: 12px 10px;
             text-align: left;
-            font-weight: 600;
-            font-size: 11px;
+            font-weight: 700;
+            font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border: 1px solid #1e3a8a;
+            color: #ffffff !important;
         }
         td {
             padding: 10px;
@@ -138,9 +149,12 @@
 </head>
 <body>
     <div class="header">
-        <h1>Laporan Dashboard Monitoring Operasional</h1>
-        <h2>Sistem Operasional Building Management (SOBM)</h2>
-        <div class="subtitle">Sistem Informasi Manajemen Operasional Gedung Terintegrasi</div>
+        <img src="{{ asset('logo.png') }}" alt="SOBM Logo" class="logo">
+        <div class="title-group">
+            <h1>Laporan Dashboard Monitoring Operasional</h1>
+            <h2>Sistem Operasional Building Management (SOBM)</h2>
+            <div class="subtitle">Sistem Informasi Manajemen Operasional Gedung Terintegrasi</div>
+        </div>
     </div>
 
     <div class="period">

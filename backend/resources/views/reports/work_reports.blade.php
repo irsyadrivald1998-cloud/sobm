@@ -127,9 +127,12 @@
 </head>
 <body>
     <div class="header">
-        <h1>Laporan Pekerjaan</h1>
-        <h2>Sistem Operasional Building Management (SOBM)</h2>
-        <div class="subtitle">Sistem Informasi Manajemen Operasional Gedung Terintegrasi</div>
+        <img src="{{ asset('logo.png') }}" alt="SOBM Logo" class="logo">
+        <div class="title-group">
+            <h1>Laporan Pekerjaan</h1>
+            <h2>Sistem Operasional Building Management (SOBM)</h2>
+            <div class="subtitle">Sistem Informasi Manajemen Operasional Gedung Terintegrasi</div>
+        </div>
     </div>
 
     <div class="report-info">
