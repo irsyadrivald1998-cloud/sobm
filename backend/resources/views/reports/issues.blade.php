@@ -29,12 +29,14 @@
             border-bottom: 3px solid #1e40af;
         }
         .header .logo {
-            width: 80px;
-            height: 80px;
-            margin-right: 20px;
+            width: 70px;
+            height: 70px;
+            margin-right: 15px;
+            flex-shrink: 0;
         }
         .header .title-group {
-            text-align: center;
+            text-align: left;
+            flex: 1;
         }
         .header h1 {
             font-size: 24px;
