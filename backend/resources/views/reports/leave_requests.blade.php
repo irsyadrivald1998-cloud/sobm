@@ -170,11 +170,11 @@
                 <td>{{ $leaveRequest->created_at ? $leaveRequest->created_at->format('d/m/Y') : '-' }}</td>
                 <td>{{ $leaveRequest->user ? $leaveRequest->user->name : '-' }}</td>
                 <td>{{ $leaveRequest->user ? ucfirst($leaveRequest->user->role) : '-' }}</td>
-                <td><span class="badge badge-{{ strtolower($leaveRequest->type) }}">{{ ucfirst($leaveRequest->type) }}</span></td>
+                <td><span class="badge badge-{{ strtolower($leaveRequest->leave_type) }}">{{ ucfirst($leaveRequest->leave_type) }}</span></td>
                 <td>{{ $leaveRequest->start_date ? $leaveRequest->start_date->format('d/m/Y') : '-' }}</td>
                 <td>{{ $leaveRequest->end_date ? $leaveRequest->end_date->format('d/m/Y') : '-' }}</td>
                 <td>{{ $leaveRequest->reason }}</td>
-                <td><span class="badge badge-{{ strtolower($leaveRequest->status) }}">{{ ucfirst($leaveRequest->status) }}</span></td>
+                <td><span class="badge badge-pending">Pending</span></td>
             </tr>
             @endforeach
         </tbody>

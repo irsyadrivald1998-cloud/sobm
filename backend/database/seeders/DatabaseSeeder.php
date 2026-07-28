@@ -9,6 +9,7 @@ use App\Models\TaskCategory;
 use App\Models\Schedule;
 use App\Models\Report;
 use App\Models\Issue;
+use App\Models\LeaveSubmission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
@@ -377,6 +378,46 @@ class DatabaseSeeder extends Seeder
                 'scheduled_time' => '09:00:00',
             ],
             ['status' => 'pending']
+        );
+
+        // 6. Seed Leave Submissions
+        LeaveSubmission::updateOrCreate(
+            [
+                'user_id' => $hk1->id,
+                'leave_type' => 'cuti',
+                'start_date' => Carbon::today()->addDays(7)->format('Y-m-d'),
+                'end_date' => Carbon::today()->addDays(9)->format('Y-m-d'),
+            ],
+            [
+                'reason' => 'Cuti tahunan untuk keperluan keluarga',
+                'attachment_path' => null,
+            ]
+        );
+
+        LeaveSubmission::updateOrCreate(
+            [
+                'user_id' => $tk1->id,
+                'leave_type' => 'izin',
+                'start_date' => Carbon::today()->addDays(3)->format('Y-m-d'),
+                'end_date' => Carbon::today()->addDays(3)->format('Y-m-d'),
+            ],
+            [
+                'reason' => 'Izin untuk keperluan medis check-up',
+                'attachment_path' => null,
+            ]
+        );
+
+        LeaveSubmission::updateOrCreate(
+            [
+                'user_id' => $sec1->id,
+                'leave_type' => 'cuti',
+                'start_date' => Carbon::today()->subDays(5)->format('Y-m-d'),
+                'end_date' => Carbon::today()->subDays(3)->format('Y-m-d'),
+            ],
+            [
+                'reason' => 'Cuti sakit',
+                'attachment_path' => null,
+            ]
         );
     }
 }

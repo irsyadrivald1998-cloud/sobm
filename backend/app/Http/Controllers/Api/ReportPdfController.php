@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Report;
 use App\Models\Issue;
-use App\Models\LeaveRequest;
+use App\Models\LeaveSubmission;
 use App\Models\Schedule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -181,7 +181,7 @@ class ReportPdfController extends Controller
      */
     public function leaveRequests(Request $request)
     {
-        $query = LeaveRequest::query()
+        $query = LeaveSubmission::query()
             ->with('user:id,name,role')
             ->orderBy('created_at', 'desc');
 
@@ -222,7 +222,7 @@ class ReportPdfController extends Controller
         $totalAttendances = Attendance::whereBetween('date', [$startDate, $endDate])->count();
         $totalReports = Report::whereBetween('created_at', [$startDate, $endDate])->count();
         $totalIssues = Issue::whereBetween('created_at', [$startDate, $endDate])->count();
-        $totalLeaveRequests = LeaveRequest::whereBetween('start_date', [$startDate, $endDate])->count();
+        $totalLeaveRequests = LeaveSubmission::whereBetween('start_date', [$startDate, $endDate])->count();
 
         // Attendance by status
         $attendanceByStatus = Attendance::whereBetween('date', [$startDate, $endDate])
