@@ -137,14 +137,20 @@ class _HomePageDashboardState extends State<HomePageDashboard> {
             expandedHeight: 64,
             titleSpacing: AppTheme.spMd,
             leading: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.5), width: 1.5),
-                  color: AppTheme.primaryBrand.withValues(alpha: 0.1),
-                ),
-                child: const Icon(Icons.business, color: AppTheme.primary, size: 20),
+              padding: const EdgeInsets.all(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppTheme.primaryBrand.withValues(alpha: 0.5), width: 1.5),
+                      color: AppTheme.primaryBrand.withValues(alpha: 0.1),
+                    ),
+                    child: const Icon(Icons.business, color: AppTheme.primaryBrand, size: 20),
+                  );
+                },
               ),
             ),
             title: Text(

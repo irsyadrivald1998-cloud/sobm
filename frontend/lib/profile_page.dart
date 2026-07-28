@@ -281,15 +281,6 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: AppTheme.spSm),
 
           _ActionButton(
-            icon: Icons.cloud_queue_outlined,
-            label: 'Antrian Offline',
-            onTap: () {
-              Navigator.of(context).pushNamed('/offline-queue');
-            },
-          ),
-          const SizedBox(height: AppTheme.spSm),
-
-          _ActionButton(
             icon: Icons.info_outline,
             label: 'Tentang Aplikasi',
             onTap: () {
