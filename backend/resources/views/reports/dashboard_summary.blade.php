@@ -110,18 +110,19 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         thead {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background-color: #1e3a8a;
             color: white;
         }
         th {
             padding: 12px 10px;
             text-align: left;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border: 1px solid #1e3a8a;
             color: #ffffff !important;
+            background-color: #1e3a8a !important;
         }
         td {
             padding: 10px;
@@ -149,7 +150,9 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ asset('logo.png') }}" alt="SOBM Logo" class="logo">
+        @if(isset($logoData) && $logoData)
+            <img src="{{ $logoData }}" alt="SOBM Logo" class="logo">
+        @endif
         <div class="title-group">
             <h1>Laporan Dashboard Monitoring Operasional</h1>
             <h2>Sistem Operasional Building Management (SOBM)</h2>
@@ -192,8 +195,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>Status</th>
-                    <th>Jumlah</th>
+                    <th style="color: white; background-color: #1e3a8a;">Status</th>
+                    <th style="color: white; background-color: #1e3a8a;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>
@@ -212,8 +215,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>Kondisi</th>
-                    <th>Jumlah</th>
+                    <th style="color: white; background-color: #1e3a8a;">Kondisi</th>
+                    <th style="color: white; background-color: #1e3a8a;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>
@@ -232,8 +235,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>Status</th>
-                    <th>Jumlah</th>
+                    <th style="color: white; background-color: #1e3a8a;">Status</th>
+                    <th style="color: white; background-color: #1e3a8a;">Jumlah</th>
                 </tr>
             </thead>
             <tbody>

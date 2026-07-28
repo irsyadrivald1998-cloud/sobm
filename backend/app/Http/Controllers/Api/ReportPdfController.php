@@ -29,7 +29,10 @@ class ReportPdfController extends Controller
             ->orderBy('name')
             ->get();
 
-        $pdf = Pdf::loadView('reports.users', compact('users'))
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $pdf = Pdf::loadView('reports.users', compact('users', 'logoData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-data-pengguna-' . now()->format('Y-m-d') . '.pdf');
@@ -57,7 +60,10 @@ class ReportPdfController extends Controller
 
         $attendances = $query->get();
 
-        $pdf = Pdf::loadView('reports.attendances', compact('attendances'))
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $pdf = Pdf::loadView('reports.attendances', compact('attendances', 'logoData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-absensi-' . now()->format('Y-m-d') . '.pdf');
@@ -89,7 +95,10 @@ class ReportPdfController extends Controller
 
         $schedules = $query->get();
 
-        $pdf = Pdf::loadView('reports.schedules', compact('schedules'))
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $pdf = Pdf::loadView('reports.schedules', compact('schedules', 'logoData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-jadwal-patroli-' . now()->format('Y-m-d') . '.pdf');
@@ -126,7 +135,10 @@ class ReportPdfController extends Controller
 
         $reports = $query->get();
 
-        $pdf = Pdf::loadView('reports.work_reports', compact('reports'))
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $pdf = Pdf::loadView('reports.work_reports', compact('reports', 'logoData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-pekerjaan-' . now()->format('Y-m-d') . '.pdf');
@@ -155,7 +167,10 @@ class ReportPdfController extends Controller
 
         $issues = $query->get();
 
-        $pdf = Pdf::loadView('reports.issues', compact('issues'))
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $pdf = Pdf::loadView('reports.issues', compact('issues', 'logoData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-kendala-' . now()->format('Y-m-d') . '.pdf');
@@ -185,7 +200,10 @@ class ReportPdfController extends Controller
 
         $leaveRequests = $query->get();
 
-        $pdf = Pdf::loadView('reports.leave_requests', compact('leaveRequests'))
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $pdf = Pdf::loadView('reports.leave_requests', compact('leaveRequests', 'logoData'))
             ->setPaper('a4', 'landscape');
 
         return $pdf->download('laporan-cuti-izin-' . now()->format('Y-m-d') . '.pdf');
@@ -240,6 +258,11 @@ class ReportPdfController extends Controller
             'reports_by_condition' => $reportsByCondition,
             'issues_by_status' => $issuesByStatus,
         ];
+
+        $logoPath = public_path('logo.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        $data['logoData'] = $logoData;
 
         $pdf = Pdf::loadView('reports.dashboard_summary', $data)
             ->setPaper('a4', 'portrait');

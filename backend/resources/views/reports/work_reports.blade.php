@@ -78,18 +78,19 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         thead {
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            background-color: #1e3a8a;
             color: white;
         }
         th {
             padding: 12px 10px;
             text-align: left;
             font-weight: 700;
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border: 1px solid #1e3a8a;
             color: #ffffff !important;
+            background-color: #1e3a8a !important;
         }
         td {
             padding: 10px;
@@ -127,7 +128,9 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ asset('logo.png') }}" alt="SOBM Logo" class="logo">
+        @if($logoData)
+            <img src="{{ $logoData }}" alt="SOBM Logo" class="logo">
+        @endif
         <div class="title-group">
             <h1>Laporan Pekerjaan</h1>
             <h2>Sistem Operasional Building Management (SOBM)</h2>
@@ -144,16 +147,16 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 50px;">No</th>
-                <th>Tanggal</th>
-                <th>Nama Karyawan</th>
-                <th>Role</th>
-                <th>Checkpoint</th>
-                <th>Kategori Tugas</th>
-                <th>Kondisi</th>
-                <th>Deskripsi Pekerjaan</th>
-                <th>Catatan</th>
-                <th>Kendala</th>
+                <th style="width: 50px; color: white; background-color: #1e3a8a;">No</th>
+                <th style="color: white; background-color: #1e3a8a;">Tanggal</th>
+                <th style="color: white; background-color: #1e3a8a;">Nama Karyawan</th>
+                <th style="color: white; background-color: #1e3a8a;">Role</th>
+                <th style="color: white; background-color: #1e3a8a;">Checkpoint</th>
+                <th style="color: white; background-color: #1e3a8a;">Kategori Tugas</th>
+                <th style="color: white; background-color: #1e3a8a;">Kondisi</th>
+                <th style="color: white; background-color: #1e3a8a;">Deskripsi Pekerjaan</th>
+                <th style="color: white; background-color: #1e3a8a;">Catatan</th>
+                <th style="color: white; background-color: #1e3a8a;">Kendala</th>
             </tr>
         </thead>
         <tbody>
