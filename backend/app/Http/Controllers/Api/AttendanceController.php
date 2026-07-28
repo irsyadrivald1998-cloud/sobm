@@ -102,7 +102,7 @@ class AttendanceController extends Controller
         $currentTimeString = $now->toTimeString();
         
         // Use shift_start from schedule instead of hardcoded time
-        $scheduleTime = Carbon::parse($schedule->date . ' ' . $schedule->shift_start, 'Asia/Jakarta');
+        $scheduleTime = Carbon::parse($schedule->date)->setTimeFrom($schedule->shift_start);
         $status = $now->greaterThan($scheduleTime) ? 'Terlambat' : 'Hadir';
 
         // 5. Store Photo
