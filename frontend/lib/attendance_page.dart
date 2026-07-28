@@ -35,13 +35,23 @@ class _AttendancePageState extends State<AttendancePage>
   int _selectedMonth = DateTime.now().month;
   int _selectedYear = DateTime.now().year;
 
+  // ── Schedule tab state ────────────────────────────────────────────────────
+  List<dynamic> _scheduleList = [];
+  bool _isLoadingSchedule = false;
+  String _errorSchedule = '';
+  int _selectedScheduleMonth = DateTime.now().month;
+  int _selectedScheduleYear = DateTime.now().year;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 1 && _historyList.isEmpty && !_isLoadingHistory) {
         _loadHistory();
+      }
+      if (_tabController.index == 2 && _scheduleList.isEmpty && !_isLoadingSchedule) {
+        _loadSchedule();
       }
     });
     _liveTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -86,6 +96,24 @@ class _AttendancePageState extends State<AttendancePage>
       }
     } catch (e) {
       if (mounted) setState(() { _errorHistory = e.toString().replaceAll('Exception: ', ''); _isLoadingHistory = false; });
+    }
+  }
+
+  Future<void> _loadSchedule() async {
+    setState(() { _isLoadingSchedule = true; _errorSchedule = ''; });
+    try {
+      final data = await _apiService.getSchedules(
+        month: _selectedScheduleMonth,
+        year: _selectedScheduleYear,
+      );
+      if (mounted) {
+        setState(() {
+          _scheduleList = (data['schedules'] as List<dynamic>?) ?? [];
+          _isLoadingSchedule = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() { _errorSchedule = e.toString().replaceAll('Exception: ', ''); _isLoadingSchedule = false; });
     }
   }
 
@@ -282,7 +310,21 @@ class _AttendancePageState extends State<AttendancePage>
         'Terlambat' => Icons.schedule_rounded,
         'Alpa' => Icons.cancel_rounded,
         _ => Icons.fingerprint,
-      };
+  };
+
+  String _scheduleStatusLabel(String? s) => switch (s) {
+        'completed' => 'Selesai',
+        'pending' => 'Belum',
+        'in_progress' => 'Sedang',
+        _ => '-',
+  };
+
+  Color _scheduleStatusColor(String? s) => switch (s) {
+        'completed' => AppTheme.statusOk,
+        'pending' => AppTheme.outline,
+        'in_progress' => AppTheme.primaryBrand,
+        _ => AppTheme.outline,
+  };
 
   // ── Build ─────────────────────────────────────────────────────────────────
 
@@ -305,6 +347,7 @@ class _AttendancePageState extends State<AttendancePage>
           tabs: const [
             Tab(text: 'Hari Ini', icon: Icon(Icons.today_outlined, size: 18)),
             Tab(text: 'Riwayat', icon: Icon(Icons.calendar_month_outlined, size: 18)),
+            Tab(text: 'Jadwal', icon: Icon(Icons.event_note_outlined, size: 18)),
           ],
         ),
       ),
@@ -313,6 +356,7 @@ class _AttendancePageState extends State<AttendancePage>
         children: [
           _buildTodayTab(),
           _buildHistoryTab(),
+          _buildScheduleTab(),
         ],
       ),
     );
@@ -532,6 +576,16 @@ class _AttendancePageState extends State<AttendancePage>
     _loadHistory();
   }
 
+  void _changeScheduleMonth(int delta) {
+    setState(() {
+      _selectedScheduleMonth += delta;
+      if (_selectedScheduleMonth > 12) { _selectedScheduleMonth = 1; _selectedScheduleYear++; }
+      if (_selectedScheduleMonth < 1) { _selectedScheduleMonth = 12; _selectedScheduleYear--; }
+      _scheduleList = [];
+    });
+    _loadSchedule();
+  }
+
   Widget _buildHistoryList() {
     final cs = Theme.of(context).colorScheme;
     if (_isLoadingHistory) {
@@ -607,6 +661,30 @@ class _AttendancePageState extends State<AttendancePage>
                         Text(_statusLabel(status),
                             style: AppTheme.bodyMd.copyWith(
                                 fontWeight: FontWeight.w600, color: _statusColor(status))),
+                        if (status == 'Terlambat') ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.statusWarning.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text('Telat',
+                                style: AppTheme.labelSm.copyWith(color: AppTheme.statusWarning, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                        if (status == 'Hadir') ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.statusOk.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text('Tepat Waktu',
+                                style: AppTheme.labelSm.copyWith(color: AppTheme.statusOk, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -631,6 +709,154 @@ class _AttendancePageState extends State<AttendancePage>
                           Text('—', style: AppTheme.labelMd),
                       ],
                     ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //  TAB 3 — Jadwal
+  // ════════════════════════════════════════════════════════════════════════════
+
+  Widget _buildScheduleTab() {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        // ── Month picker ─────────────────────────────────────────────────────
+        Container(
+          color: cs.surfaceContainerHighest,
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.spMd, vertical: AppTheme.spSm),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.chevron_left_rounded),
+                onPressed: () => _changeScheduleMonth(-1),
+                color: cs.onSurface,
+              ),
+              Expanded(
+                child: Text(
+                  '${_monthName(_selectedScheduleMonth)} $_selectedScheduleYear',
+                  style: AppTheme.bodyLg.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right_rounded),
+                onPressed: () => _changeScheduleMonth(1),
+                color: cs.onSurface,
+              ),
+            ],
+          ),
+        ),
+        Divider(height: 1, color: cs.outlineVariant),
+        // ── List ──────────────────────────────────────────────────────────
+        Expanded(child: _buildScheduleList()),
+      ],
+    );
+  }
+
+  Widget _buildScheduleList() {
+    final cs = Theme.of(context).colorScheme;
+    if (_isLoadingSchedule) {
+      return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand));
+    }
+    if (_errorSchedule.isNotEmpty) {
+      return _buildError(_errorSchedule, _loadSchedule);
+    }
+    if (_scheduleList.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.event_busy_outlined, size: 56, color: AppTheme.outline),
+            const SizedBox(height: AppTheme.spMd),
+            Text('Tidak ada jadwal\npada bulan ini',
+                style: AppTheme.bodyLg.copyWith(color: cs.onSurfaceVariant),
+                textAlign: TextAlign.center),
+          ],
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.all(AppTheme.spMd),
+      itemCount: _scheduleList.length,
+      separatorBuilder: (context, idx) => const SizedBox(height: AppTheme.spSm),
+      itemBuilder: (_, i) {
+        final item = _scheduleList[i] as Map<String, dynamic>;
+        final status    = item['status'] as String?;
+        final dateStr   = item['shift_date'] as String? ?? '';
+        final timeStr   = item['scheduled_time'] as String?;
+        final checkpoint = item['checkpoint'] as Map<String, dynamic>?;
+        final task      = item['task_category'] as Map<String, dynamic>?;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppTheme.surface,
+            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            border: Border.all(color: AppTheme.outlineVariant, width: 0.5),
+          ),
+          padding: const EdgeInsets.all(AppTheme.spMd),
+          child: Row(
+            children: [
+              // Date box
+              Container(
+                width: 48,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: _scheduleStatusColor(status).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(_dayFromDate(dateStr),
+                        style: AppTheme.labelSm.copyWith(color: _scheduleStatusColor(status))),
+                    Text(_dateNum(dateStr),
+                        style: AppTheme.bodyLg.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: _scheduleStatusColor(status))),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppTheme.spMd),
+              // Status + details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle_outline, size: 16, color: _scheduleStatusColor(status)),
+                        const SizedBox(width: 4),
+                        Text(_scheduleStatusLabel(status),
+                            style: AppTheme.bodyMd.copyWith(
+                                fontWeight: FontWeight.w600, color: _scheduleStatusColor(status))),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time, size: 13, color: AppTheme.outline),
+                        const SizedBox(width: 3),
+                        Text(_fmtTime(timeStr), style: AppTheme.labelMd),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    if (checkpoint != null)
+                      Text(checkpoint['name'] as String? ?? '-', 
+                          style: AppTheme.labelSm.copyWith(color: AppTheme.onSurfaceVariant)),
+                    if (task != null)
+                      Text(task['task_name'] as String? ?? '-', 
+                          style: AppTheme.labelSm.copyWith(color: AppTheme.onSurfaceVariant)),
                   ],
                 ),
               ),

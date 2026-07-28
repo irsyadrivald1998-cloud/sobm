@@ -216,13 +216,19 @@ class ApiService {
   }
 
   // GET /schedules
-  Future<List<dynamic>> getSchedules() async {
+  Future<Map<String, dynamic>> getSchedules({int? month, int? year}) async {
     final baseUrl = await getBaseUrl();
     final token = await getToken();
     if (token == null) throw Exception('Tidak terautentikasi.');
 
+    final queryParams = <String, String>{};
+    if (month != null) queryParams['month'] = month.toString();
+    if (year != null) queryParams['year'] = year.toString();
+
+    final uri = Uri.parse('$baseUrl/schedules').replace(queryParameters: queryParams);
+
     final response = await http.get(
-      Uri.parse('$baseUrl/schedules'),
+      uri,
       headers: {
         'Accept': 'application/json',
         'Authorization': 'Bearer $token',
@@ -233,7 +239,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       if (responseData['status'] == true) {
-        return responseData['data']['schedules'] as List<dynamic>;
+        return responseData['data'] as Map<String, dynamic>;
       } else {
         throw Exception(responseData['message'] ?? 'Gagal mengambil jadwal.');
       }
