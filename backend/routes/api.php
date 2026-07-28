@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\IssueController;
 use App\Http\Controllers\Api\LeaveSubmissionController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\ReportPdfController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Responses\ApiResponse;

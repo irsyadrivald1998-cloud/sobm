@@ -105,7 +105,8 @@ class GenerateAttendanceSchedulesCommand extends Command
             $this->createSchedule($user, $date, '22:00:00', '06:00:00', 'malam');
         }
 
-        $this->info("Generated {$users->count() * 3} schedules for Security (3 shifts per person).");
+        $schedulesCount = $users->count() * 3;
+        $this->info("Generated {$schedulesCount} schedules for Security (3 shifts per person).");
     }
 
     private function generateForOSB(Carbon $date)

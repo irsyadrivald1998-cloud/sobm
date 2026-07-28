@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Reports\Tables;
 
 use Carbon\Carbon;
 use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -110,6 +111,13 @@ class ReportsTable
             ])
             ->recordActions([
                 ViewAction::make(),
+            ])
+            ->headerActions([
+                Action::make('print_reports')
+                    ->label('Cetak Laporan')
+                    ->icon('heroicon-o-printer')
+                    ->url(fn () => url('/reports-pdf/work-reports'))
+                    ->openUrlInNewTab(),
             ]);
     }
 }
