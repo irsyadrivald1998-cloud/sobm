@@ -112,22 +112,66 @@ class _LoginPageState extends State<LoginPage>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Server Settings'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Server Settings',
+          style: TextStyle(
+            color: Color(0xFF1A1A2E),
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('API BASE URL', style: AppTheme.labelMd),
-            const SizedBox(height: AppTheme.spSm),
+            const Text(
+              'API BASE URL',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF5A5A6E),
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(height: 8),
             TextField(
               controller: tempController,
-              style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface),
-              decoration:
-                  const InputDecoration(hintText: 'http://192.168.x.x:8000'),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF1A1A2E),
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: 'http://192.168.x.x:8000',
+                hintStyle: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 13),
+                filled: true,
+                fillColor: const Color(0xFFF8F8FA),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE8E8EE)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFE8E8EE)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFD32F2F), width: 1.5),
+                ),
+              ),
             ),
-            const SizedBox(height: AppTheme.spSm),
-            Text('Default: ${ApiService.defaultBaseUrl}',
-                style: AppTheme.labelSm),
+            const SizedBox(height: 10),
+            Text(
+              'Default: ${ApiService.defaultBaseUrl}',
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF7A7A8E),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
         actions: [
@@ -137,14 +181,22 @@ class _LoginPageState extends State<LoginPage>
               _urlController.text = ApiService.defaultBaseUrl;
               Navigator.of(ctx).pop();
             },
-            child: const Text('Reset Default'),
+            child: const Text(
+              'Reset Default',
+              style: TextStyle(color: Color(0xFFD32F2F), fontWeight: FontWeight.w600),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
               _urlController.text = tempController.text;
               Navigator.of(ctx).pop();
             },
-            child: const Text('Simpan'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD32F2F),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -351,10 +403,6 @@ class _LoginPageState extends State<LoginPage>
                             ),
                           ),
                         ),
-                        const SizedBox(height: 32),
-
-                        // ── Social Login Section ────────────────────
-                        _buildSocialLoginSection(),
                         const SizedBox(height: 16),
                       ],
                     ),
@@ -556,96 +604,6 @@ class _LoginPageState extends State<LoginPage>
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── Social Login Section ──────────────────────────────────────────────────
-  Widget _buildSocialLoginSection() {
-    return Column(
-      children: [
-        const Text(
-          'ATAU LANJUT DENGAN',
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFFAAAAAA),
-            letterSpacing: 2.0,
-          ),
-        ),
-        const SizedBox(height: 18),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _SocialButton(
-              icon: Icons.g_mobiledata_rounded,
-              iconSize: 28,
-              onTap: () =>
-                  _showSnack('Google login belum tersedia', isError: false),
-            ),
-            const SizedBox(width: 16),
-            _SocialButton(
-              icon: Icons.apple_rounded,
-              iconSize: 24,
-              onTap: () =>
-                  _showSnack('Apple login belum tersedia', isError: false),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// Sub-Widgets
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Social login icon button
-class _SocialButton extends StatelessWidget {
-  final IconData icon;
-  final double iconSize;
-  final VoidCallback onTap;
-
-  const _SocialButton({
-    required this.icon,
-    required this.onTap,
-    this.iconSize = 24,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: 60,
-          height: 52,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFE8E8EE),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Icon(
-              icon,
-              size: iconSize,
-              color: const Color(0xFF3A3A4E),
-            ),
           ),
         ),
       ),

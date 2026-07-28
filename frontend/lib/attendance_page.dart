@@ -426,11 +426,12 @@ class _AttendancePageState extends State<AttendancePage>
   // ════════════════════════════════════════════════════════════════════════════
 
   Widget _buildHistoryTab() {
+    final cs = Theme.of(context).colorScheme;
     return Column(
       children: [
         // ── Month picker ─────────────────────────────────────────────────────
         Container(
-          color: AppTheme.surfaceLowest,
+          color: cs.surfaceContainerHighest,
           padding: const EdgeInsets.symmetric(
               horizontal: AppTheme.spMd, vertical: AppTheme.spSm),
           child: Row(
@@ -438,24 +439,27 @@ class _AttendancePageState extends State<AttendancePage>
               IconButton(
                 icon: const Icon(Icons.chevron_left_rounded),
                 onPressed: () => _changeMonth(-1),
-                color: AppTheme.onSurface,
+                color: cs.onSurface,
               ),
               Expanded(
                 child: Text(
                   '${_monthName(_selectedMonth)} $_selectedYear',
-                  style: AppTheme.bodyLg.copyWith(fontWeight: FontWeight.w700),
+                  style: AppTheme.bodyLg.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right_rounded),
                 onPressed: () => _changeMonth(1),
-                color: AppTheme.onSurface,
+                color: cs.onSurface,
               ),
             ],
           ),
         ),
-        const Divider(height: 1),
+        Divider(height: 1, color: cs.outlineVariant),
         // ── List ──────────────────────────────────────────────────────────
         Expanded(child: _buildHistoryList()),
       ],
@@ -473,6 +477,7 @@ class _AttendancePageState extends State<AttendancePage>
   }
 
   Widget _buildHistoryList() {
+    final cs = Theme.of(context).colorScheme;
     if (_isLoadingHistory) {
       return const Center(child: CircularProgressIndicator(color: AppTheme.primaryBrand));
     }
@@ -487,7 +492,8 @@ class _AttendancePageState extends State<AttendancePage>
             const Icon(Icons.event_busy_outlined, size: 56, color: AppTheme.outline),
             const SizedBox(height: AppTheme.spMd),
             Text('Tidak ada data absensi\npada bulan ini',
-                style: AppTheme.bodyLg, textAlign: TextAlign.center),
+                style: AppTheme.bodyLg.copyWith(color: cs.onSurfaceVariant),
+                textAlign: TextAlign.center),
           ],
         ),
       );

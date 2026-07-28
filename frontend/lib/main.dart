@@ -17,6 +17,7 @@ import 'notification_service.dart';
 import 'notifications_page.dart';
 import 'my_tasks_page.dart';
 import 'register_page.dart';
+import 'splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,7 +69,8 @@ class _MyAppState extends State<MyApp> {
                 themeMode: ThemeMode.system,
                 initialRoute: '/',
                 routes: {
-                  '/': (context) => const LoginPage(),
+                  '/': (context) => const SplashPage(),
+                  '/login': (context) => const LoginPage(),
                   '/home': (context) => const HomePage(),
                   '/activity-log': (context) => const ActivityLogPage(),
                   '/admin-dashboard': (context) => const AdminDashboardPage(),

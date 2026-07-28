@@ -438,6 +438,11 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _nameController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w500,
+                              ),
                               textCapitalization: TextCapitalization.words,
                               decoration: _buildInputDecoration(
                                 hint: 'Masukkan nama lengkap karyawan',
@@ -470,6 +475,11 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _employeeIdController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w500,
+                              ),
                               decoration: _buildInputDecoration(
                                 hint:
                                     'Contoh: ${currentMeta['prefix']}001',
@@ -489,6 +499,11 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _emailController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w500,
+                              ),
                               keyboardType: TextInputType.emailAddress,
                               decoration: _buildInputDecoration(
                                 hint: 'contoh@domain.com',
@@ -510,6 +525,11 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _phoneController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w500,
+                              ),
                               keyboardType: TextInputType.phone,
                               decoration: _buildInputDecoration(
                                 hint: '08123456789',
@@ -523,6 +543,11 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _passwordController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w500,
+                              ),
                               obscureText: !_isPasswordVisible,
                               decoration: _buildInputDecoration(
                                 hint: 'Minimal 8 karakter',
@@ -558,6 +583,11 @@ class _RegisterPageState extends State<RegisterPage>
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _confirmPasswordController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w500,
+                              ),
                               obscureText: !_isConfirmPasswordVisible,
                               decoration: _buildInputDecoration(
                                 hint: 'Ulangi password di atas',

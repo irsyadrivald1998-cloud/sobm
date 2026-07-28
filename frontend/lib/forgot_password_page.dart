@@ -57,8 +57,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: Text('Lupa Password', style: AppTheme.titleLg),
+        title: Text(
+          'Lupa Password',
+          style: AppTheme.titleLg.copyWith(color: AppTheme.onSurface),
+        ),
         backgroundColor: AppTheme.surfaceLowest,
+        iconTheme: const IconThemeData(color: AppTheme.onSurface),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppTheme.spLg),
@@ -93,7 +97,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           // Title
           Text(
             'Lupa Password?',
-            style: AppTheme.headlineMd,
+            style: AppTheme.headlineMd.copyWith(color: AppTheme.onSurface),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppTheme.spSm),
@@ -101,24 +105,44 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           // Description
           Text(
             'Masukkan ID Pegawai Anda dan kami akan mengirimkan link reset password ke email terdaftar.',
-            style: AppTheme.bodyMd,
+            style: AppTheme.bodyMd.copyWith(color: const Color(0xFF7A7A8E)),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppTheme.spXl),
 
           // Employee ID Field
-          Text('ID Pegawai', style: AppTheme.bodyMd.copyWith(fontWeight: FontWeight.w600)),
+          Text(
+            'ID Pegawai',
+            style: AppTheme.bodyMd.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppTheme.onSurface,
+            ),
+          ),
           const SizedBox(height: AppTheme.spSm),
           TextFormField(
             controller: _employeeIdController,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Color(0xFF1A1A2E),
+              fontWeight: FontWeight.w500,
+            ),
             decoration: InputDecoration(
               hintText: 'Contoh: EMP001',
-              prefixIcon: const Icon(Icons.badge),
+              hintStyle: const TextStyle(color: Color(0xFFAAAAAA), fontSize: 14),
+              prefixIcon: const Icon(Icons.badge, color: Color(0xFF7A7A8E)),
               filled: true,
               fillColor: AppTheme.surface,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
                 borderSide: const BorderSide(color: AppTheme.outlineVariant),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                borderSide: const BorderSide(color: AppTheme.outlineVariant),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                borderSide: const BorderSide(color: AppTheme.primaryBrand, width: 1.5),
               ),
             ),
             validator: (value) {
@@ -186,7 +210,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         // Success Title
         Text(
           'Email Terkirim!',
-          style: AppTheme.headlineMd,
+          style: AppTheme.headlineMd.copyWith(color: AppTheme.onSurface),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppTheme.spSm),
@@ -194,7 +218,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         // Success Description
         Text(
           'Link reset password telah dikirim ke email terdaftar Anda. Silakan cek inbox atau folder spam.',
-          style: AppTheme.bodyMd,
+          style: AppTheme.bodyMd.copyWith(color: const Color(0xFF7A7A8E)),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppTheme.spXl),
@@ -224,11 +248,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 ],
               ),
               const SizedBox(height: AppTheme.spSm),
-              Text('• Link reset akan kadaluarsa dalam 1 jam', style: AppTheme.bodyMd),
+              Text('• Link reset akan kadaluarsa dalam 1 jam', style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
               const SizedBox(height: AppTheme.spXs),
-              Text('• Jika tidak menerima email, coba kirim ulang', style: AppTheme.bodyMd),
+              Text('• Jika tidak menerima email, coba kirim ulang', style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
               const SizedBox(height: AppTheme.spXs),
-              Text('• Hubungi admin jika masalah berlanjut', style: AppTheme.bodyMd),
+              Text('• Hubungi admin jika masalah berlanjut', style: AppTheme.bodyMd.copyWith(color: AppTheme.onSurface)),
             ],
           ),
         ),
