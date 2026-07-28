@@ -12,3 +12,4 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('schedules:generate')->hourly();
 Schedule::command('attendances:mark-alpa')->dailyAt('23:59');
 Schedule::command('attendance-schedules:generate')->dailyAt('00:00');
+Schedule::command('attendance:create-daily')->dailyAt('00:05');

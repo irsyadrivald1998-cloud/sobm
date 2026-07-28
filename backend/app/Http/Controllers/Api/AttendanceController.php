@@ -64,6 +64,7 @@ class AttendanceController extends Controller
 
         $userId = $request->user()->id;
         $today = Carbon::today('Asia/Jakarta')->toDateString();
+        $now = Carbon::now('Asia/Jakarta');
 
         // 1. Check if already clocked in
         $exists = Attendance::where('user_id', $userId)
@@ -84,7 +85,22 @@ class AttendanceController extends Controller
             return ApiResponse::error('Anda tidak memiliki jadwal absensi untuk hari ini.', 400);
         }
 
-        // 3. Validate Geolocation (Geofence to main office)
+        // 3. Validate time window (30 minutes before to 15 minutes after shift start)
+        $shiftStart = Carbon::parse($schedule->date)->setTimeFrom($schedule->shift_start);
+        $allowedStart = $shiftStart->copy()->subMinutes(30);
+        $allowedEnd = $shiftStart->copy()->addMinutes(15);
+
+        if ($now->lt($allowedStart)) {
+            $minutesUntil = $now->diffInMinutes($allowedStart);
+            return ApiResponse::error("Anda belum bisa absen. Absen dibuka {$minutesUntil} menit lagi.", 400);
+        }
+
+        if ($now->gt($allowedEnd)) {
+            $minutesLate = $now->diffInMinutes($allowedEnd);
+            return ApiResponse::error("Waktu absen telah berakhir. Anda terlambat {$minutesLate} menit dari batas waktu absen.", 400);
+        }
+
+        // 4. Validate Geolocation (Geofence to main office)
         $distance = $this->haversineGreatCircleDistance(
             self::OFFICE_LATITUDE,
             self::OFFICE_LONGITUDE,
@@ -97,15 +113,11 @@ class AttendanceController extends Controller
             return ApiResponse::error("Anda berada {$over} meter di luar jangkauan lokasi kantor untuk absensi.", 400);
         }
 
-        // 4. Determine Lateness Status based on schedule
-        $now = Carbon::now('Asia/Jakarta');
+        // 5. Determine Lateness Status based on schedule
         $currentTimeString = $now->toTimeString();
-        
-        // Use shift_start from schedule instead of hardcoded time
-        $scheduleTime = Carbon::parse($schedule->date)->setTimeFrom($schedule->shift_start);
-        $status = $now->greaterThan($scheduleTime) ? 'Terlambat' : 'Hadir';
+        $status = $now->gt($shiftStart) ? 'Terlambat' : 'Hadir';
 
-        // 5. Store Photo
+        // 6. Store Photo
         $photoPath = $request->file('photo')->store('attendances/clock_in', 'public');
 
         try {

@@ -94,6 +94,11 @@ class _AttendancePageState extends State<AttendancePage>
   Future<void> _startClockFlow(bool isClockIn) async {
     setState(() => _isSubmitting = true);
     try {
+      // For clock-in, check time window first before proceeding
+      if (isClockIn) {
+        await _checkClockInWindow();
+      }
+
       // 1. Get GPS
       final position = await _getLocation();
       if (position == null) { setState(() => _isSubmitting = false); return; }
@@ -148,6 +153,57 @@ class _AttendancePageState extends State<AttendancePage>
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _checkClockInWindow() async {
+    try {
+      // Get today's attendance to check if schedule exists
+      final data = await _apiService.getTodayAttendance();
+      
+      // If attendance already exists with clock-in, no need to check window
+      if (data != null && data['clock_in_time'] != null) {
+        return;
+      }
+      
+      // The API will handle time validation, but we can show a warning
+      // if it's too early based on typical shift times
+      final now = DateTime.now();
+      final hour = now.hour;
+      
+      // Typical shift start is 08:00, so warn if before 07:30
+      if (hour < 7 || (hour == 7 && now.minute < 30)) {
+        if (mounted) {
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Waktu Absen Terlalu Awal'),
+              content: const Text(
+                'Anda mencoba absen lebih dari 30 menit sebelum jam kerja dimulai. '
+                'Absen dibuka 30 menit sebelum jam kerja. Lanjutkan?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Batal'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Lanjutkan'),
+                ),
+              ],
+            ),
+          );
+          if (confirmed != true) {
+            throw Exception('Absen dibatalkan oleh pengguna');
+          }
+        }
+      }
+    } catch (e) {
+      // If there's any error checking, just proceed and let the API handle validation
+      if (mounted && e.toString().contains('Absen dibatalkan')) {
+        rethrow;
+      }
     }
   }
 
