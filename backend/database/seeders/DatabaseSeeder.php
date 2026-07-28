@@ -391,6 +391,7 @@ class DatabaseSeeder extends Seeder
             [
                 'reason' => 'Cuti tahunan untuk keperluan keluarga',
                 'attachment_path' => null,
+                'date' => Carbon::today()->addDays(7)->format('Y-m-d'),
             ]
         );
 
@@ -404,6 +405,7 @@ class DatabaseSeeder extends Seeder
             [
                 'reason' => 'Izin untuk keperluan medis check-up',
                 'attachment_path' => null,
+                'date' => Carbon::today()->addDays(3)->format('Y-m-d'),
             ]
         );
 
@@ -417,6 +419,7 @@ class DatabaseSeeder extends Seeder
             [
                 'reason' => 'Cuti sakit',
                 'attachment_path' => null,
+                'date' => Carbon::today()->subDays(5)->format('Y-m-d'),
             ]
         );
     }
